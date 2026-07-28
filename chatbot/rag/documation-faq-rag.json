@@ -1,22 +1,41 @@
 {
   "meta": {
-    "knowledge_base": "Documation Sdn Bhd — Customer FAQ",
-    "version": "1.0",
+    "knowledge_base": "Documation Sdn Bhd — Customer FAQ and partner-product reference",
+    "version": "1.1",
     "compiled_date": "2026-07-28",
     "source_site": "https://documation.com.my/",
     "language": "en",
     "audience": "mixed — prospective clients, existing clients, general public",
-    "entry_count": 68,
+    "entry_count": 181,
     "chunking_guidance": "Each entry is one chunk. Do not split or merge entries. Embed the 'text' field; keep 'question', 'category', 'tags', 'source_url' and 'status' as metadata for filtering and citation.",
     "authoring_rules": [
       "Answers name 'Documation' explicitly instead of using pronouns, so a retrieved chunk is self-contained with no surrounding context.",
       "Every entry carries a source_url so the bot can cite where an answer came from.",
-      "Entries with status 'needs_client_confirmation' must not be served until Documation confirms the underlying fact — see open_items."
+      "Entries with status 'needs_client_confirmation' must not be served until Documation confirms the underlying fact — see open_items.",
+      "Entries with the EPSON- prefix describe Epson's WorkForce Enterprise products, not Documation's services. They name the Epson product explicitly in every answer so a retrieved chunk cannot be mistaken for a statement about Documation's own equipment or capabilities."
     ],
     "status_values": {
       "verified": "Taken directly from the Documation website and internally consistent. Safe to serve.",
       "needs_client_confirmation": "The website is ambiguous, contradictory, or the value could not be extracted. Do NOT serve until confirmed."
-    }
+    },
+    "sources": [
+      {
+        "name": "Documation Sdn Bhd website",
+        "short_name": "Documation FAQ",
+        "url": "https://documation.com.my/",
+        "id_prefix": "FAQ-",
+        "scope": "Documation's own company, services, technology, security and contact details."
+      },
+      {
+        "name": "Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure",
+        "short_name": "Epson product reference",
+        "publisher": "Epson Singapore Pte Ltd / Epson Malaysia Sdn Bhd",
+        "printed": "July 2020",
+        "id_prefix": "EPSON-",
+        "scope": "Epson product specifications held as partner-product reference. These entries describe Epson hardware, not Documation's own services or production equipment.",
+        "caveat": "The brochure states that information is correct at time of printing and that specifications and product availability are subject to change without notice and may vary between countries. Re-verify against Epson before quoting to a customer."
+      }
+    ]
   },
   "entries": [
     {
@@ -63,7 +82,7 @@
     },
     {
       "id": "FAQ-004",
-      "question": "Where is Documation located?",
+      "question": "Where is Documation located, and what is its office address?",
       "answer": "Documation Sdn Bhd is located at No. 7, Jalan PPU 3A, Pusat Teknologi Sinar Puchong, 47150 Puchong, Selangor, Malaysia.",
       "category": "contact",
       "tags": [
@@ -73,7 +92,7 @@
       ],
       "source_url": "https://documation.com.my/contact-us/",
       "status": "verified",
-      "text": "Q: Where is Documation located?\nA: Documation Sdn Bhd is located at No. 7, Jalan PPU 3A, Pusat Teknologi Sinar Puchong, 47150 Puchong, Selangor, Malaysia."
+      "text": "Q: Where is Documation located, and what is its office address?\nA: Documation Sdn Bhd is located at No. 7, Jalan PPU 3A, Pusat Teknologi Sinar Puchong, 47150 Puchong, Selangor, Malaysia."
     },
     {
       "id": "FAQ-005",
@@ -994,6 +1013,1873 @@
       "source_url": "https://documation.com.my/insight/news/",
       "status": "verified",
       "text": "Q: Does Documation publish articles or insights?\nA: Yes. Documation publishes articles in its Insights section at https://documation.com.my/insight/news/. Published topics include Business Process Outsourcing in Malaysia, the need for digitising documents, the pros and cons of BPO, printing trends, outsourcing versus in-house, and digital transformation in Malaysia."
+    },
+    {
+      "id": "EPSON-001",
+      "question": "What is the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 series?",
+      "answer": "The Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 are A3 colour multifunction printers built on Epson Heat-Free Technology, PrecisionCore Line Head Inkjet Technology and DURABrite Pro ink. Epson describes them as providing consistent high-speed printing with lower power consumption to increase productivity while minimising running costs, at speeds of up to 60, 75 and 100 pages per minute respectively, and with fewer replacement parts to reduce environmental impact.",
+      "category": "epson-product",
+      "tags": [
+        "workforce-enterprise",
+        "wf-c20600",
+        "wf-c20750",
+        "wf-c21000",
+        "overview",
+        "a3-mfp"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 series?\nA: The Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 are A3 colour multifunction printers built on Epson Heat-Free Technology, PrecisionCore Line Head Inkjet Technology and DURABrite Pro ink. Epson describes them as providing consistent high-speed printing with lower power consumption to increase productivity while minimising running costs, at speeds of up to 60, 75 and 100 pages per minute respectively, and with fewer replacement parts to reduce environmental impact."
+    },
+    {
+      "id": "EPSON-002",
+      "question": "Which models are in the Epson WorkForce Enterprise range, and how do they differ?",
+      "answer": "The range covers three models: the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000. They share the same printing technology, paper handling, scanning, connectivity and finishing options. The difference is rated speed — approximately 60 ipm for the WF-C20600, 75 ipm for the WF-C20750 and 100 ipm for the WF-C21000 on A4, in both simplex and duplex, measured to ISO 24734.",
+      "category": "epson-product",
+      "tags": [
+        "model-comparison",
+        "speeds",
+        "wf-c20600",
+        "wf-c20750",
+        "wf-c21000"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Which models are in the Epson WorkForce Enterprise range, and how do they differ?\nA: The range covers three models: the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000. They share the same printing technology, paper handling, scanning, connectivity and finishing options. The difference is rated speed — approximately 60 ipm for the WF-C20600, 75 ipm for the WF-C20750 and 100 ipm for the WF-C21000 on A4, in both simplex and duplex, measured to ISO 24734."
+    },
+    {
+      "id": "EPSON-003",
+      "question": "What are the Epson order numbers for the WorkForce Enterprise printers?",
+      "answer": "The Epson order numbers are C11CH86502 for the WorkForce Enterprise WF-C20600, C11CH87502 for the WF-C20750 and C11CH88502 for the WF-C21000.",
+      "category": "epson-product",
+      "tags": [
+        "order-code",
+        "sku",
+        "model-number",
+        "part-number"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the Epson order numbers for the WorkForce Enterprise printers?\nA: The Epson order numbers are C11CH86502 for the WorkForce Enterprise WF-C20600, C11CH87502 for the WF-C20750 and C11CH88502 for the WF-C21000."
+    },
+    {
+      "id": "EPSON-004",
+      "question": "What functions do the Epson WorkForce Enterprise multifunction printers perform?",
+      "answer": "The Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 print, copy and scan as standard, with fax available as an option. Epson describes them as enabling large workgroups to print, copy, scan and send to email at ultra-fast speeds, with optional finishing for stapling, hole punching, folding and booklet making.",
+      "category": "epson-product",
+      "tags": [
+        "functions",
+        "print-copy-scan",
+        "mfp",
+        "capabilities"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What functions do the Epson WorkForce Enterprise multifunction printers perform?\nA: The Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 print, copy and scan as standard, with fax available as an option. Epson describes them as enabling large workgroups to print, copy, scan and send to email at ultra-fast speeds, with optional finishing for stapling, hole punching, folding and booklet making."
+    },
+    {
+      "id": "EPSON-005",
+      "question": "What are the three main benefits Epson claims for the WorkForce Enterprise range?",
+      "answer": "Epson's brochure gives three pillars. Exceptional Performance — maximum productivity with consistent high-speed printing of up to 100 pages per minute, even in duplex mode. Environmentally Friendly — Heat-Free Technology means significantly less power consumption and less frequent part replacement, reducing impact on the environment. Enhanced Finishing — new finishing options allowing stapling, hole-punching and booklet printing.",
+      "category": "epson-product",
+      "tags": [
+        "benefits",
+        "value-proposition",
+        "pillars",
+        "marketing"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the three main benefits Epson claims for the WorkForce Enterprise range?\nA: Epson's brochure gives three pillars. Exceptional Performance — maximum productivity with consistent high-speed printing of up to 100 pages per minute, even in duplex mode. Environmentally Friendly — Heat-Free Technology means significantly less power consumption and less frequent part replacement, reducing impact on the environment. Enhanced Finishing — new finishing options allowing stapling, hole-punching and booklet printing."
+    },
+    {
+      "id": "EPSON-006",
+      "question": "What features are highlighted on the Epson WorkForce Enterprise cover specification strip?",
+      "answer": "The Epson WorkForce Enterprise brochure highlights ISO print speed of up to 100 ipm in simplex and duplex, high-yield cartridges rated up to 100,000 pages in black and up to 50,000 pages in colour, duplex printing, Ethernet, Wi-Fi Direct, Epson Connect, and Open Platform support. The cover headline is \"Shaping the future of business printing with Heat-Free Technology\".",
+      "category": "epson-product",
+      "tags": [
+        "highlights",
+        "feature-summary",
+        "icons",
+        "at-a-glance"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What features are highlighted on the Epson WorkForce Enterprise cover specification strip?\nA: The Epson WorkForce Enterprise brochure highlights ISO print speed of up to 100 ipm in simplex and duplex, high-yield cartridges rated up to 100,000 pages in black and up to 50,000 pages in colour, duplex printing, Ethernet, Wi-Fi Direct, Epson Connect, and Open Platform support. The cover headline is \"Shaping the future of business printing with Heat-Free Technology\"."
+    },
+    {
+      "id": "EPSON-007",
+      "question": "Is the Epson WF-C20590 one of the WorkForce Enterprise models in this range?",
+      "answer": "No. The WF-C20590, WF-M20590 and WF-17590 appear in the brochure only as the benchmark units used in Epson's own research and in the Keypoint Intelligence-Buyers Lab comparison testing that supports the energy and replacement-part claims. The models sold in this range are the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000.",
+      "category": "epson-product",
+      "tags": [
+        "wf-c20590",
+        "benchmark",
+        "clarification",
+        "comparison-model"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "Important disambiguation: comparison figures quoted in the brochure are measured on the WF-C20590, not on the three models sold. From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Is the Epson WF-C20590 one of the WorkForce Enterprise models in this range?\nA: No. The WF-C20590, WF-M20590 and WF-17590 appear in the brochure only as the benchmark units used in Epson's own research and in the Keypoint Intelligence-Buyers Lab comparison testing that supports the energy and replacement-part claims. The models sold in this range are the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000."
+    },
+    {
+      "id": "EPSON-008",
+      "question": "What is the source and date of these Epson WorkForce Enterprise specifications?",
+      "answer": "These Epson WorkForce Enterprise details come from the Epson product brochure and specification sheet for the WF-C20600, WF-C20750 and WF-C21000, published by Epson Singapore Pte Ltd and Epson Malaysia Sdn Bhd and printed in July 2020. The brochure states that the information is correct at time of printing, and that specifications and product availability are subject to change without notice and may vary between countries.",
+      "category": "epson-product",
+      "tags": [
+        "source",
+        "brochure",
+        "date",
+        "disclaimer",
+        "provenance"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the source and date of these Epson WorkForce Enterprise specifications?\nA: These Epson WorkForce Enterprise details come from the Epson product brochure and specification sheet for the WF-C20600, WF-C20750 and WF-C21000, published by Epson Singapore Pte Ltd and Epson Malaysia Sdn Bhd and printed in July 2020. The brochure states that the information is correct at time of printing, and that specifications and product availability are subject to change without notice and may vary between countries."
+    },
+    {
+      "id": "EPSON-009",
+      "question": "What is Epson Heat-Free Technology?",
+      "answer": "Heat-Free Technology is Epson's inkjet approach that uses no heat in the ink ejection process. Rather than heating ink, pressure is applied to a Piezo element that flexes backwards and forwards to fire ink from the printhead. Epson states that because there is no fuser to warm up, the printer prints immediately, consumes less energy, needs fewer replacement parts, and suffers no heat damage to the printheads.",
+      "category": "epson-technology",
+      "tags": [
+        "heat-free",
+        "piezo",
+        "core-technology",
+        "how-it-works"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is Epson Heat-Free Technology?\nA: Heat-Free Technology is Epson's inkjet approach that uses no heat in the ink ejection process. Rather than heating ink, pressure is applied to a Piezo element that flexes backwards and forwards to fire ink from the printhead. Epson states that because there is no fuser to warm up, the printer prints immediately, consumes less energy, needs fewer replacement parts, and suffers no heat damage to the printheads."
+    },
+    {
+      "id": "EPSON-010",
+      "question": "How does the Epson inkjet printing process differ from laser printing?",
+      "answer": "Epson describes laser printing as an eight-stage process that uses heat: receive print job, preheat the fuser, charge the photoreceptor drum, laser exposure, development, toner transfer, fusing, and print out. Epson's Heat-Free inkjet process has three stages: receive print job, ink ejection, print out. Epson characterises its inkjet printers as simple, non-contact systems that deposit ink droplets on the media without using heat.",
+      "category": "epson-technology",
+      "tags": [
+        "inkjet-vs-laser",
+        "process",
+        "stages",
+        "comparison"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How does the Epson inkjet printing process differ from laser printing?\nA: Epson describes laser printing as an eight-stage process that uses heat: receive print job, preheat the fuser, charge the photoreceptor drum, laser exposure, development, toner transfer, fusing, and print out. Epson's Heat-Free inkjet process has three stages: receive print job, ink ejection, print out. Epson characterises its inkjet printers as simple, non-contact systems that deposit ink droplets on the media without using heat."
+    },
+    {
+      "id": "EPSON-011",
+      "question": "What advantages does Epson claim for Heat-Free inkjet printers over laser printers?",
+      "answer": "Epson lists four. Save time with consistent high-speed printing — no heat is required to warm up, so printing starts immediately and stays consistent even on high-density documents. Less power consumption saves energy and money — there is no fuser unit to heat. Fewer replacement parts and lower environmental impact — fewer parts and consumables need replacing and there is no heat damage to printheads. Less intervention increases productivity — fewer parts to replace means improved reliability and reduced downtime.",
+      "category": "epson-technology",
+      "tags": [
+        "heat-free-benefits",
+        "advantages",
+        "laser-comparison",
+        "productivity"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What advantages does Epson claim for Heat-Free inkjet printers over laser printers?\nA: Epson lists four. Save time with consistent high-speed printing — no heat is required to warm up, so printing starts immediately and stays consistent even on high-density documents. Less power consumption saves energy and money — there is no fuser unit to heat. Fewer replacement parts and lower environmental impact — fewer parts and consumables need replacing and there is no heat damage to printheads. Less intervention increases productivity — fewer parts to replace means improved reliability and reduced downtime."
+    },
+    {
+      "id": "EPSON-012",
+      "question": "What is Epson PrecisionCore technology?",
+      "answer": "PrecisionCore is Epson's next-generation inkjet printhead technology. Epson describes it as merging advanced key component technologies, state-of-the-art MEMS fabrication and high-precision assembly processes honed over decades. In the WorkForce Enterprise printers it takes the form of a PrecisionCore line head, which spans the full width of the page so the printhead does not have to traverse the paper.",
+      "category": "epson-technology",
+      "tags": [
+        "precisioncore",
+        "printhead",
+        "linehead",
+        "core-technology"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is Epson PrecisionCore technology?\nA: PrecisionCore is Epson's next-generation inkjet printhead technology. Epson describes it as merging advanced key component technologies, state-of-the-art MEMS fabrication and high-precision assembly processes honed over decades. In the WorkForce Enterprise printers it takes the form of a PrecisionCore line head, which spans the full width of the page so the printhead does not have to traverse the paper."
+    },
+    {
+      "id": "EPSON-013",
+      "question": "How does an Epson printhead eject ink without using heat?",
+      "answer": "Epson's proprietary Micro Piezo inkjet technology applies a controlled voltage to a piezo element instead of heating the ink. The element flexes backwards and forwards, and that mechanical pressure fires the ink droplet from the nozzle. This is what Epson calls Heat-Free Technology, and it is the point of difference Epson draws against thermal and laser-based competitors.",
+      "category": "epson-technology",
+      "tags": [
+        "micro-piezo",
+        "ink-ejection",
+        "piezo-element",
+        "how-it-works"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How does an Epson printhead eject ink without using heat?\nA: Epson's proprietary Micro Piezo inkjet technology applies a controlled voltage to a piezo element instead of heating the ink. The element flexes backwards and forwards, and that mechanical pressure fires the ink droplet from the nozzle. This is what Epson calls Heat-Free Technology, and it is the point of difference Epson draws against thermal and laser-based competitors."
+    },
+    {
+      "id": "EPSON-014",
+      "question": "What is a MicroTFP print chip in Epson's PrecisionCore printhead?",
+      "answer": "MicroTFP print chips are the core element of PrecisionCore Heat-Free Technology. Epson states that by achieving higher precision and greater miniaturisation in its thin film piezo (TFP) technology, the basic performance of the printhead module has been radically improved and its range of applications widened. The chips are the modules arrayed together to form the PrecisionCore line head.",
+      "category": "epson-technology",
+      "tags": [
+        "microtfp",
+        "print-chip",
+        "tfp",
+        "precisioncore"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is a MicroTFP print chip in Epson's PrecisionCore printhead?\nA: MicroTFP print chips are the core element of PrecisionCore Heat-Free Technology. Epson states that by achieving higher precision and greater miniaturisation in its thin film piezo (TFP) technology, the basic performance of the printhead module has been radically improved and its range of applications widened. The chips are the modules arrayed together to form the PrecisionCore line head."
+    },
+    {
+      "id": "EPSON-015",
+      "question": "How thin is the Epson piezo element and how fast can it fire ink?",
+      "answer": "The thin film piezo element that drives ink ejection is approximately 1 micron thick — about one-hundredth the thickness of a human hair. Epson states that by closely controlling the voltage applied to such piezo elements it is possible to fire up to 50,000 shots of ink per second from a single nozzle, to precise positions and in the necessary quantities.",
+      "category": "epson-technology",
+      "tags": [
+        "piezo",
+        "1-micron",
+        "firing-rate",
+        "nozzle",
+        "precision"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How thin is the Epson piezo element and how fast can it fire ink?\nA: The thin film piezo element that drives ink ejection is approximately 1 micron thick — about one-hundredth the thickness of a human hair. Epson states that by closely controlling the voltage applied to such piezo elements it is possible to fire up to 50,000 shots of ink per second from a single nozzle, to precise positions and in the necessary quantities."
+    },
+    {
+      "id": "EPSON-016",
+      "question": "What is the PrecisionCore linehead used in the Epson WorkForce Enterprise?",
+      "answer": "Epson arrays 36 MicroTFP print chips in a diagonal configuration to form a compact line head just 43 mm wide with approximately 33,500 active nozzles. Its length is approximately 337 mm, a print span equivalent to the width of A3+ media. Epson states that this size-conscious core device reduces the space the product needs while enabling printing of up to 100 pages per minute in a compact design.",
+      "category": "epson-technology",
+      "tags": [
+        "linehead",
+        "36-chips",
+        "33500-nozzles",
+        "43mm",
+        "a3-plus"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the PrecisionCore linehead used in the Epson WorkForce Enterprise?\nA: Epson arrays 36 MicroTFP print chips in a diagonal configuration to form a compact line head just 43 mm wide with approximately 33,500 active nozzles. Its length is approximately 337 mm, a print span equivalent to the width of A3+ media. Epson states that this size-conscious core device reduces the space the product needs while enabling printing of up to 100 pages per minute in a compact design."
+    },
+    {
+      "id": "EPSON-017",
+      "question": "What resolution and geometry do the Epson MicroTFP print chips have?",
+      "answer": "The brochure diagram gives the MicroTFP print chip a resolution of 1200 dpi, formed as 400 dpi by 3 dots, and also shows a 600 dpi figure. Each chip is 1.53 inch long and is mounted at an angle of 56.3 degrees within the line head. Thirty-six chips are combined to make one PrecisionCore line head.",
+      "category": "epson-technology",
+      "tags": [
+        "microtfp",
+        "dpi",
+        "chip-geometry",
+        "1200dpi",
+        "specifications"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What resolution and geometry do the Epson MicroTFP print chips have?\nA: The brochure diagram gives the MicroTFP print chip a resolution of 1200 dpi, formed as 400 dpi by 3 dots, and also shows a 600 dpi figure. Each chip is 1.53 inch long and is mounted at an angle of 56.3 degrees within the line head. Thirty-six chips are combined to make one PrecisionCore line head."
+    },
+    {
+      "id": "EPSON-018",
+      "question": "What does MEMS mean in Epson's PrecisionCore description?",
+      "answer": "MEMS stands for Micro Electro Mechanical Systems. Epson defines them as devices possessing mechanically driven elements, manufactured through the application of semiconductor processing technology. PrecisionCore printheads are produced using this MEMS fabrication process.",
+      "category": "epson-technology",
+      "tags": [
+        "mems",
+        "definition",
+        "fabrication",
+        "semiconductor"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What does MEMS mean in Epson's PrecisionCore description?\nA: MEMS stands for Micro Electro Mechanical Systems. Epson defines them as devices possessing mechanically driven elements, manufactured through the application of semiconductor processing technology. PrecisionCore printheads are produced using this MEMS fabrication process."
+    },
+    {
+      "id": "EPSON-019",
+      "question": "How many nozzles does the Epson WorkForce Enterprise printhead have?",
+      "answer": "The specification sheet lists a nozzle configuration of 8,676 nozzles for each colour — black, cyan, magenta and yellow — on the WF-C20600, WF-C20750 and WF-C21000. Epson's technology description separately states that the PrecisionCore line head carries approximately 33,500 active nozzles in total.",
+      "category": "epson-technology",
+      "tags": [
+        "nozzles",
+        "8676",
+        "nozzle-configuration",
+        "cmyk"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How many nozzles does the Epson WorkForce Enterprise printhead have?\nA: The specification sheet lists a nozzle configuration of 8,676 nozzles for each colour — black, cyan, magenta and yellow — on the WF-C20600, WF-C20750 and WF-C21000. Epson's technology description separately states that the PrecisionCore line head carries approximately 33,500 active nozzles in total."
+    },
+    {
+      "id": "EPSON-020",
+      "question": "What is the minimum ink droplet volume of the Epson WorkForce Enterprise?",
+      "answer": "The minimum ink droplet volume is 3.5 picolitres on the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000.",
+      "category": "epson-technology",
+      "tags": [
+        "droplet-volume",
+        "3.5pl",
+        "print-quality",
+        "specification"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the minimum ink droplet volume of the Epson WorkForce Enterprise?\nA: The minimum ink droplet volume is 3.5 picolitres on the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000."
+    },
+    {
+      "id": "EPSON-021",
+      "question": "How fast do the Epson WorkForce Enterprise printers print on A4?",
+      "answer": "Measured to ISO 24734 on A4, the Epson WorkForce Enterprise WF-C20600 prints approximately 60 ipm in simplex and 60 ipm in duplex, the WF-C20750 approximately 75 ipm simplex and 75 ipm duplex, and the WF-C21000 approximately 100 ipm simplex and 100 ipm duplex. The same figures apply to black and colour printing.",
+      "category": "epson-performance",
+      "tags": [
+        "print-speed",
+        "a4",
+        "ipm",
+        "iso-24734",
+        "simplex-duplex"
+      ],
+      "source_url": "https://www.epson.com.my/printspeed",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How fast do the Epson WorkForce Enterprise printers print on A4?\nA: Measured to ISO 24734 on A4, the Epson WorkForce Enterprise WF-C20600 prints approximately 60 ipm in simplex and 60 ipm in duplex, the WF-C20750 approximately 75 ipm simplex and 75 ipm duplex, and the WF-C21000 approximately 100 ipm simplex and 100 ipm duplex. The same figures apply to black and colour printing."
+    },
+    {
+      "id": "EPSON-022",
+      "question": "Does duplex printing slow the Epson WorkForce Enterprise down?",
+      "answer": "No. Epson states that the WorkForce Enterprise realises the same productivity level in simplex and duplex printing of up to 100 pages per minute, due to its shortest duplex route design. A switchback paper path ensures ultra-fast throughput even in duplex printing. The A4 ISO 24734 figures are identical for simplex and duplex on all three models.",
+      "category": "epson-performance",
+      "tags": [
+        "duplex",
+        "two-sided",
+        "same-speed",
+        "switchback",
+        "paper-path"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Does duplex printing slow the Epson WorkForce Enterprise down?\nA: No. Epson states that the WorkForce Enterprise realises the same productivity level in simplex and duplex printing of up to 100 pages per minute, due to its shortest duplex route design. A switchback paper path ensures ultra-fast throughput even in duplex printing. The A4 ISO 24734 figures are identical for simplex and duplex on all three models."
+    },
+    {
+      "id": "EPSON-023",
+      "question": "How fast do the Epson WorkForce Enterprise printers print on A3?",
+      "answer": "Measured to ISO 24734.2 on A3, the Epson WorkForce Enterprise WF-C20600 prints approximately 37 ipm simplex and 21 ipm duplex, the WF-C20750 approximately 45 ipm simplex and 25.4 ipm duplex, and the WF-C21000 approximately 54 ipm simplex and 36.3 ipm duplex.",
+      "category": "epson-performance",
+      "tags": [
+        "print-speed",
+        "a3",
+        "ipm",
+        "iso-24734",
+        "duplex"
+      ],
+      "source_url": "https://www.epson.com.my/printspeed",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How fast do the Epson WorkForce Enterprise printers print on A3?\nA: Measured to ISO 24734.2 on A3, the Epson WorkForce Enterprise WF-C20600 prints approximately 37 ipm simplex and 21 ipm duplex, the WF-C20750 approximately 45 ipm simplex and 25.4 ipm duplex, and the WF-C21000 approximately 54 ipm simplex and 36.3 ipm duplex."
+    },
+    {
+      "id": "EPSON-024",
+      "question": "What is the first page out time of the Epson WorkForce Enterprise printers?",
+      "answer": "First page out time is approximately 5.7 seconds on the Epson WorkForce Enterprise WF-C20600, approximately 5.5 seconds on the WF-C20750 and approximately 5.0 seconds on the WF-C21000, in both simplex and duplex.",
+      "category": "epson-performance",
+      "tags": [
+        "first-page-out",
+        "fpot",
+        "warm-up",
+        "5-seconds"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the first page out time of the Epson WorkForce Enterprise printers?\nA: First page out time is approximately 5.7 seconds on the Epson WorkForce Enterprise WF-C20600, approximately 5.5 seconds on the WF-C20750 and approximately 5.0 seconds on the WF-C21000, in both simplex and duplex."
+    },
+    {
+      "id": "EPSON-025",
+      "question": "Why is the first page out time of the Epson WorkForce Enterprise so short?",
+      "answer": "Epson attributes it to minimal warm-up time. The inkjet flow is ejection then print out — described by Epson as simple, cool, contactless technology — whereas a laser printer must run charging, exposure, development, first transfer, second transfer and fixing before printing out, which Epson describes as complex technology using heat and pressure. The stated 5.0-second figure is based on Epson testing methodology.",
+      "category": "epson-performance",
+      "tags": [
+        "first-page-out",
+        "why",
+        "no-warm-up",
+        "laser-comparison"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Why is the first page out time of the Epson WorkForce Enterprise so short?\nA: Epson attributes it to minimal warm-up time. The inkjet flow is ejection then print out — described by Epson as simple, cool, contactless technology — whereas a laser printer must run charging, exposure, development, first transfer, second transfer and fixing before printing out, which Epson describes as complex technology using heat and pressure. The stated 5.0-second figure is based on Epson testing methodology."
+    },
+    {
+      "id": "EPSON-026",
+      "question": "How fast do the Epson WorkForce Enterprise printers copy?",
+      "answer": "Copy speed matches print speed on all three models. To ISO 29183 on A4 simplex from the flatbed, and to ISO 24735 on A4 from the ADF in simplex (1:1) and duplex (1:2 and 2:2), the Epson WorkForce Enterprise WF-C20600 copies at approximately 60 ipm, the WF-C20750 at approximately 75 ipm and the WF-C21000 at approximately 100 ipm, in black and in colour.",
+      "category": "epson-performance",
+      "tags": [
+        "copy-speed",
+        "iso-29183",
+        "iso-24735",
+        "adf",
+        "flatbed"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How fast do the Epson WorkForce Enterprise printers copy?\nA: Copy speed matches print speed on all three models. To ISO 29183 on A4 simplex from the flatbed, and to ISO 24735 on A4 from the ADF in simplex (1:1) and duplex (1:2 and 2:2), the Epson WorkForce Enterprise WF-C20600 copies at approximately 60 ipm, the WF-C20750 at approximately 75 ipm and the WF-C21000 at approximately 100 ipm, in black and in colour."
+    },
+    {
+      "id": "EPSON-027",
+      "question": "What print resolution do the Epson WorkForce Enterprise printers deliver?",
+      "answer": "Maximum print resolution is 600 x 2,400 dpi. Epson states that thanks to its efficient paper transport mechanism the WorkForce Enterprise delivers reliable and consistently excellent image quality of up to 600 x 2,400 dpi, with 600 x 1,200 dpi as the default setting.",
+      "category": "epson-performance",
+      "tags": [
+        "resolution",
+        "dpi",
+        "print-quality",
+        "600x2400"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What print resolution do the Epson WorkForce Enterprise printers deliver?\nA: Maximum print resolution is 600 x 2,400 dpi. Epson states that thanks to its efficient paper transport mechanism the WorkForce Enterprise delivers reliable and consistently excellent image quality of up to 600 x 2,400 dpi, with 600 x 1,200 dpi as the default setting."
+    },
+    {
+      "id": "EPSON-028",
+      "question": "How does the paper transport mechanism of the Epson WorkForce Enterprise work?",
+      "answer": "Instead of the paper waving and contacting the printhead as Epson depicts on a conventional printer, the WorkForce Enterprise holds the sheet flat on an electrostatic transport belt, using a charge roller to hold the paper and a static elimination brush to release it. Epson credits this mechanism for reliable, consistently excellent image quality of up to 600 x 2,400 dpi.",
+      "category": "epson-performance",
+      "tags": [
+        "paper-transport",
+        "electrostatic-belt",
+        "charge-roller",
+        "image-quality"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How does the paper transport mechanism of the Epson WorkForce Enterprise work?\nA: Instead of the paper waving and contacting the printhead as Epson depicts on a conventional printer, the WorkForce Enterprise holds the sheet flat on an electrostatic transport belt, using a charge roller to hold the paper and a static elimination brush to release it. Epson credits this mechanism for reliable, consistently excellent image quality of up to 600 x 2,400 dpi."
+    },
+    {
+      "id": "EPSON-029",
+      "question": "How many copies can the Epson WorkForce Enterprise make in one job, and what copy settings are available?",
+      "answer": "The Epson WorkForce Enterprise supports up to 9,999 copies from standalone operation, with a maximum copy resolution of 600 x 1,200 dpi and reduction or enlargement from 25 to 400 percent including an auto-fit function. Maximum copy size is A3.",
+      "category": "epson-performance",
+      "tags": [
+        "copy-count",
+        "9999",
+        "copy-resolution",
+        "zoom",
+        "reduction-enlargement"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How many copies can the Epson WorkForce Enterprise make in one job, and what copy settings are available?\nA: The Epson WorkForce Enterprise supports up to 9,999 copies from standalone operation, with a maximum copy resolution of 600 x 1,200 dpi and reduction or enlargement from 25 to 400 percent including an auto-fit function. Maximum copy size is A3."
+    },
+    {
+      "id": "EPSON-030",
+      "question": "How are the Epson WorkForce Enterprise print speeds measured?",
+      "answer": "Black and colour print speeds are measured in accordance with ISO/IEC 24734. Epson states that actual print times will vary based on system configuration, software and page complexity, and directs readers to www.epson.com.my/printspeed for more information.",
+      "category": "epson-performance",
+      "tags": [
+        "measurement",
+        "iso-24734",
+        "disclaimer",
+        "methodology"
+      ],
+      "source_url": "https://www.epson.com.my/printspeed",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How are the Epson WorkForce Enterprise print speeds measured?\nA: Black and colour print speeds are measured in accordance with ISO/IEC 24734. Epson states that actual print times will vary based on system configuration, software and page complexity, and directs readers to www.epson.com.my/printspeed for more information."
+    },
+    {
+      "id": "EPSON-031",
+      "question": "What ink do the Epson WorkForce Enterprise printers use?",
+      "answer": "They use Epson DURABrite Pro ink, a fast-drying pigment ink. Epson states that the ink is water resistant, safeguarding printouts from accidental spills, and that it is supplied in high-capacity cartridges so that fewer consumable changes are needed.",
+      "category": "epson-consumables",
+      "tags": [
+        "durabrite-pro",
+        "ink",
+        "pigment",
+        "water-resistant"
+      ],
+      "source_url": "https://www.epson.com.my/inkinfo",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What ink do the Epson WorkForce Enterprise printers use?\nA: They use Epson DURABrite Pro ink, a fast-drying pigment ink. Epson states that the ink is water resistant, safeguarding printouts from accidental spills, and that it is supplied in high-capacity cartridges so that fewer consumable changes are needed."
+    },
+    {
+      "id": "EPSON-032",
+      "question": "How many pages does an Epson WorkForce Enterprise ink cartridge print?",
+      "answer": "Epson quotes up to 100,000 pages in black and up to 50,000 pages in colour without interruption; the 100,000-page black figure is based on two black cartridges. The specification table lists 50,000 pages for the black cartridge and 50,000 pages for cyan, with magenta and yellow quoted as composite yield.",
+      "category": "epson-consumables",
+      "tags": [
+        "page-yield",
+        "100000-pages",
+        "50000-pages",
+        "cartridge-capacity"
+      ],
+      "source_url": "https://www.epson.com.my/inkinfo",
+      "status": "verified",
+      "note": "The brochure quotes the 100,000-page black figure as being based on 2 cartridges. From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How many pages does an Epson WorkForce Enterprise ink cartridge print?\nA: Epson quotes up to 100,000 pages in black and up to 50,000 pages in colour without interruption; the 100,000-page black figure is based on two black cartridges. The specification table lists 50,000 pages for the black cartridge and 50,000 pages for cyan, with magenta and yellow quoted as composite yield."
+    },
+    {
+      "id": "EPSON-033",
+      "question": "What are the ink cartridge order codes for the Epson WorkForce Enterprise WF-C20600?",
+      "answer": "For the Epson WorkForce Enterprise WF-C20600 the ink cartridge order codes are C13T02Q100 for black, C13T02Q200 for cyan, C13T02Q300 for magenta and C13T02Q400 for yellow.",
+      "category": "epson-consumables",
+      "tags": [
+        "order-code",
+        "wf-c20600",
+        "cartridge",
+        "part-number",
+        "cmyk"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the ink cartridge order codes for the Epson WorkForce Enterprise WF-C20600?\nA: For the Epson WorkForce Enterprise WF-C20600 the ink cartridge order codes are C13T02Q100 for black, C13T02Q200 for cyan, C13T02Q300 for magenta and C13T02Q400 for yellow."
+    },
+    {
+      "id": "EPSON-034",
+      "question": "What are the ink cartridge order codes for the Epson WorkForce Enterprise WF-C20750?",
+      "answer": "For the Epson WorkForce Enterprise WF-C20750 the ink cartridge order codes are C13T02S100 for black, C13T02S200 for cyan, C13T02S300 for magenta and C13T02S400 for yellow.",
+      "category": "epson-consumables",
+      "tags": [
+        "order-code",
+        "wf-c20750",
+        "cartridge",
+        "part-number",
+        "cmyk"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the ink cartridge order codes for the Epson WorkForce Enterprise WF-C20750?\nA: For the Epson WorkForce Enterprise WF-C20750 the ink cartridge order codes are C13T02S100 for black, C13T02S200 for cyan, C13T02S300 for magenta and C13T02S400 for yellow."
+    },
+    {
+      "id": "EPSON-035",
+      "question": "What are the ink cartridge order codes for the Epson WorkForce Enterprise WF-C21000?",
+      "answer": "For the Epson WorkForce Enterprise WF-C21000 the ink cartridge order codes are C13T02Y100 for black, C13T02Y200 for cyan, C13T02Y300 for magenta and C13T02Y400 for yellow.",
+      "category": "epson-consumables",
+      "tags": [
+        "order-code",
+        "wf-c21000",
+        "cartridge",
+        "part-number",
+        "cmyk"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the ink cartridge order codes for the Epson WorkForce Enterprise WF-C21000?\nA: For the Epson WorkForce Enterprise WF-C21000 the ink cartridge order codes are C13T02Y100 for black, C13T02Y200 for cyan, C13T02Y300 for magenta and C13T02Y400 for yellow."
+    },
+    {
+      "id": "EPSON-036",
+      "question": "What are the maintenance box and maintenance roller order codes for the Epson WorkForce Enterprise?",
+      "answer": "The same maintenance parts serve all three models. The maintenance box is C13T671300, the maintenance roller for the main unit is C12C935961 and the maintenance roller for the paper cassette is C12C935941.",
+      "category": "epson-consumables",
+      "tags": [
+        "maintenance-box",
+        "maintenance-roller",
+        "order-code",
+        "spare-parts"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the maintenance box and maintenance roller order codes for the Epson WorkForce Enterprise?\nA: The same maintenance parts serve all three models. The maintenance box is C13T671300, the maintenance roller for the main unit is C12C935961 and the maintenance roller for the paper cassette is C12C935941."
+    },
+    {
+      "id": "EPSON-037",
+      "question": "What staple cartridges do the Epson WorkForce Enterprise finishers use?",
+      "answer": "The staple cartridge for the Stapler Finisher is order code C12C935401 and holds 3 x 5,000 staples. The staple cartridge for the Booklet Finisher is order code C12C935411 and holds 3 x 2,000 staples.",
+      "category": "epson-consumables",
+      "tags": [
+        "staple-cartridge",
+        "order-code",
+        "finisher",
+        "staples"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What staple cartridges do the Epson WorkForce Enterprise finishers use?\nA: The staple cartridge for the Stapler Finisher is order code C12C935401 and holds 3 x 5,000 staples. The staple cartridge for the Booklet Finisher is order code C12C935411 and holds 3 x 2,000 staples."
+    },
+    {
+      "id": "EPSON-038",
+      "question": "How are the Epson WorkForce Enterprise cartridge yields measured?",
+      "answer": "Replacement cartridge yields are based on ISO/IEC 24711 tests in Default Mode printing continuously. Epson states that yields vary considerably for reasons including images printed, print settings, temperature and humidity, and may be lower when printing infrequently or predominantly with one ink colour. All colours are used for printing and printer maintenance and must be installed to print; some ink from the included cartridges is used for setup, and a variable amount remains after the replace-cartridge signal.",
+      "category": "epson-consumables",
+      "tags": [
+        "yield-methodology",
+        "iso-24711",
+        "disclaimer",
+        "ink-usage"
+      ],
+      "source_url": "https://www.epson.com.my/inkinfo",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How are the Epson WorkForce Enterprise cartridge yields measured?\nA: Replacement cartridge yields are based on ISO/IEC 24711 tests in Default Mode printing continuously. Epson states that yields vary considerably for reasons including images printed, print settings, temperature and humidity, and may be lower when printing infrequently or predominantly with one ink colour. All colours are used for printing and printer maintenance and must be installed to print; some ink from the included cartridges is used for setup, and a variable amount remains after the replace-cartridge signal."
+    },
+    {
+      "id": "EPSON-039",
+      "question": "Is the printhead on the Epson WorkForce Enterprise a consumable that needs replacing?",
+      "answer": "No. Epson states that its printheads are not a consumable, and that Heat-Free Technology causes no heat damage to the printheads. Epson cites longer-lasting printheads and fewer parts to replace as the reason less user intervention is needed.",
+      "category": "epson-consumables",
+      "tags": [
+        "printhead",
+        "not-consumable",
+        "durability",
+        "maintenance"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Is the printhead on the Epson WorkForce Enterprise a consumable that needs replacing?\nA: No. Epson states that its printheads are not a consumable, and that Heat-Free Technology causes no heat damage to the printheads. Epson cites longer-lasting printheads and fewer parts to replace as the reason less user intervention is needed."
+    },
+    {
+      "id": "EPSON-040",
+      "question": "How easy is it to replace ink and consumables on the Epson WorkForce Enterprise?",
+      "answer": "Epson states there are no messy toner cartridges to deal with and no waiting for parts to cool. An easy front access door to the ink cartridges makes replacement fast and hassle-free, and front access to the maintenance box supports maximum printer uptime.",
+      "category": "epson-consumables",
+      "tags": [
+        "ink-replacement",
+        "front-access",
+        "ease-of-use",
+        "uptime"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How easy is it to replace ink and consumables on the Epson WorkForce Enterprise?\nA: Epson states there are no messy toner cartridges to deal with and no waiting for parts to cool. An easy front access door to the ink cartridges makes replacement fast and hassle-free, and front access to the maintenance box supports maximum printer uptime."
+    },
+    {
+      "id": "EPSON-041",
+      "question": "How much less power does the Epson WorkForce Enterprise use than a laser printer?",
+      "answer": "Epson claims its inkjet printers use up to 85% less power than laser printers. The claim is based on testing commissioned by Epson to Keypoint Intelligence-Buyers Lab using the Epson WF-C20590 against two colour laser multifunction printers in the 65-70 ppm class.",
+      "category": "epson-environment",
+      "tags": [
+        "power-saving",
+        "85-percent",
+        "laser-comparison",
+        "energy"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How much less power does the Epson WorkForce Enterprise use than a laser printer?\nA: Epson claims its inkjet printers use up to 85% less power than laser printers. The claim is based on testing commissioned by Epson to Keypoint Intelligence-Buyers Lab using the Epson WF-C20590 against two colour laser multifunction printers in the 65-70 ppm class."
+    },
+    {
+      "id": "EPSON-042",
+      "question": "Why do Epson Heat-Free printers consume less power than laser printers?",
+      "answer": "Epson states that Heat-Free Technology uses less power because it does not use heat to warm up. Epson inkjet printers have no fuser unit to heat, which results in significantly less energy consumption and cost savings for the business.",
+      "category": "epson-environment",
+      "tags": [
+        "why-less-power",
+        "no-fuser",
+        "heat-free",
+        "energy-saving"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Why do Epson Heat-Free printers consume less power than laser printers?\nA: Epson states that Heat-Free Technology uses less power because it does not use heat to warm up. Epson inkjet printers have no fuser unit to heat, which results in significantly less energy consumption and cost savings for the business."
+    },
+    {
+      "id": "EPSON-043",
+      "question": "What are the TEC values of the Epson WorkForce Enterprise printers?",
+      "answer": "The Typical Electricity Consumption (TEC) value is 0.7 kWh for the Epson WorkForce Enterprise WF-C20600, 0.9 kWh for the WF-C20750 and 1.1 kWh for the WF-C21000.",
+      "category": "epson-environment",
+      "tags": [
+        "tec",
+        "kwh",
+        "energy-rating",
+        "electricity"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the TEC values of the Epson WorkForce Enterprise printers?\nA: The Typical Electricity Consumption (TEC) value is 0.7 kWh for the Epson WorkForce Enterprise WF-C20600, 0.9 kWh for the WF-C20750 and 1.1 kWh for the WF-C21000."
+    },
+    {
+      "id": "EPSON-044",
+      "question": "What is the power consumption of the Epson WorkForce Enterprise printers?",
+      "answer": "Power consumption while operating is 160 W on the Epson WorkForce Enterprise WF-C20600 and WF-C20750 and 170 W on the WF-C21000. All three models draw 76 W in standby, 1.1 W in sleep and 0.1 W when powered off.",
+      "category": "epson-environment",
+      "tags": [
+        "power-consumption",
+        "watts",
+        "standby",
+        "sleep",
+        "operating"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the power consumption of the Epson WorkForce Enterprise printers?\nA: Power consumption while operating is 160 W on the Epson WorkForce Enterprise WF-C20600 and WF-C20750 and 170 W on the WF-C21000. All three models draw 76 W in standby, 1.1 W in sleep and 0.1 W when powered off."
+    },
+    {
+      "id": "EPSON-045",
+      "question": "What is the rated voltage and frequency of the Epson WorkForce Enterprise printers?",
+      "answer": "The Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 are rated for 100-240 V universal voltage at 50-60 Hz.",
+      "category": "epson-environment",
+      "tags": [
+        "voltage",
+        "frequency",
+        "electrical",
+        "power-supply"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the rated voltage and frequency of the Epson WorkForce Enterprise printers?\nA: The Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 are rated for 100-240 V universal voltage at 50-60 Hz."
+    },
+    {
+      "id": "EPSON-046",
+      "question": "How much of an office's electricity do printers consume, according to Epson?",
+      "answer": "Epson cites a commissioned survey in which office power is consumed by central air conditioning at 45%, LED lighting at 29%, computers at 13%, printers and MFPs at 10%, and others at 3%. Epson argues that because printers and MFPs account for as much as 10% of electricity consumption, replacing laser printers with the WorkForce Enterprise can cut printing-related energy significantly and reduce CO2 emissions.",
+      "category": "epson-environment",
+      "tags": [
+        "office-energy",
+        "10-percent",
+        "survey",
+        "co2",
+        "sustainability"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "Epson research based on a commissioned survey conducted in March 2018 by SOMPO Risk Management & Health Care Inc. From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How much of an office's electricity do printers consume, according to Epson?\nA: Epson cites a commissioned survey in which office power is consumed by central air conditioning at 45%, LED lighting at 29%, computers at 13%, printers and MFPs at 10%, and others at 3%. Epson argues that because printers and MFPs account for as much as 10% of electricity consumption, replacing laser printers with the WorkForce Enterprise can cut printing-related energy significantly and reduce CO2 emissions."
+    },
+    {
+      "id": "EPSON-047",
+      "question": "How many fewer replacement parts do Epson inkjet printers need compared with laser printers?",
+      "answer": "Epson claims its inkjet printers need up to 59% less replacement parts than laser printers, comparing supplies and packaging waste after 1 million prints. Epson states that Heat-Free Technology means fewer parts need replacing and that printheads are not a consumable, reducing the environmental burden of manufacturing and recycling those resources.",
+      "category": "epson-environment",
+      "tags": [
+        "replacement-parts",
+        "59-percent",
+        "waste",
+        "laser-comparison"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How many fewer replacement parts do Epson inkjet printers need compared with laser printers?\nA: Epson claims its inkjet printers need up to 59% less replacement parts than laser printers, comparing supplies and packaging waste after 1 million prints. Epson states that Heat-Free Technology means fewer parts need replacing and that printheads are not a consumable, reducing the environmental burden of manufacturing and recycling those resources."
+    },
+    {
+      "id": "EPSON-048",
+      "question": "Which parts of the Epson WorkForce Enterprise need periodic replacement?",
+      "answer": "Epson lists paper feed rollers as the only periodic replacement part on the WorkForce Enterprise, noting that after printing more than 1.2 million sheets other replacement parts will be required in addition to paper feed rollers. For comparison Epson lists a standard laser printer as needing a cleaning unit, photoreceptor, developer, transfer unit, fixing unit and paper feed rollers, while noting that actual parts vary by model.",
+      "category": "epson-environment",
+      "tags": [
+        "periodic-parts",
+        "paper-feed-rollers",
+        "1.2-million-sheets",
+        "maintenance"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Which parts of the Epson WorkForce Enterprise need periodic replacement?\nA: Epson lists paper feed rollers as the only periodic replacement part on the WorkForce Enterprise, noting that after printing more than 1.2 million sheets other replacement parts will be required in addition to paper feed rollers. For comparison Epson lists a standard laser printer as needing a cleaning unit, photoreceptor, developer, transfer unit, fixing unit and paper feed rollers, while noting that actual parts vary by model."
+    },
+    {
+      "id": "EPSON-049",
+      "question": "What environmental certifications do the Epson WorkForce Enterprise printers hold?",
+      "answer": "Epson states that the WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 comply with some of the world's most stringent environmental certification standards. The certification marks shown on the brochure are Green Label Singapore and Blauer Engel (Blue Angel, Das Umweltzeichen), together with a third eco or energy certification mark.",
+      "category": "epson-environment",
+      "tags": [
+        "certification",
+        "green-label",
+        "blue-angel",
+        "eco",
+        "sustainability"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "A third certification mark appears on the brochure but was not legible in the scanned source. From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What environmental certifications do the Epson WorkForce Enterprise printers hold?\nA: Epson states that the WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 comply with some of the world's most stringent environmental certification standards. The certification marks shown on the brochure are Green Label Singapore and Blauer Engel (Blue Angel, Das Umweltzeichen), together with a third eco or energy certification mark."
+    },
+    {
+      "id": "EPSON-050",
+      "question": "What testing supports Epson's power and replacement-part claims for the WorkForce Enterprise?",
+      "answer": "Both claims come from testing commissioned by Epson to Keypoint Intelligence-Buyers Lab, based on the Epson WF-C20590 against two colour laser multifunction printers in the 65-70 ppm class. Energy tests used Buyers Lab standard methods at default settings, assuming a weekday workload of two four-hour printing periods plus 16 hours in sleep or standby, and 48 weekend hours in sleep or standby. Replacement-part calculations covered printing 1 million pages of the ISO/IEC 24712 test pattern over five years.",
+      "category": "epson-environment",
+      "tags": [
+        "methodology",
+        "keypoint-intelligence",
+        "buyers-lab",
+        "testing",
+        "claims"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What testing supports Epson's power and replacement-part claims for the WorkForce Enterprise?\nA: Both claims come from testing commissioned by Epson to Keypoint Intelligence-Buyers Lab, based on the Epson WF-C20590 against two colour laser multifunction printers in the 65-70 ppm class. Energy tests used Buyers Lab standard methods at default settings, assuming a weekday workload of two four-hour printing periods plus 16 hours in sleep or standby, and 48 weekend hours in sleep or standby. Replacement-part calculations covered printing 1 million pages of the ISO/IEC 24712 test pattern over five years."
+    },
+    {
+      "id": "EPSON-051",
+      "question": "How does the maximum power consumption of the Epson WorkForce Enterprise compare with laser printers?",
+      "answer": "Epson's chart plots maximum power consumption against printing speed and marks the WF-C20590 inkjet at 320 W, while the laser curve rises steeply beyond 8,000 W near 110 ppm. Epson plotted 12 A3 colour laser MFPs with print speeds of 45 ppm or higher, selected from the top-selling models globally in each speed range, using figures published by each manufacturer in Japan (Epson research, data source IDC/CY16).",
+      "category": "epson-environment",
+      "tags": [
+        "max-power",
+        "320w",
+        "chart",
+        "laser-comparison",
+        "idc"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "The 320 W figure is measured on the WF-C20590 benchmark unit, not on the WF-C20600, WF-C20750 or WF-C21000. From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How does the maximum power consumption of the Epson WorkForce Enterprise compare with laser printers?\nA: Epson's chart plots maximum power consumption against printing speed and marks the WF-C20590 inkjet at 320 W, while the laser curve rises steeply beyond 8,000 W near 110 ppm. Epson plotted 12 A3 colour laser MFPs with print speeds of 45 ppm or higher, selected from the top-selling models globally in each speed range, using figures published by each manufacturer in Japan (Epson research, data source IDC/CY16)."
+    },
+    {
+      "id": "EPSON-052",
+      "question": "How does the TEC value of the Epson WorkForce Enterprise compare with laser printers?",
+      "answer": "Epson's TEC chart shows the WF-C20590 at 1.2 kWh at around 100 ppm against a laser average of 2.5 kWh clustered around 50 ppm. Epson plotted TEC values of 10 A3 colour laser MFPs with print speeds of 45-55 ppm, selected from the top-selling models globally in that speed range, calculated from energy efficiency data published by each manufacturer in Japan on a 100 V supply (Epson research, data source IDC/CY16).",
+      "category": "epson-environment",
+      "tags": [
+        "tec-comparison",
+        "chart",
+        "1.2-kwh",
+        "laser-comparison"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "The 1.2 kWh figure is measured on the WF-C20590 benchmark unit. The TEC values for the models sold are 0.7, 0.9 and 1.1 kWh. From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How does the TEC value of the Epson WorkForce Enterprise compare with laser printers?\nA: Epson's TEC chart shows the WF-C20590 at 1.2 kWh at around 100 ppm against a laser average of 2.5 kWh clustered around 50 ppm. Epson plotted TEC values of 10 A3 colour laser MFPs with print speeds of 45-55 ppm, selected from the top-selling models globally in that speed range, calculated from energy efficiency data published by each manufacturer in Japan on a 100 V supply (Epson research, data source IDC/CY16)."
+    },
+    {
+      "id": "EPSON-053",
+      "question": "What finishing options are available for the Epson WorkForce Enterprise?",
+      "answer": "Epson offers a Stapler Finisher and a Booklet Finisher, a Saddle Unit for folding and saddle stitching, 2/4 and 2/3 hole punch units, a Finisher Bridge Unit and a High Capacity Tray. Between them they provide shift sorting, stapling, hole punching, folding and booklet making.",
+      "category": "epson-finishing",
+      "tags": [
+        "finishing",
+        "options",
+        "stapler",
+        "booklet",
+        "hole-punch"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What finishing options are available for the Epson WorkForce Enterprise?\nA: Epson offers a Stapler Finisher and a Booklet Finisher, a Saddle Unit for folding and saddle stitching, 2/4 and 2/3 hole punch units, a Finisher Bridge Unit and a High Capacity Tray. Between them they provide shift sorting, stapling, hole punching, folding and booklet making."
+    },
+    {
+      "id": "EPSON-054",
+      "question": "What does the Epson Stapler Finisher for the WorkForce Enterprise do?",
+      "answer": "The Epson Stapler Finisher (LX3SF1, order code C12C935501) provides shift sorting and stapling, with an optional hole punch unit. Its stacker tray holds up to 4,000 sheets of A4 80 g/m² in simplex, or 1,500 sheets in duplex or A3 at 80 g/m², and tray 2 holds up to 200 sheets of A4 80 g/m² for fax output only. Maximum power consumption is 170 W and it measures 666 x 686 x 1,228 mm and weighs 95.5 kg.",
+      "category": "epson-finishing",
+      "tags": [
+        "stapler-finisher",
+        "lx3sf1",
+        "4000-sheets",
+        "shift-sort",
+        "specifications"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "The brochure labels this dimensions row \"Dimensions & Weight (with Booklet Finisher)\" inside the Stapler Finisher table; the weight differs from the Booklet Finisher's 107.5 kg. From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What does the Epson Stapler Finisher for the WorkForce Enterprise do?\nA: The Epson Stapler Finisher (LX3SF1, order code C12C935501) provides shift sorting and stapling, with an optional hole punch unit. Its stacker tray holds up to 4,000 sheets of A4 80 g/m² in simplex, or 1,500 sheets in duplex or A3 at 80 g/m², and tray 2 holds up to 200 sheets of A4 80 g/m² for fax output only. Maximum power consumption is 170 W and it measures 666 x 686 x 1,228 mm and weighs 95.5 kg."
+    },
+    {
+      "id": "EPSON-055",
+      "question": "What does the Epson Booklet Finisher for the WorkForce Enterprise do?",
+      "answer": "The Epson Booklet Finisher (LX3BF1, order code C12C935071) provides shift sorting, stapling, folding, booklet making and hole punching. Its stacker tray holds up to 1,700 sheets of A4 80 g/m² in simplex, or 1,500 sheets in duplex or A3 at 80 g/m², with tray 2 holding up to 200 sheets at 80 g/m² for fax output only. It measures 666 x 686 x 1,228 mm and weighs 107.5 kg.",
+      "category": "epson-finishing",
+      "tags": [
+        "booklet-finisher",
+        "lx3bf1",
+        "1700-sheets",
+        "booklet-making",
+        "specifications"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What does the Epson Booklet Finisher for the WorkForce Enterprise do?\nA: The Epson Booklet Finisher (LX3BF1, order code C12C935071) provides shift sorting, stapling, folding, booklet making and hole punching. Its stacker tray holds up to 1,700 sheets of A4 80 g/m² in simplex, or 1,500 sheets in duplex or A3 at 80 g/m², with tray 2 holding up to 200 sheets at 80 g/m² for fax output only. It measures 666 x 686 x 1,228 mm and weighs 107.5 kg."
+    },
+    {
+      "id": "EPSON-056",
+      "question": "What is the Epson Saddle Unit for the WorkForce Enterprise?",
+      "answer": "The Epson Saddle Unit (LX3SU1, order code C12C935821) adds folding and saddle stitching. Its stacker tray holds up to 7 booklets of 20 sheets at 60 to 90 g/m², or 10 sheets at 91 to 105 g/m². Booklet paper sizes are A3, B4, A4, Legal, Letter and 8.5 x 13 inch, with supported paper weight of 60 to 105 g/m². Maximum power consumption with the Booklet Finisher is 200 W, or 840 W with the heater. It measures 557 x 581 x 644 mm and weighs 46.6 kg.",
+      "category": "epson-finishing",
+      "tags": [
+        "saddle-unit",
+        "lx3su1",
+        "saddle-stitch",
+        "folding",
+        "booklet"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the Epson Saddle Unit for the WorkForce Enterprise?\nA: The Epson Saddle Unit (LX3SU1, order code C12C935821) adds folding and saddle stitching. Its stacker tray holds up to 7 booklets of 20 sheets at 60 to 90 g/m², or 10 sheets at 91 to 105 g/m². Booklet paper sizes are A3, B4, A4, Legal, Letter and 8.5 x 13 inch, with supported paper weight of 60 to 105 g/m². Maximum power consumption with the Booklet Finisher is 200 W, or 840 W with the heater. It measures 557 x 581 x 644 mm and weighs 46.6 kg."
+    },
+    {
+      "id": "EPSON-057",
+      "question": "What hole punch options are available for the Epson WorkForce Enterprise?",
+      "answer": "Two units are offered. The 2/4 Hole Punch Unit (LX3HPU1, order code C12C935171) punches 2 or 4 holes at 80 mm intervals. The 2/3 Hole Punch Unit (LX3HPU2, order code C12C935181) punches 2 or 3 holes at 70 mm intervals to US specifications. Both support A3, B4, A4, B5, Legal, Letter and 8.5 x 13 inch paper up to 250 g/m².",
+      "category": "epson-finishing",
+      "tags": [
+        "hole-punch",
+        "2-4-hole",
+        "2-3-hole",
+        "order-code",
+        "options"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What hole punch options are available for the Epson WorkForce Enterprise?\nA: Two units are offered. The 2/4 Hole Punch Unit (LX3HPU1, order code C12C935171) punches 2 or 4 holes at 80 mm intervals. The 2/3 Hole Punch Unit (LX3HPU2, order code C12C935181) punches 2 or 3 holes at 70 mm intervals to US specifications. Both support A3, B4, A4, B5, Legal, Letter and 8.5 x 13 inch paper up to 250 g/m²."
+    },
+    {
+      "id": "EPSON-058",
+      "question": "How many sheets can the Epson WorkForce Enterprise finishers staple?",
+      "answer": "Both the Stapler Finisher and the Booklet Finisher staple up to 50 sheets of 60-90 g/m² paper. Epson qualifies this as up to 50 sheets for Letter, A4 and B5 size, and up to 30 sheets for A3, B4, Legal and 8.5 x 13 inch. Supported paper sizes for stapling run from A5 to A3 including Legal and Letter, with paper weight up to 250 g/m², and three staple positions: corner, opposite corner, or two points on the side.",
+      "category": "epson-finishing",
+      "tags": [
+        "staple-capacity",
+        "50-sheets",
+        "staple-positions",
+        "paper-size"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How many sheets can the Epson WorkForce Enterprise finishers staple?\nA: Both the Stapler Finisher and the Booklet Finisher staple up to 50 sheets of 60-90 g/m² paper. Epson qualifies this as up to 50 sheets for Letter, A4 and B5 size, and up to 30 sheets for A3, B4, Legal and 8.5 x 13 inch. Supported paper sizes for stapling run from A5 to A3 including Legal and Letter, with paper weight up to 250 g/m², and three staple positions: corner, opposite corner, or two points on the side."
+    },
+    {
+      "id": "EPSON-059",
+      "question": "What is the Epson Finisher Bridge Unit for the WorkForce Enterprise?",
+      "answer": "The Finisher Bridge Unit (LX3FBU1, order code C12C935101) connects the printer to a finisher. It measures 366 x 573 x 632 mm and weighs 38.0 kg.",
+      "category": "epson-finishing",
+      "tags": [
+        "finisher-bridge",
+        "lx3fbu1",
+        "order-code",
+        "dimensions"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the Epson Finisher Bridge Unit for the WorkForce Enterprise?\nA: The Finisher Bridge Unit (LX3FBU1, order code C12C935101) connects the printer to a finisher. It measures 366 x 573 x 632 mm and weighs 38.0 kg."
+    },
+    {
+      "id": "EPSON-060",
+      "question": "What is the optional High Capacity Tray for the Epson WorkForce Enterprise?",
+      "answer": "The optional High Capacity Tray (LXA3LPU1, order code C12C933041) adds up to 3,000 sheets of 80 g/m² input capacity in A4 or Letter, supporting paper weights of 60 to 160 g/m². Maximum power consumption is 21 W or less. It measures 321 x 620 x 504 mm and weighs 27.3 kg.",
+      "category": "epson-finishing",
+      "tags": [
+        "high-capacity-tray",
+        "3000-sheets",
+        "lxa3lpu1",
+        "input-capacity",
+        "option"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the optional High Capacity Tray for the Epson WorkForce Enterprise?\nA: The optional High Capacity Tray (LXA3LPU1, order code C12C933041) adds up to 3,000 sheets of 80 g/m² input capacity in A4 or Letter, supporting paper weights of 60 to 160 g/m². Maximum power consumption is 21 W or less. It measures 321 x 620 x 504 mm and weighs 27.3 kg."
+    },
+    {
+      "id": "EPSON-061",
+      "question": "How is the Epson WorkForce Enterprise configured when fitted with the Stapler Finisher?",
+      "answer": "In the Stapler Finisher configuration the finisher tray provides stacking of up to 4,000 sheets with shift sort, stapling and optional hole punch; there is a face up tray; the upper tray is for fax only; the duplex ADF takes up to 150 sheets; the main tray holds up to 500 sheets with rotate sort; the manual tray handles thick paper, special media and long paper; the cassette tray holds up to 2,200 sheets across four trays, with an optional cassette lock.",
+      "category": "epson-finishing",
+      "tags": [
+        "configuration",
+        "stapler-finisher",
+        "trays",
+        "layout"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How is the Epson WorkForce Enterprise configured when fitted with the Stapler Finisher?\nA: In the Stapler Finisher configuration the finisher tray provides stacking of up to 4,000 sheets with shift sort, stapling and optional hole punch; there is a face up tray; the upper tray is for fax only; the duplex ADF takes up to 150 sheets; the main tray holds up to 500 sheets with rotate sort; the manual tray handles thick paper, special media and long paper; the cassette tray holds up to 2,200 sheets across four trays, with an optional cassette lock."
+    },
+    {
+      "id": "EPSON-062",
+      "question": "How is the Epson WorkForce Enterprise configured when fitted with the Booklet Finisher?",
+      "answer": "In the Booklet Finisher configuration the finisher tray provides stacking of up to 1,700 sheets with shift sort, stapling and optional hole punch, and the lower tray handles folding and booklet making. An optional high capacity tray adds up to 3,000 sheets of input.",
+      "category": "epson-finishing",
+      "tags": [
+        "configuration",
+        "booklet-finisher",
+        "trays",
+        "layout"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How is the Epson WorkForce Enterprise configured when fitted with the Booklet Finisher?\nA: In the Booklet Finisher configuration the finisher tray provides stacking of up to 1,700 sheets with shift sort, stapling and optional hole punch, and the lower tray handles folding and booklet making. An optional high capacity tray adds up to 3,000 sheets of input."
+    },
+    {
+      "id": "EPSON-063",
+      "question": "What are the option order codes for the Epson WorkForce Enterprise?",
+      "answer": "The options and their order codes are: Finisher Bridge Unit LX3FBU1 C12C935101; Stapler Finisher LX3SF1 C12C935501; Booklet Finisher LX3BF1 C12C935071; Saddle Unit LX3SU1 C12C935821; 2/4 Hole Punch Unit LX3HPU1 C12C935171; 2/3 Hole Punch Unit LX3HPU2 C12C935181; High Capacity Tray LXA3LPU1 C12C933041; EpsonNet 10/100/1000Base Tx Interface C12C934471; Super G3 Multi Faxboard C12C934491; Paper Cassette Lock set of four C12C933231; Optional Paper Guide C12C935901; Epson Print Admin 7110574; and Epson Print Admin Serverless 7111310.",
+      "category": "epson-finishing",
+      "tags": [
+        "options",
+        "order-codes",
+        "accessories",
+        "part-numbers"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the option order codes for the Epson WorkForce Enterprise?\nA: The options and their order codes are: Finisher Bridge Unit LX3FBU1 C12C935101; Stapler Finisher LX3SF1 C12C935501; Booklet Finisher LX3BF1 C12C935071; Saddle Unit LX3SU1 C12C935821; 2/4 Hole Punch Unit LX3HPU1 C12C935171; 2/3 Hole Punch Unit LX3HPU2 C12C935181; High Capacity Tray LXA3LPU1 C12C933041; EpsonNet 10/100/1000Base Tx Interface C12C934471; Super G3 Multi Faxboard C12C934491; Paper Cassette Lock set of four C12C933231; Optional Paper Guide C12C935901; Epson Print Admin 7110574; and Epson Print Admin Serverless 7111310."
+    },
+    {
+      "id": "EPSON-064",
+      "question": "How much paper do the Epson WorkForce Enterprise printers hold as standard?",
+      "answer": "As standard the Epson WorkForce Enterprise has five paper trays — four paper cassettes plus one multipurpose tray — holding up to 2,350 sheets of 80 g/m² paper in total: 550 sheets in each of cassettes 1 to 4, plus 150 sheets in the MP tray. Paper is fed by friction feed.",
+      "category": "epson-paper",
+      "tags": [
+        "paper-capacity",
+        "2350-sheets",
+        "trays",
+        "cassettes",
+        "standard"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How much paper do the Epson WorkForce Enterprise printers hold as standard?\nA: As standard the Epson WorkForce Enterprise has five paper trays — four paper cassettes plus one multipurpose tray — holding up to 2,350 sheets of 80 g/m² paper in total: 550 sheets in each of cassettes 1 to 4, plus 150 sheets in the MP tray. Paper is fed by friction feed."
+    },
+    {
+      "id": "EPSON-065",
+      "question": "What is the maximum paper input capacity of the Epson WorkForce Enterprise?",
+      "answer": "Maximum input capacity is up to 5,350 sheets of 80 g/m² paper: 550 sheets in each of the four paper cassettes, 150 sheets in the MP tray, and 3,000 sheets in the optional High Capacity Feeder Unit.",
+      "category": "epson-paper",
+      "tags": [
+        "maximum-capacity",
+        "5350-sheets",
+        "high-capacity-feeder",
+        "input"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the maximum paper input capacity of the Epson WorkForce Enterprise?\nA: Maximum input capacity is up to 5,350 sheets of 80 g/m² paper: 550 sheets in each of the four paper cassettes, 150 sheets in the MP tray, and 3,000 sheets in the optional High Capacity Feeder Unit."
+    },
+    {
+      "id": "EPSON-066",
+      "question": "What is the output capacity of the Epson WorkForce Enterprise?",
+      "answer": "Output capacity is 700 sheets — 550 sheets in tray 1 and 150 sheets in tray 2, where tray 2 is for fax output only. Higher stacking is available through the optional finishers.",
+      "category": "epson-paper",
+      "tags": [
+        "output-capacity",
+        "700-sheets",
+        "output-tray",
+        "fax-tray"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is the output capacity of the Epson WorkForce Enterprise?\nA: Output capacity is 700 sheets — 550 sheets in tray 1 and 150 sheets in tray 2, where tray 2 is for fax output only. Higher stacking is available through the optional finishers."
+    },
+    {
+      "id": "EPSON-067",
+      "question": "What paper sizes do the Epson WorkForce Enterprise printers support?",
+      "answer": "Supported paper sizes are A3+, A3, A4, B5, A5, A6, 5 x 7 inch, 4 x 6 inch, Legal, Letter and envelopes #10, DL, C6 and C4. The maximum paper size is A3+, and the maximum sheet dimensions are 330 x 1,200 mm (12.95 x 47.24 inch).",
+      "category": "epson-paper",
+      "tags": [
+        "paper-sizes",
+        "a3-plus",
+        "maximum-size",
+        "envelopes",
+        "long-paper"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What paper sizes do the Epson WorkForce Enterprise printers support?\nA: Supported paper sizes are A3+, A3, A4, B5, A5, A6, 5 x 7 inch, 4 x 6 inch, Legal, Letter and envelopes #10, DL, C6 and C4. The maximum paper size is A3+, and the maximum sheet dimensions are 330 x 1,200 mm (12.95 x 47.24 inch)."
+    },
+    {
+      "id": "EPSON-068",
+      "question": "What special media can the Epson WorkForce Enterprise print on?",
+      "answer": "Using the multipurpose tray the Epson WorkForce Enterprise prints up to A3+ size on a wide range of special media, including envelopes with windows, sticker media, long paper up to 1.2 m and thick paper up to 350 g/m². Epson credits Heat-Free Technology and the printer's design for this media flexibility.",
+      "category": "epson-paper",
+      "tags": [
+        "special-media",
+        "thick-paper",
+        "350gsm",
+        "long-paper",
+        "envelopes",
+        "stickers"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What special media can the Epson WorkForce Enterprise print on?\nA: Using the multipurpose tray the Epson WorkForce Enterprise prints up to A3+ size on a wide range of special media, including envelopes with windows, sticker media, long paper up to 1.2 m and thick paper up to 350 g/m². Epson credits Heat-Free Technology and the printer's design for this media flexibility."
+    },
+    {
+      "id": "EPSON-069",
+      "question": "What are the ADF specifications of the Epson WorkForce Enterprise?",
+      "answer": "The automatic document feeder holds 150 pages of 80 g/m² paper and supports paper thicknesses of 38 to 128 g/m². It performs automatic two-sided scanning, copying and faxing in a single pass.",
+      "category": "epson-paper",
+      "tags": [
+        "adf",
+        "150-pages",
+        "duplex-adf",
+        "single-pass",
+        "paper-weight"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the ADF specifications of the Epson WorkForce Enterprise?\nA: The automatic document feeder holds 150 pages of 80 g/m² paper and supports paper thicknesses of 38 to 128 g/m². It performs automatic two-sided scanning, copying and faxing in a single pass."
+    },
+    {
+      "id": "EPSON-070",
+      "question": "What are the scanner specifications of the Epson WorkForce Enterprise?",
+      "answer": "The Epson WorkForce Enterprise uses a flatbed colour image scanner with a CIS sensor and 600 x 600 dpi optical resolution. Maximum scan area is 297 x 431.8 mm (11.7 x 17 inch). Scanner bit depth is 48-bit input and 24-bit output in colour, 16-bit input and 8-bit output in grayscale, and 16-bit input and 1-bit output in black and white.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "scanner",
+        "cis",
+        "optical-resolution",
+        "bit-depth",
+        "scan-area"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the scanner specifications of the Epson WorkForce Enterprise?\nA: The Epson WorkForce Enterprise uses a flatbed colour image scanner with a CIS sensor and 600 x 600 dpi optical resolution. Maximum scan area is 297 x 431.8 mm (11.7 x 17 inch). Scanner bit depth is 48-bit input and 24-bit output in colour, 16-bit input and 8-bit output in grayscale, and 16-bit input and 1-bit output in black and white."
+    },
+    {
+      "id": "EPSON-071",
+      "question": "Where can the Epson WorkForce Enterprise scan to?",
+      "answer": "Scan destinations are scan to memory device, scan to network folder or FTP, scan to email, scan to computer via Document Capture Pro or Document Capture Pro Server, and scan to computer via WSD.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "scan-to",
+        "destinations",
+        "scan-to-email",
+        "scan-to-folder",
+        "ftp"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Where can the Epson WorkForce Enterprise scan to?\nA: Scan destinations are scan to memory device, scan to network folder or FTP, scan to email, scan to computer via Document Capture Pro or Document Capture Pro Server, and scan to computer via WSD."
+    },
+    {
+      "id": "EPSON-072",
+      "question": "How fast does the Epson WorkForce Enterprise scan?",
+      "answer": "At 200 dpi from the ADF the Epson WorkForce Enterprise scans A4 at 60 ppm in simplex and 110 ipm in duplex, and A3 at 30 ppm measured to ISO 17991 scan to folder. From the flatbed at 200 dpi it scans A4 landscape in 3.7 seconds and A3 in 4.7 seconds. Dual CIS technology allows duplex scanning in a single pass.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "scan-speed",
+        "60ppm",
+        "110ipm",
+        "dual-cis",
+        "single-pass"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How fast does the Epson WorkForce Enterprise scan?\nA: At 200 dpi from the ADF the Epson WorkForce Enterprise scans A4 at 60 ppm in simplex and 110 ipm in duplex, and A3 at 30 ppm measured to ISO 17991 scan to folder. From the flatbed at 200 dpi it scans A4 landscape in 3.7 seconds and A3 in 4.7 seconds. Dual CIS technology allows duplex scanning in a single pass."
+    },
+    {
+      "id": "EPSON-073",
+      "question": "What paper sizes can the Epson WorkForce Enterprise copy from the flatbed?",
+      "answer": "Copy paper sizes from the flatbed are A3, B4, Legal, Indian-Legal, 8.5 x 13 inch, Letter, A4, B5, A5, B6, A6, 16K, 8K, 13 x 18 cm, HV 16:9 Wide, 10 x 15 cm, and envelopes #10, DL, C4 and C6. Maximum copy size is A3.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "copy-sizes",
+        "flatbed",
+        "paper-size",
+        "maximum-copy-size"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What paper sizes can the Epson WorkForce Enterprise copy from the flatbed?\nA: Copy paper sizes from the flatbed are A3, B4, Legal, Indian-Legal, 8.5 x 13 inch, Letter, A4, B5, A5, B6, A6, 16K, 8K, 13 x 18 cm, HV 16:9 Wide, 10 x 15 cm, and envelopes #10, DL, C4 and C6. Maximum copy size is A3."
+    },
+    {
+      "id": "EPSON-074",
+      "question": "Is fax standard on the Epson WorkForce Enterprise?",
+      "answer": "No, fax is an option on the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000. When fitted it provides walk-up black-and-white and colour fax capability over an RJ-11 connection.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "fax",
+        "optional",
+        "rj-11",
+        "walk-up"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Is fax standard on the Epson WorkForce Enterprise?\nA: No, fax is an option on the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000. When fitted it provides walk-up black-and-white and colour fax capability over an RJ-11 connection."
+    },
+    {
+      "id": "EPSON-075",
+      "question": "What are the fax speed and memory specifications of the Epson WorkForce Enterprise?",
+      "answer": "The optional fax transfers data at up to 33.6 kbps, approximately 3 seconds per page, with error correction to ITU-T T.30. Receive memory is 6 MB, giving page memory of up to 550 pages measured on the ITU-T No.1 chart.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "fax-speed",
+        "33.6kbps",
+        "fax-memory",
+        "550-pages",
+        "error-correction"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the fax speed and memory specifications of the Epson WorkForce Enterprise?\nA: The optional fax transfers data at up to 33.6 kbps, approximately 3 seconds per page, with error correction to ITU-T T.30. Receive memory is 6 MB, giving page memory of up to 550 pages measured on the ITU-T No.1 chart."
+    },
+    {
+      "id": "EPSON-076",
+      "question": "What fax resolutions does the Epson WorkForce Enterprise support?",
+      "answer": "In black and white the optional fax supports Standard at 8 pels/mm x 3.85 lines/mm, Fine at 8 pels/mm x 7.7 lines/mm, Super Fine at 8 pels/mm x 15.4 lines/mm and Ultra Fine at 16 pels/mm x 15.4 lines/mm. In colour it supports Fine at 200 x 200 dpi and Photo at 8 pels/mm x 7.7 lines/mm.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "fax-resolution",
+        "fine",
+        "super-fine",
+        "ultra-fine",
+        "colour-fax"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What fax resolutions does the Epson WorkForce Enterprise support?\nA: In black and white the optional fax supports Standard at 8 pels/mm x 3.85 lines/mm, Fine at 8 pels/mm x 7.7 lines/mm, Super Fine at 8 pels/mm x 15.4 lines/mm and Ultra Fine at 16 pels/mm x 15.4 lines/mm. In colour it supports Fine at 200 x 200 dpi and Photo at 8 pels/mm x 7.7 lines/mm."
+    },
+    {
+      "id": "EPSON-077",
+      "question": "What fax features does the Epson WorkForce Enterprise offer?",
+      "answer": "Fax features include PC Fax for transmission and receipt, automatic redial, one touch dial, address book, transmit reservation for 50 cases, broadcast fax in mono only, polling reception, fax preview, fax to e-mail, memory reception and fax to folder.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "fax-features",
+        "pc-fax",
+        "fax-to-email",
+        "broadcast",
+        "polling"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What fax features does the Epson WorkForce Enterprise offer?\nA: Fax features include PC Fax for transmission and receipt, automatic redial, one touch dial, address book, transmit reservation for 50 cases, broadcast fax in mono only, polling reception, fax preview, fax to e-mail, memory reception and fax to folder."
+    },
+    {
+      "id": "EPSON-078",
+      "question": "What fax paper sizes and dial memory does the Epson WorkForce Enterprise support?",
+      "answer": "Transmission paper sizes are A5 to A3 or Ledger from both the flatbed and the ADF. Receiving paper sizes are HLT, A5, B5, A4, LT, LGL, B4, 11 x 17 inch and A3. The address book holds up to 2,000 speed dial numbers and 200 groups.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "fax-paper-size",
+        "speed-dial",
+        "2000-numbers",
+        "group-dial"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What fax paper sizes and dial memory does the Epson WorkForce Enterprise support?\nA: Transmission paper sizes are A5 to A3 or Ledger from both the flatbed and the ADF. Receiving paper sizes are HLT, A5, B5, A4, LT, LGL, B4, 11 x 17 inch and A3. The address book holds up to 2,000 speed dial numbers and 200 groups."
+    },
+    {
+      "id": "EPSON-079",
+      "question": "Can the Epson WorkForce Enterprise use more than one fax line?",
+      "answer": "Yes. Epson states that up to 3 fax ports can be added for simultaneous communication, using the Super G3 Multi Faxboard, order code C12C934491.",
+      "category": "epson-scan-copy-fax",
+      "tags": [
+        "multiple-fax-lines",
+        "3-ports",
+        "super-g3",
+        "faxboard",
+        "option"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Can the Epson WorkForce Enterprise use more than one fax line?\nA: Yes. Epson states that up to 3 fax ports can be added for simultaneous communication, using the Super G3 Multi Faxboard, order code C12C934491."
+    },
+    {
+      "id": "EPSON-080",
+      "question": "What connectivity does the Epson WorkForce Enterprise have?",
+      "answer": "The Epson WorkForce Enterprise is equipped with Ethernet, Wi-Fi, Wi-Fi Direct, RJ-11 fax and USB 3.0. Epson describes this combination as suited to office environments, with the printer shipping standard with a network port for shared usage across the network.",
+      "category": "epson-connectivity",
+      "tags": [
+        "connectivity",
+        "ethernet",
+        "wifi",
+        "usb-3.0",
+        "interfaces"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What connectivity does the Epson WorkForce Enterprise have?\nA: The Epson WorkForce Enterprise is equipped with Ethernet, Wi-Fi, Wi-Fi Direct, RJ-11 fax and USB 3.0. Epson describes this combination as suited to office environments, with the printer shipping standard with a network port for shared usage across the network."
+    },
+    {
+      "id": "EPSON-081",
+      "question": "How many devices can connect to the Epson WorkForce Enterprise over Wi-Fi Direct?",
+      "answer": "Wi-Fi Direct acts as an access point and allows up to four devices to connect to the Epson WorkForce Enterprise printer at a time.",
+      "category": "epson-connectivity",
+      "tags": [
+        "wi-fi-direct",
+        "4-devices",
+        "access-point",
+        "wireless"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How many devices can connect to the Epson WorkForce Enterprise over Wi-Fi Direct?\nA: Wi-Fi Direct acts as an access point and allows up to four devices to connect to the Epson WorkForce Enterprise printer at a time."
+    },
+    {
+      "id": "EPSON-082",
+      "question": "What network protocols does the Epson WorkForce Enterprise support?",
+      "answer": "Network protocols are TCP/IPv4 and TCP/IPv6. Network printing protocols are LPD, IPP, PORT9100 and WSD. Network management protocols are SNMP, HTTP, DHCP, BOOTP, APIPA, PING, DDNS, mDNS, SNTP, SLP, WSD and LLTD.",
+      "category": "epson-connectivity",
+      "tags": [
+        "protocols",
+        "tcp-ip",
+        "lpd",
+        "ipp",
+        "snmp",
+        "network-management"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What network protocols does the Epson WorkForce Enterprise support?\nA: Network protocols are TCP/IPv4 and TCP/IPv6. Network printing protocols are LPD, IPP, PORT9100 and WSD. Network management protocols are SNMP, HTTP, DHCP, BOOTP, APIPA, PING, DDNS, mDNS, SNTP, SLP, WSD and LLTD."
+    },
+    {
+      "id": "EPSON-083",
+      "question": "Can the Epson WorkForce Enterprise connect to more than one network?",
+      "answer": "Yes. The printer comes standard with a network port for shared usage across the network, and connectivity can be expanded to multiple networks with the additional network option — the EpsonNet 10/100/1000Base Tx interface, order code C12C934471.",
+      "category": "epson-connectivity",
+      "tags": [
+        "multiple-networks",
+        "epsonnet",
+        "network-card",
+        "option",
+        "order-code"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Can the Epson WorkForce Enterprise connect to more than one network?\nA: Yes. The printer comes standard with a network port for shared usage across the network, and connectivity can be expanded to multiple networks with the additional network option — the EpsonNet 10/100/1000Base Tx interface, order code C12C934471."
+    },
+    {
+      "id": "EPSON-084",
+      "question": "What is Epson Connect and what does it offer on the WorkForce Enterprise?",
+      "answer": "Epson Connect lets users print documents wirelessly from anywhere. It comprises Epson iPrint, for printing from and scanning directly to a smart device or online cloud storage; Epson Email Print, for printing to any Email Print-enabled Epson printer from any device or PC with email access; Remote Print Driver, for printing to a compatible Epson printer anywhere in the world over the internet; and Scan to Cloud, for sharing scans by email or storing them in cloud storage services.",
+      "category": "epson-connectivity",
+      "tags": [
+        "epson-connect",
+        "iprint",
+        "email-print",
+        "remote-print",
+        "scan-to-cloud"
+      ],
+      "source_url": "http://www.epson.com.my/connect",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is Epson Connect and what does it offer on the WorkForce Enterprise?\nA: Epson Connect lets users print documents wirelessly from anywhere. It comprises Epson iPrint, for printing from and scanning directly to a smart device or online cloud storage; Epson Email Print, for printing to any Email Print-enabled Epson printer from any device or PC with email access; Remote Print Driver, for printing to a compatible Epson printer anywhere in the world over the internet; and Scan to Cloud, for sharing scans by email or storing them in cloud storage services."
+    },
+    {
+      "id": "EPSON-085",
+      "question": "What mobile printing does the Epson WorkForce Enterprise support?",
+      "answer": "The Epson WorkForce Enterprise supports Epson Connect — Epson iPrint, Epson Email Print, Remote Print Driver and Scan to Cloud — and Mopria Print Service as an additional mobile solution.",
+      "category": "epson-connectivity",
+      "tags": [
+        "mobile-printing",
+        "mopria",
+        "epson-connect",
+        "iprint"
+      ],
+      "source_url": "http://www.epson.com.my/connect",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What mobile printing does the Epson WorkForce Enterprise support?\nA: The Epson WorkForce Enterprise supports Epson Connect — Epson iPrint, Epson Email Print, Remote Print Driver and Scan to Cloud — and Mopria Print Service as an additional mobile solution."
+    },
+    {
+      "id": "EPSON-086",
+      "question": "Can the Epson WorkForce Enterprise print directly from a USB memory device?",
+      "answer": "Yes. The USB host function supports direct printing from memory devices, and scan to memory device plus a storage function. Direct print paper sizes are 10 x 15 cm, 13 x 18 cm, HV 16:9 Wide, A3, A4, A5, A6, Legal, Indian-Legal, Letter, B4, B5, B6, 8K, 16K, 8 x 13 inch and envelopes #10, C4, C6 and DL.",
+      "category": "epson-connectivity",
+      "tags": [
+        "usb-host",
+        "direct-print",
+        "memory-device",
+        "walk-up-printing"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Can the Epson WorkForce Enterprise print directly from a USB memory device?\nA: Yes. The USB host function supports direct printing from memory devices, and scan to memory device plus a storage function. Direct print paper sizes are 10 x 15 cm, 13 x 18 cm, HV 16:9 Wide, A3, A4, A5, A6, Legal, Indian-Legal, Letter, B4, B5, B6, 8K, 16K, 8 x 13 inch and envelopes #10, C4, C6 and DL."
+    },
+    {
+      "id": "EPSON-087",
+      "question": "Which page description languages and print driver emulations does the Epson WorkForce Enterprise support?",
+      "answer": "The Epson WorkForce Enterprise printer language is ESC/P-R. Its printer control language emulations are PCL5, PCL6, PostScript3 and PDF version 1.7.",
+      "category": "epson-connectivity",
+      "tags": [
+        "printer-language",
+        "pcl",
+        "postscript",
+        "pdf",
+        "emulation"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Which page description languages and print driver emulations does the Epson WorkForce Enterprise support?\nA: The Epson WorkForce Enterprise printer language is ESC/P-R. Its printer control language emulations are PCL5, PCL6, PostScript3 and PDF version 1.7."
+    },
+    {
+      "id": "EPSON-088",
+      "question": "Which operating systems do the Epson WorkForce Enterprise printers support?",
+      "answer": "Supported operating systems are Windows XP, Vista, 7, 8, 8.1 and 10; Windows Server 2003, 2008, 2012, 2016 and 2019; and Mac OS X 10.6.8 or later.",
+      "category": "epson-connectivity",
+      "tags": [
+        "operating-systems",
+        "windows",
+        "mac",
+        "drivers",
+        "compatibility"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Which operating systems do the Epson WorkForce Enterprise printers support?\nA: Supported operating systems are Windows XP, Vista, 7, 8, 8.1 and 10; Windows Server 2003, 2008, 2012, 2016 and 2019; and Mac OS X 10.6.8 or later."
+    },
+    {
+      "id": "EPSON-089",
+      "question": "What security features do the Epson WorkForce Enterprise printers have?",
+      "answer": "Security features are an access control function, LDAP address book, IP address filtering, panel admin mode and confidential job printing. Epson also markets secured printing with PIN release and a limited access function covering up to 10 user accounts.",
+      "category": "epson-security",
+      "tags": [
+        "security",
+        "access-control",
+        "ip-filtering",
+        "confidential-job",
+        "overview"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What security features do the Epson WorkForce Enterprise printers have?\nA: Security features are an access control function, LDAP address book, IP address filtering, panel admin mode and confidential job printing. Epson also markets secured printing with PIN release and a limited access function covering up to 10 user accounts."
+    },
+    {
+      "id": "EPSON-090",
+      "question": "How does secure or confidential printing work on the Epson WorkForce Enterprise?",
+      "answer": "Secured printing with PIN release lets a user set a PIN on a print job so that confidential documents are only released at the printer panel. The specification sheet lists this as the Confidential Job security feature.",
+      "category": "epson-security",
+      "tags": [
+        "secure-print",
+        "pin-release",
+        "confidential-job",
+        "pull-printing"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How does secure or confidential printing work on the Epson WorkForce Enterprise?\nA: Secured printing with PIN release lets a user set a PIN on a print job so that confidential documents are only released at the printer panel. The specification sheet lists this as the Confidential Job security feature."
+    },
+    {
+      "id": "EPSON-091",
+      "question": "Can access to the Epson WorkForce Enterprise be restricted to certain users or devices?",
+      "answer": "Yes. IP address filtering prevents unauthorised devices from connecting to the printer. Panel admin mode sets a password for administrator settings so unauthorised users cannot change printer configuration. The limited access function reduces the risk of information leaks by limiting access to functions for up to 10 user accounts.",
+      "category": "epson-security",
+      "tags": [
+        "ip-filter",
+        "admin-password",
+        "limited-access",
+        "user-accounts"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Can access to the Epson WorkForce Enterprise be restricted to certain users or devices?\nA: Yes. IP address filtering prevents unauthorised devices from connecting to the printer. Panel admin mode sets a password for administrator settings so unauthorised users cannot change printer configuration. The limited access function reduces the risk of information leaks by limiting access to functions for up to 10 user accounts."
+    },
+    {
+      "id": "EPSON-092",
+      "question": "Does the Epson WorkForce Enterprise support LDAP?",
+      "answer": "Yes. An LDAP address book lets the printer use addresses registered on the LDAP server so recipients' email addresses are selected accurately, which Epson presents as a safeguard against information leaks.",
+      "category": "epson-security",
+      "tags": [
+        "ldap",
+        "address-book",
+        "email",
+        "directory"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Does the Epson WorkForce Enterprise support LDAP?\nA: Yes. An LDAP address book lets the printer use addresses registered on the LDAP server so recipients' email addresses are selected accurately, which Epson presents as a safeguard against information leaks."
+    },
+    {
+      "id": "EPSON-093",
+      "question": "Does the Epson WorkForce Enterprise have a hard disk, and is it encrypted?",
+      "answer": "Yes. The Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 have a 320 GB hard disk, and the specification sheet lists it as encrypted.",
+      "category": "epson-security",
+      "tags": [
+        "hdd",
+        "320gb",
+        "encryption",
+        "storage"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Does the Epson WorkForce Enterprise have a hard disk, and is it encrypted?\nA: Yes. The Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000 have a 320 GB hard disk, and the specification sheet lists it as encrypted."
+    },
+    {
+      "id": "EPSON-094",
+      "question": "What software solutions does Epson offer for the WorkForce Enterprise?",
+      "answer": "Epson groups its WorkForce Enterprise solutions into three categories. Fleet Management covers Epson Device Admin and Epson Remote Service. Print and Scan Management covers Epson Print Admin, Epson Print Admin Serverless and Epson Open Platform. Document Management covers Document Capture Pro and Document Capture Pro Server.",
+      "category": "epson-software",
+      "tags": [
+        "software",
+        "solutions",
+        "fleet-management",
+        "categories",
+        "overview"
+      ],
+      "source_url": "https://www.epson.com.my/software-solutions",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What software solutions does Epson offer for the WorkForce Enterprise?\nA: Epson groups its WorkForce Enterprise solutions into three categories. Fleet Management covers Epson Device Admin and Epson Remote Service. Print and Scan Management covers Epson Print Admin, Epson Print Admin Serverless and Epson Open Platform. Document Management covers Document Capture Pro and Document Capture Pro Server."
+    },
+    {
+      "id": "EPSON-095",
+      "question": "What is Epson Device Admin?",
+      "answer": "Epson Device Admin is Epson's fleet management software. It lets an organisation control, analyse and manage its printer fleet centrally from one interface, which Epson says is designed to increase productivity, reduce costs and ensure maximum security.",
+      "category": "epson-software",
+      "tags": [
+        "device-admin",
+        "fleet-management",
+        "central-management",
+        "software"
+      ],
+      "source_url": "https://www.epson.com.my/software-solutions",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is Epson Device Admin?\nA: Epson Device Admin is Epson's fleet management software. It lets an organisation control, analyse and manage its printer fleet centrally from one interface, which Epson says is designed to increase productivity, reduce costs and ensure maximum security."
+    },
+    {
+      "id": "EPSON-096",
+      "question": "What is Epson Remote Service (ERS)?",
+      "answer": "Epson Remote Service is Epson's cloud-based device monitoring and management system. It supports a service provider in delivering advanced remote diagnostics for Epson business products.",
+      "category": "epson-software",
+      "tags": [
+        "remote-service",
+        "ers",
+        "monitoring",
+        "diagnostics",
+        "cloud"
+      ],
+      "source_url": "https://www.epson.com.my/software-solutions",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is Epson Remote Service (ERS)?\nA: Epson Remote Service is Epson's cloud-based device monitoring and management system. It supports a service provider in delivering advanced remote diagnostics for Epson business products."
+    },
+    {
+      "id": "EPSON-097",
+      "question": "What is Epson Print Admin, and what is the serverless version?",
+      "answer": "Epson Print Admin is a server-based print and scan management solution that creates a secure printing, scanning and copying environment through user authentication, boosting productivity and monitoring print usage. Epson Print Admin Serverless delivers the same integration with security and compliance rules without the burden of maintaining a server system. The order codes are 7110574 for Epson Print Admin and 7111310 for Epson Print Admin Serverless.",
+      "category": "epson-software",
+      "tags": [
+        "print-admin",
+        "serverless",
+        "authentication",
+        "print-management",
+        "order-code"
+      ],
+      "source_url": "https://www.epson.com.my/software-solutions",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is Epson Print Admin, and what is the serverless version?\nA: Epson Print Admin is a server-based print and scan management solution that creates a secure printing, scanning and copying environment through user authentication, boosting productivity and monitoring print usage. Epson Print Admin Serverless delivers the same integration with security and compliance rules without the burden of maintaining a server system. The order codes are 7110574 for Epson Print Admin and 7111310 for Epson Print Admin Serverless."
+    },
+    {
+      "id": "EPSON-098",
+      "question": "What is Epson Open Platform?",
+      "answer": "Epson Open Platform is a web-based application that gives control of printing operations, letting an organisation adapt the printer to specific and changing business requirements with solutions that help it better manage printing. The WorkForce Enterprise printers are marketed as Open Platform enabled.",
+      "category": "epson-software",
+      "tags": [
+        "open-platform",
+        "web-based",
+        "integration",
+        "customisation"
+      ],
+      "source_url": "https://www.epson.com.my/software-solutions",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is Epson Open Platform?\nA: Epson Open Platform is a web-based application that gives control of printing operations, letting an organisation adapt the printer to specific and changing business requirements with solutions that help it better manage printing. The WorkForce Enterprise printers are marketed as Open Platform enabled."
+    },
+    {
+      "id": "EPSON-099",
+      "question": "What is Epson Document Capture Pro?",
+      "answer": "Document Capture Pro lets users scan, view, edit and manage scanned documents for processing or integration into cloud services. It optically recognises barcodes, characters and blank pages in scanned documents to separate them into different folders, allows creation of up to 30 customised job settings, and adds built-in OCR and password protection for devices and documents. It runs on Windows; the Mac OS X version, Document Capture, has limited functionality.",
+      "category": "epson-software",
+      "tags": [
+        "document-capture-pro",
+        "ocr",
+        "barcode",
+        "job-settings",
+        "scanning-software"
+      ],
+      "source_url": "https://www.epson.com.my/software-solutions",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is Epson Document Capture Pro?\nA: Document Capture Pro lets users scan, view, edit and manage scanned documents for processing or integration into cloud services. It optically recognises barcodes, characters and blank pages in scanned documents to separate them into different folders, allows creation of up to 30 customised job settings, and adds built-in OCR and password protection for devices and documents. It runs on Windows; the Mac OS X version, Document Capture, has limited functionality."
+    },
+    {
+      "id": "EPSON-100",
+      "question": "What is Epson Document Capture Pro Server?",
+      "answer": "Document Capture Pro Server centralises scanning and manages a fleet of up to 100 scanners without installing drivers on individual computers. It creates and assigns up to 30 job settings directly to the panel through a single web interface, and processes and distributes documents securely with tracking reports.",
+      "category": "epson-software",
+      "tags": [
+        "document-capture-pro-server",
+        "centralised-scanning",
+        "100-scanners",
+        "reports"
+      ],
+      "source_url": "https://www.epson.com.my/software-solutions",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What is Epson Document Capture Pro Server?\nA: Document Capture Pro Server centralises scanning and manages a fleet of up to 100 scanners without installing drivers on individual computers. It creates and assigns up to 30 job settings directly to the panel through a single web interface, and processes and distributes documents securely with tracking reports."
+    },
+    {
+      "id": "EPSON-101",
+      "question": "What are the dimensions and weight of the Epson WorkForce Enterprise main unit?",
+      "answer": "The main unit alone weighs 177.1 kg (390.4 lb) and measures 674 mm wide (26.5 inch), 757 mm deep (29.8 inch) and 1,243 mm high (48.9 inch).",
+      "category": "epson-specs",
+      "tags": [
+        "dimensions",
+        "weight",
+        "main-unit",
+        "footprint",
+        "installation"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are the dimensions and weight of the Epson WorkForce Enterprise main unit?\nA: The main unit alone weighs 177.1 kg (390.4 lb) and measures 674 mm wide (26.5 inch), 757 mm deep (29.8 inch) and 1,243 mm high (48.9 inch)."
+    },
+    {
+      "id": "EPSON-102",
+      "question": "How much space does the Epson WorkForce Enterprise need with a finisher and high capacity feeder?",
+      "answer": "With the optional finisher and High Capacity Feeder Unit the Epson WorkForce Enterprise weighs 337.9 kg (744.9 lb) and measures 2,002 mm wide (78.8 inch), 757 mm deep (29.8 inch) and 1,243 mm high (48.9 inch).",
+      "category": "epson-specs",
+      "tags": [
+        "dimensions",
+        "weight",
+        "finisher",
+        "footprint",
+        "configuration"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How much space does the Epson WorkForce Enterprise need with a finisher and high capacity feeder?\nA: With the optional finisher and High Capacity Feeder Unit the Epson WorkForce Enterprise weighs 337.9 kg (744.9 lb) and measures 2,002 mm wide (78.8 inch), 757 mm deep (29.8 inch) and 1,243 mm high (48.9 inch)."
+    },
+    {
+      "id": "EPSON-103",
+      "question": "How much space does the Epson WorkForce Enterprise need with the booklet stapler finisher and high capacity feeder?",
+      "answer": "With the Booklet Stapler Finisher and High Capacity Feeder Unit the Epson WorkForce Enterprise weighs 396.5 kg (874.1 lb) and measures 2,327 mm wide (91.6 inch), 757 mm deep (29.8 inch) and 1,243 mm high (48.9 inch).",
+      "category": "epson-specs",
+      "tags": [
+        "dimensions",
+        "weight",
+        "booklet-finisher",
+        "footprint",
+        "configuration"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How much space does the Epson WorkForce Enterprise need with the booklet stapler finisher and high capacity feeder?\nA: With the Booklet Stapler Finisher and High Capacity Feeder Unit the Epson WorkForce Enterprise weighs 396.5 kg (874.1 lb) and measures 2,327 mm wide (91.6 inch), 757 mm deep (29.8 inch) and 1,243 mm high (48.9 inch)."
+    },
+    {
+      "id": "EPSON-104",
+      "question": "How noisy is the Epson WorkForce Enterprise?",
+      "answer": "For PC printing on plain paper in default mode, measured in accordance with ISO 7779, the noise level is 7.5 B(A) sound power and 60 dB(A) sound pressure.",
+      "category": "epson-specs",
+      "tags": [
+        "noise",
+        "sound-level",
+        "iso-7779",
+        "decibels"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How noisy is the Epson WorkForce Enterprise?\nA: For PC printing on plain paper in default mode, measured in accordance with ISO 7779, the noise level is 7.5 B(A) sound power and 60 dB(A) sound pressure."
+    },
+    {
+      "id": "EPSON-105",
+      "question": "What control panel do the Epson WorkForce Enterprise printers have?",
+      "answer": "The Epson WorkForce Enterprise has a 9.0 inch (22.7 cm) TFT colour LCD touchscreen. Epson describes it as an intuitive panel with a user-friendly interface that makes the printer simple to operate.",
+      "category": "epson-specs",
+      "tags": [
+        "control-panel",
+        "touchscreen",
+        "9-inch",
+        "lcd",
+        "interface"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What control panel do the Epson WorkForce Enterprise printers have?\nA: The Epson WorkForce Enterprise has a 9.0 inch (22.7 cm) TFT colour LCD touchscreen. Epson describes it as an intuitive panel with a user-friendly interface that makes the printer simple to operate."
+    },
+    {
+      "id": "EPSON-106",
+      "question": "What does Epson say about ease of use on the WorkForce Enterprise?",
+      "answer": "Epson highlights an intuitive 9 inch touchscreen panel; easy front access to the ink cartridges for fast replacement; cassette trays that open smoothly for easy paper refilling; easy removal of jammed paper with easy-to-follow on-printer instructions; and front access to the maintenance box to maximise uptime. Epson also notes there are no messy toner cartridges and no waiting for parts to cool.",
+      "category": "epson-specs",
+      "tags": [
+        "ease-of-use",
+        "operability",
+        "front-access",
+        "paper-jam",
+        "usability"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What does Epson say about ease of use on the WorkForce Enterprise?\nA: Epson highlights an intuitive 9 inch touchscreen panel; easy front access to the ink cartridges for fast replacement; cassette trays that open smoothly for easy paper refilling; easy removal of jammed paper with easy-to-follow on-printer instructions; and front access to the maintenance box to maximise uptime. Epson also notes there are no messy toner cartridges and no waiting for parts to cool."
+    },
+    {
+      "id": "EPSON-107",
+      "question": "What warranty comes with the Epson WorkForce Enterprise?",
+      "answer": "Epson markets the WorkForce Enterprise with a quality service badge stating quality service with up to 5 years warranty extension. Epson directs customers to check warranty terms at www.epson.com.my/warrantytnc.",
+      "category": "epson-support",
+      "tags": [
+        "warranty",
+        "5-years",
+        "service",
+        "terms"
+      ],
+      "source_url": "https://www.epson.com.my/warrantytnc",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What warranty comes with the Epson WorkForce Enterprise?\nA: Epson markets the WorkForce Enterprise with a quality service badge stating quality service with up to 5 years warranty extension. Epson directs customers to check warranty terms at www.epson.com.my/warrantytnc."
+    },
+    {
+      "id": "EPSON-108",
+      "question": "How do I contact Epson Malaysia about the WorkForce Enterprise?",
+      "answer": "Epson Malaysia can be reached on the toll-free line 1800-81-7349, or at Epson Malaysia Sdn Bhd (211204-X), 3rd Floor, East Tower, Wisma Consplant 1, No. 2, Jalan SS16/4, 47500 Subang Jaya, Selangor Darul Ehsan, telephone 603-56 288 288, fax 603-56 212 088. Epson also directs enquiries to www.epson.com.my/enterpriseprinting. These are Epson Malaysia's own contact details as the printer manufacturer; they are not Documation's address or phone number.",
+      "category": "epson-support",
+      "tags": [
+        "epson-contact",
+        "toll-free",
+        "epson-malaysia",
+        "phone",
+        "address"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "This is Epson Malaysia's contact information, not Documation's. From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: How do I contact Epson Malaysia about the WorkForce Enterprise?\nA: Epson Malaysia can be reached on the toll-free line 1800-81-7349, or at Epson Malaysia Sdn Bhd (211204-X), 3rd Floor, East Tower, Wisma Consplant 1, No. 2, Jalan SS16/4, 47500 Subang Jaya, Selangor Darul Ehsan, telephone 603-56 288 288, fax 603-56 212 088. Epson also directs enquiries to www.epson.com.my/enterpriseprinting. These are Epson Malaysia's own contact details as the printer manufacturer; they are not Documation's address or phone number."
+    },
+    {
+      "id": "EPSON-109",
+      "question": "Where can I find more information about the Epson WorkForce Enterprise?",
+      "answer": "Epson lists www.epson.com.my/enterpriseprinting for the product range, www.epson.com.my/warrantytnc for warranty terms, www.epson.com.my/software-solutions for the software solutions, http://www.epson.com.my/connect for Epson Connect, www.epson.com.my/printspeed for print speed methodology and www.epson.com.my/inkinfo for ink yield information.",
+      "category": "epson-support",
+      "tags": [
+        "links",
+        "urls",
+        "more-information",
+        "resources"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: Where can I find more information about the Epson WorkForce Enterprise?\nA: Epson lists www.epson.com.my/enterpriseprinting for the product range, www.epson.com.my/warrantytnc for warranty terms, www.epson.com.my/software-solutions for the software solutions, http://www.epson.com.my/connect for Epson Connect, www.epson.com.my/printspeed for print speed methodology and www.epson.com.my/inkinfo for ink yield information."
+    },
+    {
+      "id": "EPSON-110",
+      "question": "What are Epson Malaysia's social media channels?",
+      "answer": "Epson Malaysia lists EpsonMalaysia on Facebook and Instagram, and EpsonSoutheastAsia on YouTube.",
+      "category": "epson-support",
+      "tags": [
+        "social-media",
+        "facebook",
+        "instagram",
+        "youtube",
+        "epson-malaysia"
+      ],
+      "source_url": "https://www.epson.com.my/enterpriseprinting",
+      "status": "verified",
+      "note": "From the Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 brochure, printed July 2020. Specifications are subject to change without notice and may vary between countries.",
+      "text": "Q: What are Epson Malaysia's social media channels?\nA: Epson Malaysia lists EpsonMalaysia on Facebook and Instagram, and EpsonSoutheastAsia on YouTube."
+    },
+    {
+      "id": "EPSON-111",
+      "question": "Why does Documation's knowledge base include Epson WorkForce Enterprise information?",
+      "answer": "Epson is one of Documation's listed print and imaging technology partners, alongside Canon and Ricoh. This section of the knowledge base holds product reference information for the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000, taken from Epson's own product brochure. It describes Epson's products, not Documation's own production equipment or service specifications.",
+      "category": "epson-partner",
+      "tags": [
+        "documation",
+        "epson",
+        "partner",
+        "scope",
+        "why-included"
+      ],
+      "source_url": "https://documation.com.my/",
+      "status": "verified",
+      "note": "Anchored on FAQ-055 and FAQ-056, which list Epson as a technology partner. Deliberately does not claim Documation operates these models.",
+      "text": "Q: Why does Documation's knowledge base include Epson WorkForce Enterprise information?\nA: Epson is one of Documation's listed print and imaging technology partners, alongside Canon and Ricoh. This section of the knowledge base holds product reference information for the Epson WorkForce Enterprise WF-C20600, WF-C20750 and WF-C21000, taken from Epson's own product brochure. It describes Epson's products, not Documation's own production equipment or service specifications."
+    },
+    {
+      "id": "EPSON-112",
+      "question": "Does Documation use the Epson WorkForce Enterprise printers in its own print production?",
+      "answer": "PENDING CLIENT CONFIRMATION. Documation lists Epson as a print and imaging technology partner, but neither Documation's website nor the Epson brochure states which specific printer models Documation operates in its own bulk printing and mail fulfilment facility. Confirm with Documation which devices are in production use before this answer is served.",
+      "category": "epson-partner",
+      "tags": [
+        "documation",
+        "production-equipment",
+        "fleet",
+        "unconfirmed"
+      ],
+      "source_url": "https://documation.com.my/bulk-printing-mail-fulfillment/",
+      "status": "needs_client_confirmation",
+      "note": "Do not let the assistant infer that Documation runs these specific models from the partner listing alone. See open_items OI-08.",
+      "text": "Q: Does Documation use the Epson WorkForce Enterprise printers in its own print production?\nA: PENDING CLIENT CONFIRMATION. Documation lists Epson as a print and imaging technology partner, but neither Documation's website nor the Epson brochure states which specific printer models Documation operates in its own bulk printing and mail fulfilment facility. Confirm with Documation which devices are in production use before this answer is served."
+    },
+    {
+      "id": "EPSON-113",
+      "question": "Can I buy or lease an Epson WorkForce Enterprise printer from Documation?",
+      "answer": "PENDING CLIENT CONFIRMATION. Documation's website describes Epson as a technology partner and does not state whether Documation resells, supplies or leases Epson hardware. Confirm whether hardware supply is an offered service before this answer is served; until then, hardware enquiries should be directed to Documation via https://documation.com.my/contact-us/.",
+      "category": "epson-partner",
+      "tags": [
+        "documation",
+        "hardware-sales",
+        "reseller",
+        "leasing",
+        "unconfirmed"
+      ],
+      "source_url": "https://documation.com.my/contact-us/",
+      "status": "needs_client_confirmation",
+      "note": "See open_items OI-08.",
+      "text": "Q: Can I buy or lease an Epson WorkForce Enterprise printer from Documation?\nA: PENDING CLIENT CONFIRMATION. Documation's website describes Epson as a technology partner and does not state whether Documation resells, supplies or leases Epson hardware. Confirm whether hardware supply is an offered service before this answer is served; until then, hardware enquiries should be directed to Documation via https://documation.com.my/contact-us/."
     }
   ],
   "open_items": [
@@ -1070,6 +2956,19 @@
       "detail": "The site references 'SLA Achievement' as a headline statistic but publishes no actual SLA terms, turnaround times, or daily and monthly capacity.",
       "impact": "How fast and how much are among the most common pre-sales questions. The chatbot cannot answer either.",
       "action_required": "Provide publishable SLA and capacity figures."
+    },
+    {
+      "id": "OI-08",
+      "severity": "medium",
+      "issue": "Documation's relationship to the Epson WorkForce Enterprise hardware is unstated",
+      "detail": "The knowledge base now carries the full Epson WorkForce Enterprise WF-C20600 / WF-C20750 / WF-C21000 specification set from Epson's July 2020 brochure. Documation's website lists Epson as a print and imaging technology partner (FAQ-055, FAQ-056) but never states which printer models Documation operates, nor whether Documation supplies, resells or leases Epson hardware.",
+      "impact": "A prospect asking 'what do you print on?' or 'can I buy this printer from you?' gets a refusal, and there is a standing risk of the assistant implying Documation runs this specific equipment when the source material does not say so.",
+      "action_required": "Confirm which Epson models are in Documation's production fleet, and whether hardware supply is an offered service. Then either verify the two held-back epson-partner entries or rewrite them.",
+      "affects": [
+        "EPSON-111",
+        "EPSON-112",
+        "EPSON-113"
+      ]
     }
   ],
   "suggested_additions": [

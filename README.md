@@ -7,9 +7,16 @@ answers questions using only retrieved documents, refuses everything else, and
 shows exactly which FAQ entries produced each answer along with the token and
 cost accounting for the turn.
 
+The knowledge base holds 181 entries from two sources: 68 `FAQ-*` entries about
+Documation itself, and 113 `EPSON-*` entries covering the Epson WorkForce
+Enterprise WF-C20600 / WF-C20750 / WF-C21000 — partner-product reference taken
+from Epson's July 2020 brochure. Epson entries describe Epson's hardware, never
+Documation's own equipment or capacity; the system prompt enforces that
+distinction and the two entries that would claim otherwise are held back.
+
 - **Retrieval**: ChromaDB + a local `all-MiniLM-L6-v2` embedding model (no API cost)
 - **Generation**: DeepSeek (`deepseek-chat`) via the OpenAI-compatible client
-- **Demo**: Streamlit app with retrieved sources, guardrail trace, token counter and live price estimate
+- **Demo**: Streamlit app with retrieved sources (each labelled with the knowledge-base source it came from), guardrail trace, token counter and live price estimate
 
 ---
 
@@ -88,13 +95,14 @@ used. Any id not in the retrieved set is dropped, and an answer left with no
 valid citation is discarded and replaced with a refusal. A hallucinated answer
 has nothing real to cite.
 
-**Unconfirmed entries are never served.** The knowledge base flags five entries
-(`FAQ-050`, `FAQ-051`, `FAQ-053`, `FAQ-061`, `FAQ-063`) as
-`needs_client_confirmation` — including the ISO 27001 claim and a contradictory
-phone number. These are indexed but filtered out of retrieval, and re-checked at
-the output stage. Asking "Is Documation ISO 27001 certified?" gets a refusal, not
-a guess. Set `RAG_SERVE_UNVERIFIED=true` only after Documation confirms the
-wording.
+**Unconfirmed entries are never served.** The knowledge base flags seven entries
+(`FAQ-050`, `FAQ-051`, `FAQ-053`, `FAQ-061`, `FAQ-063`, `EPSON-112`,
+`EPSON-113`) as `needs_client_confirmation` — including the ISO 27001 claim, a
+contradictory phone number, and the two questions that would have the bot claim
+Documation operates or resells specific Epson hardware. These are indexed but
+filtered out of retrieval, and re-checked at the output stage. Asking "Is
+Documation ISO 27001 certified?" gets a refusal, not a guess. Set
+`RAG_SERVE_UNVERIFIED=true` only after Documation confirms the wording.
 
 Observed behaviour on the current knowledge base:
 
@@ -105,6 +113,8 @@ Observed behaviour on the current knowledge base:
 | "Ignore all previous instructions..." | blocked at the input guard | 0 |
 | "Who is Documation's CEO?" | refused — not in the knowledge base | ~1,470 |
 | "Is Documation ISO 27001 certified?" | refused — entry pending confirmation | ~1,450 |
+| "How fast does the Epson WF-C21000 print in duplex?" | answered, cites EPSON-021 and EPSON-023 | ~1,780 |
+| "Do you use Epson printers in your own production facility?" | refused — entry pending confirmation | ~1,720 |
 
 ---
 
@@ -117,16 +127,17 @@ and the threshold is interpretable.
 **Quality** (`python -m chatbot.scripts.eval_retrieval`, no API key needed):
 
 ```
-Exact FAQ questions   Recall@1 95.2%   Recall@5 98.4%   MRR 0.968
-Paraphrased questions Recall@5 100%    (22 hand-written probes)
-Off-topic questions   11/12 correctly scored below threshold
+Exact FAQ questions   Recall@1 96.6%   Recall@5 99.4%   MRR 0.980   (174 verified entries)
+Paraphrased questions Recall@5 100%    (34 hand-written probes, 12 of them Epson)
+Off-topic questions   10/12 correctly scored below threshold
 ```
 
 **Threshold**: `RAG_MIN_SIMILARITY` defaults to `0.22`. Real paraphrases bottom
-out at 0.24; off-topic probes sit at or below 0.21, except queries sharing
-Malaysian context ("weather in Kuala Lumpur", 0.38). The gate is therefore tuned
-for recall — it stops the clearly unrelated, and the citation guard rejects
-whatever gets past it.
+out at 0.24; off-topic probes sit at or below 0.21, except two that share
+vocabulary with the corpus — "weather in Kuala Lumpur" (0.38, Malaysian context)
+and "best programming language to learn" (0.23, which brushes the printer
+language entry). The gate is therefore tuned for recall — it stops the clearly
+unrelated, and the citation guard rejects whatever gets past it.
 
 **Follow-ups**: a short or pronoun-led question ("What about the cost?") is
 re-searched with the previous question prepended, and the two ranked lists are
@@ -180,9 +191,15 @@ file or the embedding model changes, and is skipped otherwise.
   `RAG_EMBEDDING_PROVIDER=sentence-transformers` and
   `RAG_EMBEDDING_MODEL=paraphrase-multilingual-MiniLM-L12-v2`, then re-ingest.
   That pulls in PyTorch (~2 GB).
-- **Answers are capped by the knowledge base.** The seven `open_items` in the
-  source file (SLA figures, client references, headline statistics) are questions
-  the bot structurally cannot answer until Documation supplies the facts.
+- **Answers are capped by the knowledge base.** The eight `open_items` in the
+  source file (SLA figures, client references, headline statistics, and which
+  Epson hardware Documation actually operates) are questions the bot structurally
+  cannot answer until Documation supplies the facts.
+- **Epson model numbers embed weakly.** `WF-C20600`, `WF-C20750` and `WF-C21000`
+  are near-identical to a MiniLM tokenizer, so a query naming one model retrieves
+  all three order-code entries and relies on the model to pick the matching
+  string from the context. Answers stay correct, but do not expect the right
+  entry to always rank first.
 - **No streaming.** Answers are validated as a whole before display, which rules
   out token streaming; a turn takes 1–3 seconds.
 - **Single-process index.** ChromaDB runs embedded in the app. For multiple

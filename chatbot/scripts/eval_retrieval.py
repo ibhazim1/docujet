@@ -52,6 +52,19 @@ PARAPHRASE_PROBES: list[tuple[str, set[str]]] = [
 	("what happens to mail that gets returned undelivered", {"FAQ-012"}),
 	("what output file formats can you produce", {"FAQ-018"}),
 	("why should we outsource this instead of printing in house", {"FAQ-059"}),
+	# Epson WorkForce Enterprise partner-product reference (EPSON-* entries).
+	("how fast does the wf-c21000 print", {"EPSON-021", "EPSON-002"}),
+	("does the epson printer use heat to print", {"EPSON-009", "EPSON-010"}),
+	("what is precisioncore", {"EPSON-012", "EPSON-016"}),
+	("how many pages does an epson ink cartridge last", {"EPSON-032"}),
+	("can the epson printer staple and punch holes", {"EPSON-053", "EPSON-054", "EPSON-058"}),
+	("how much paper can the epson workforce enterprise hold", {"EPSON-064", "EPSON-065"}),
+	("can it print on thick card or banners", {"EPSON-068", "EPSON-067"}),
+	("how much electricity does the epson printer use", {"EPSON-044", "EPSON-043", "EPSON-041"}),
+	("does the epson printer scan both sides at once", {"EPSON-072", "EPSON-069"}),
+	("is fax included with the epson workforce enterprise", {"EPSON-074", "EPSON-079"}),
+	("how heavy is the epson workforce enterprise printer", {"EPSON-101"}),
+	("can i print confidentially with a pin on the epson", {"EPSON-090", "EPSON-089"}),
 ]
 
 #: Queries the bot must refuse. None of these are answerable from the FAQ.
