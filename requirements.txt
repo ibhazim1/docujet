@@ -1,0 +1,23 @@
+# Documation RAG chatbot — runtime dependencies.
+# Versions are the ones this project was built and tested against.
+
+# DeepSeek is called through the OpenAI-compatible client.
+openai>=2.0,<3
+python-dotenv>=1.0
+pydantic>=2.7,<3
+
+# Vector store. chromadb pulls in onnxruntime, which runs the default local
+# embedding model (all-MiniLM-L6-v2); it is listed explicitly because retrieval
+# does not work without it.
+chromadb>=1.5,<2
+onnxruntime>=1.17
+
+# Demo UI.
+streamlit>=1.40
+
+# Optional: only needed for RAG_EMBEDDING_PROVIDER=sentence-transformers, e.g. to
+# use a multilingual model. Installs PyTorch (~2 GB).
+# sentence-transformers>=3.0
+
+# Optional: test suite (pytest -q).
+# pytest>=8.0
