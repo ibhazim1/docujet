@@ -18,7 +18,7 @@ export const PLASMIC = initPlasmicLoader({
       token: process.env.PLASMIC_API_TOKEN!,
     },
   ],
-  preview: true,
+  preview: false,
 });
 
 PLASMIC.registerComponent(ServiceCard, {
