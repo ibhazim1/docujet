@@ -12,6 +12,7 @@ import ServicesPage from "./components/pages/ServicesPage";
 import BookingPage from "./components/pages/BookingPage";
 import FAQPage from "./components/pages/FAQPage";
 import ContactPage from "./components/pages/ContactPage";
+import LoginPage from "./components/pages/LoginPage";
 
 PLASMIC.registerComponent(ServiceCard, {
   name: "ServiceCard",
@@ -375,4 +376,10 @@ PLASMIC.registerComponent(ContactPage, {
       defaultValue: "/booking",
     },
   },
+});
+
+PLASMIC.registerComponent(LoginPage, {
+  name: "LoginPage",
+  displayName: "DocuJet Login Page",
+  props: {},
 });
