@@ -1,93 +1,84 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
-import AdminTable from "@/components/admin/AdminTable";
-import SearchInput from "@/components/admin/SearchInput";
-import StatusBadge from "@/components/admin/StatusBadge";
-import { leads } from "@/lib/admin-mock-data";
+import LeadTracker from "@/components/crm/LeadTracker";
+import { resolveToday } from "@/lib/crm/analytics";
+import { fetchLeads, isSheetConfigured } from "@/lib/crm/sheets";
+import type { Lead } from "@/lib/crm/types";
 
 export const metadata: Metadata = {
-  title: "Leads",
+  title: "Lead Tracker",
 };
 
-export default function AdminLeadsPage() {
+// The sheet is the database, so this page is always request-time fresh.
+export const dynamic = "force-dynamic";
+
+/**
+ * Explains why the rows on screen are not the sheet's.
+ *
+ * The tracker still renders underneath, on the bundled seed leads, so the
+ * whole UI is testable before any Google setup. Editing is inert in that mode
+ * — `LeadTracker` blocks the write when it is handed no leads — so nothing
+ * here can be mistaken for a change that was saved.
+ */
+function DemoNotice({ reason }: { reason: string }) {
+  return (
+    <div
+      role="status"
+      className="rounded-3xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-900"
+    >
+      <p className="font-semibold">Showing sample data — the leads sheet is not connected.</p>
+      <p className="mt-2 leading-6">{reason}</p>
+      <p className="mt-2 leading-6">
+        Every view below works on the 46 seed leads. The stage controls still respond, but
+        nothing is saved — these rows exist in no sheet. Connect one by following the header of{" "}
+        <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
+          scripts/apps-script/Code.gs
+        </code>
+        , then run{" "}
+        <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">npm run crm:seed</code>.
+      </p>
+    </div>
+  );
+}
+
+export default async function AdminLeadsPage() {
+  const today = resolveToday(process.env.CRM_TODAY);
+
+  let leads: Lead[] | null = null;
+  let notice: string | null = null;
+
+  if (!isSheetConfigured()) {
+    notice = "CRM_SHEET_ENDPOINT and CRM_SHEET_SECRET are not set in .env.";
+  } else {
+    try {
+      leads = await fetchLeads();
+    } catch (cause) {
+      notice = cause instanceof Error ? cause.message : "Could not read the leads sheet.";
+    }
+  }
+
   return (
     <>
       <AdminHeader
-        title="Leads"
-        description="Track mock lead entries, statuses, and next-step actions for the admin UI."
+        title="Lead Tracker"
+        description="Which channels produce leads, and which of those leads are worth anything."
       />
 
       <div className="space-y-6 p-5 md:p-8">
-        <section className="grid gap-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-[minmax(0,1fr)_240px]">
-          <SearchInput placeholder="Search lead name, company, or email" />
-          <label className="block">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Status</span>
-            <select className={inputClassName} defaultValue="All Statuses">
-              {["All Statuses", "New", "Contacted", "Qualified", "Proposal", "Won", "Lost"].map(
-                (option) => (
-                  <option key={option}>{option}</option>
-                ),
-              )}
-            </select>
-          </label>
-        </section>
+        {notice ? <DemoNotice reason={notice} /> : null}
 
-        <AdminTable>
-          <table className="min-w-[980px] text-left text-sm">
-            <thead className="bg-slate-50 text-slate-500">
-              <tr>
-                {[
-                  "Name",
-                  "Company",
-                  "Email",
-                  "Phone",
-                  "Product Interest",
-                  "Source",
-                  "Status",
-                  "Created Date",
-                  "Actions",
-                ].map((heading) => (
-                  <th key={heading} className="px-5 py-4 font-medium">
-                    {heading}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {leads.map((lead) => (
-                <tr key={lead.id} className="border-t border-slate-200">
-                  <td className="px-5 py-4 font-medium text-slate-950">{lead.name}</td>
-                  <td className="px-5 py-4 text-slate-600">{lead.company}</td>
-                  <td className="px-5 py-4 text-slate-600">{lead.email}</td>
-                  <td className="px-5 py-4 text-slate-600">{lead.phone}</td>
-                  <td className="px-5 py-4 text-slate-600">{lead.productInterest}</td>
-                  <td className="px-5 py-4 text-slate-600">{lead.source}</td>
-                  <td className="px-5 py-4">
-                    <StatusBadge status={lead.status} />
-                  </td>
-                  <td className="px-5 py-4 text-slate-600">{lead.createdDate}</td>
-                  <td className="px-5 py-4">
-                    <div className="flex gap-2">
-                      {["View", "Update"].map((action) => (
-                        <button
-                          key={action}
-                          type="button"
-                          className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-                        >
-                          {action}
-                        </button>
-                      ))}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </AdminTable>
+        {/* LeadTracker reads the query string with useSearchParams, which needs
+            a Suspense boundary above it. Omitting `leads` puts it in sample
+            mode, which is exactly what the notice above describes. */}
+        <Suspense fallback={<p className="text-sm text-slate-500">Loading leads…</p>}>
+          {leads ? (
+            <LeadTracker leads={leads} today={today} />
+          ) : (
+            <LeadTracker today={today} />
+          )}
+        </Suspense>
       </div>
     </>
   );
 }
-
-const inputClassName =
-  "w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-700 focus:ring-4 focus:ring-sky-100";

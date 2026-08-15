@@ -72,6 +72,7 @@ export type IntegrationStatus = "Not configured" | "Planned" | "Connected";
 export const adminNavItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Appointments", href: "/admin/appointments" },
+  { label: "Leads", href: "/admin/leads" },
   { label: "Customer", href: "/admin/customers" },
 ] as const;
 

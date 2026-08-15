@@ -12,7 +12,7 @@ import ServicesPage from "./components/pages/ServicesPage";
 import BookingPage from "./components/pages/BookingPage";
 import FAQPage from "./components/pages/FAQPage";
 import ContactPage from "./components/pages/ContactPage";
-import LoginPage from "./components/pages/LoginPage";
+import LeadTracker from "./components/crm/LeadTracker";
 
 PLASMIC.registerComponent(ServiceCard, {
   name: "ServiceCard",
@@ -378,8 +378,41 @@ PLASMIC.registerComponent(ContactPage, {
   },
 });
 
-PLASMIC.registerComponent(LoginPage, {
-  name: "LoginPage",
-  displayName: "DocuJet Login Page",
-  props: {},
+PLASMIC.registerComponent(LeadTracker, {
+  name: "LeadTracker",
+  displayName: "CRM Lead Tracker",
+  props: {
+    className: {
+      type: "class",
+    },
+    defaultView: {
+      type: "choice",
+      options: ["table", "board", "charts"],
+      defaultValue: "table",
+    },
+    showKpis: {
+      type: "boolean",
+      defaultValue: true,
+    },
+    showPipeline: {
+      type: "boolean",
+      defaultValue: true,
+    },
+    showFilters: {
+      type: "boolean",
+      defaultValue: true,
+    },
+    // Presentational only. Writes are blocked in the canvas regardless, because
+    // the sample rows the component falls back to are not in the sheet.
+    readOnly: {
+      type: "boolean",
+      defaultValue: false,
+      description:
+        "Show each lead's stage as a coloured badge instead of an editable control.",
+    },
+    today: {
+      type: "string",
+      defaultValue: "2026-07-31",
+    },
+  },
 });
