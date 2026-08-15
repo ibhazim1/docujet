@@ -49,9 +49,9 @@ const GREETING =
   "Hi! I'm the DocuJet assistant. Ask me about the WorkForce Enterprise range, pricing direction, or booking a consultation.";
 
 const SUGGESTIONS = [
-  "Which model suits 5,000 pages a day?",
+  "What resolution and geometry do the Epson MicroTFP print chips have?",
   "What is Heat-Free Technology?",
-  "How do I book a demonstration?",
+  "How fast do the Epson WorkForce Enterprise printers print on A4?",
 ];
 
 const MAX_MESSAGE_CHARS = 1000;
