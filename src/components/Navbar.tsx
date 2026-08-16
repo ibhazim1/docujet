@@ -7,9 +7,10 @@ import { navItems } from "@/lib/site-data";
 
 type NavbarProps = {
   className?: string;
+  companyName?: string;
 };
 
-export default function Navbar({ className }: NavbarProps) {
+export default function Navbar({ className, companyName = "DocuJet" }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -26,7 +27,7 @@ export default function Navbar({ className }: NavbarProps) {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         <Link href="/" className="text-2xl font-semibold tracking-tight text-slate-950">
-          DocuJet
+          {companyName}
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">

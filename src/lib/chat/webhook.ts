@@ -16,6 +16,8 @@
  * CORS with n8n.
  */
 
+import { getSettings } from "@/lib/settings/store";
+
 /**
  * The workflow supplied for development.
  *
@@ -33,15 +35,24 @@ const FALLBACK_WEBHOOK_URL =
 /** How long the workflow gets to answer before the visitor is told it timed out. */
 const REQUEST_TIMEOUT_MS = 45_000;
 
-/** Longest question accepted, matching GUARDRAIL_MAX_QUESTION_CHARS in .env.example. */
+/** Longest question accepted, matching GUARDRAIL_MAX_QUESTION_CHARS in .env.example. Ultimate fallback — see MAX_MESSAGE_CHARS usage note below. */
 export const MAX_MESSAGE_CHARS = 1000;
 
-export function chatWebhookUrl(): string {
-  return process.env.N8N_CHAT_WEBHOOK_URL?.trim() || FALLBACK_WEBHOOK_URL;
+/**
+ * Resolves the webhook URL: the admin-configured Settings value wins when
+ * set, then N8N_CHAT_WEBHOOK_URL, then the hardcoded dev-test URL above.
+ */
+export async function chatWebhookUrl(): Promise<string> {
+  const { integrations } = await getSettings();
+  return (
+    integrations.n8nWebhookUrl.trim() ||
+    process.env.N8N_CHAT_WEBHOOK_URL?.trim() ||
+    FALLBACK_WEBHOOK_URL
+  );
 }
 
 /** True while the webhook is the one-shot test endpoint rather than a live one. */
-export function isTestWebhook(url = chatWebhookUrl()): boolean {
+export function isTestWebhook(url: string): boolean {
   return url.includes("/webhook-test/");
 }
 
@@ -156,7 +167,7 @@ export async function askChatWebhook({
   page,
   history = [],
 }: AskOptions): Promise<string> {
-  const url = chatWebhookUrl();
+  const url = await chatWebhookUrl();
 
   let response: Response;
   try {

@@ -1,11 +1,14 @@
 "use client";
 
+import ActiveLostDonut from "./charts/ActiveLostDonut";
 import FunnelChart from "./charts/FunnelChart";
 import MonthlyChart from "./charts/MonthlyChart";
 import SocialSplitMeter from "./charts/SocialSplitMeter";
 import SourceQualityChart from "./charts/SourceQualityChart";
+import SourceShareDonut from "./charts/SourceShareDonut";
 import SourceStageMatrix from "./charts/SourceStageMatrix";
 import SourceVolumeChart from "./charts/SourceVolumeChart";
+import StageShareDonut from "./charts/StageShareDonut";
 import { funnelStats, monthlyStats } from "@/lib/crm/analytics";
 import type { SourceStat } from "@/lib/crm/analytics";
 import type { Lead, SourceKey } from "@/lib/crm/types";
@@ -32,6 +35,9 @@ export default function LeadCharts({
       <MonthlyChart rows={monthlyStats(leads)} />
       <SourceStageMatrix rows={sources} />
       <SocialSplitMeter rows={sources} total={leads.length} />
+      <SourceShareDonut rows={sources} />
+      <ActiveLostDonut leads={leads} />
+      <StageShareDonut leads={leads} />
     </div>
   );
 }

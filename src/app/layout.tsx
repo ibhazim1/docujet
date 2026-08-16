@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import SiteChrome from "@/components/SiteChrome";
+import { getSettingsSafe } from "@/lib/settings/store";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,18 +33,25 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // getSettingsSafe(), not getSettings(): the whole site renders through this
+  // layout, so a broken Settings sheet must degrade to defaults here, never
+  // 500 every page. Only the public-safe chat subset crosses into a Client
+  // Component prop — settings also holds integration secrets, which must
+  // never reach here.
+  const { chat } = await getSettingsSafe();
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-stone-50 text-slate-950">
-        <SiteChrome>{children}</SiteChrome>
+        <SiteChrome chatConfig={chat}>{children}</SiteChrome>
       </body>
     </html>
   );

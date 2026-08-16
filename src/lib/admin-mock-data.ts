@@ -74,6 +74,7 @@ export const adminNavItems = [
   { label: "Appointments", href: "/admin/appointments" },
   { label: "Leads", href: "/admin/leads" },
   { label: "Customer", href: "/admin/customers" },
+  { label: "Settings", href: "/admin/settings" },
 ] as const;
 
 export const dashboardStats = [

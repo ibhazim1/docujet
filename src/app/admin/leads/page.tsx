@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
+import DemoNotice from "@/components/admin/DemoNotice";
 import LeadTracker from "@/components/crm/LeadTracker";
 import { resolveToday } from "@/lib/crm/analytics";
 import { fetchLeads, isSheetConfigured } from "@/lib/crm/sheets";
@@ -12,35 +13,6 @@ export const metadata: Metadata = {
 
 // The sheet is the database, so this page is always request-time fresh.
 export const dynamic = "force-dynamic";
-
-/**
- * Explains why the rows on screen are not the sheet's.
- *
- * The tracker still renders underneath, on the bundled seed leads, so the
- * whole UI is testable before any Google setup. Editing is inert in that mode
- * — `LeadTracker` blocks the write when it is handed no leads — so nothing
- * here can be mistaken for a change that was saved.
- */
-function DemoNotice({ reason }: { reason: string }) {
-  return (
-    <div
-      role="status"
-      className="rounded-3xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-900"
-    >
-      <p className="font-semibold">Showing sample data — the leads sheet is not connected.</p>
-      <p className="mt-2 leading-6">{reason}</p>
-      <p className="mt-2 leading-6">
-        Every view below works on the 46 seed leads. The stage controls still respond, but
-        nothing is saved — these rows exist in no sheet. Connect one by following the header of{" "}
-        <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
-          scripts/apps-script/Code.gs
-        </code>
-        , then run{" "}
-        <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">npm run crm:seed</code>.
-      </p>
-    </div>
-  );
-}
 
 export default async function AdminLeadsPage() {
   const today = resolveToday(process.env.CRM_TODAY);
@@ -66,7 +38,24 @@ export default async function AdminLeadsPage() {
       />
 
       <div className="space-y-6 p-5 md:p-8">
-        {notice ? <DemoNotice reason={notice} /> : null}
+        {notice ? (
+          <DemoNotice
+            title="Showing sample data — the leads sheet is not connected."
+            reason={notice}
+          >
+            Every view below works on the 46 seed leads. The stage controls still respond, but
+            nothing is saved — these rows exist in no sheet. Connect one by following the header
+            of{" "}
+            <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
+              scripts/apps-script/Code.gs
+            </code>
+            , then run{" "}
+            <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
+              npm run crm:seed
+            </code>
+            .
+          </DemoNotice>
+        ) : null}
 
         {/* LeadTracker reads the query string with useSearchParams, which needs
             a Suspense boundary above it. Omitting `leads` puts it in sample

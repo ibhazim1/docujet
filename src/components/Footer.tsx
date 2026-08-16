@@ -6,6 +6,10 @@ type FooterProps = {
   companyName?: string;
   bookingLinkText?: string;
   bookingLinkUrl?: string;
+  phone?: string;
+  email?: string;
+  address?: string;
+  hours?: string;
 };
 
 export default function Footer({
@@ -13,6 +17,10 @@ export default function Footer({
   companyName = "DocuJet",
   bookingLinkText = "Book Appointment",
   bookingLinkUrl = "/booking",
+  phone = footerPlaceholders.phone,
+  email = footerPlaceholders.email,
+  address = footerPlaceholders.office,
+  hours = footerPlaceholders.hours,
 }: FooterProps) {
   return (
     <footer
@@ -54,13 +62,13 @@ export default function Footer({
           <div className="space-y-4 text-sm text-slate-600">
             <div>
               <h3 className="font-semibold text-slate-950">Contact</h3>
-              <p className="mt-2">{footerPlaceholders.phone}</p>
-              <p>{footerPlaceholders.email}</p>
-              <p>{footerPlaceholders.office}</p>
+              <p className="mt-2">{phone}</p>
+              <p>{email}</p>
+              <p>{address}</p>
             </div>
             <div>
               <h3 className="font-semibold text-slate-950">Business Hours</h3>
-              <p className="mt-2">{footerPlaceholders.hours}</p>
+              <p className="mt-2">{hours}</p>
             </div>
           </div>
         </div>

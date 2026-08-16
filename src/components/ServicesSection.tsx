@@ -1,16 +1,19 @@
 import ServiceCard from "./ServiceCard";
-import { serviceItems } from "@/lib/site-data";
+import { serviceItems as defaultServiceItems } from "@/lib/site-data";
+import type { ServiceItem } from "@/lib/site-data";
 
 type ServicesSectionProps = {
   className?: string;
   title?: string;
   description?: string;
+  serviceItems?: ServiceItem[];
 };
 
 export default function ServicesSection({
   className,
   title = "WorkForce Enterprise Product Range",
   description = "Explore the three Epson WorkForce Enterprise models and review the key product details highlighted in the brochure, including speed, Heat-Free printing, finishing support, and enterprise workflow readiness.",
+  serviceItems = defaultServiceItems,
 }: ServicesSectionProps) {
   return (
     <section className={`w-full bg-white py-20 ${className ?? ""}`}>

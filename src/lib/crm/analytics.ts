@@ -418,6 +418,54 @@ export function funnelStats(leads: Lead[]): FunnelRow[] {
   return rows;
 }
 
+export type SourceShareRow = { key: SourceKey | "other"; label: string; total: number };
+
+/**
+ * Top sources by volume, tail folded into "Other".
+ *
+ * Feeds the source-share donut, which only has three colour slots that stay
+ * pairwise distinct under CVD (see `RANK_COLORS` in `charts/tokens.ts`) — past
+ * that, more wedges would need hues the palette can't safely give them.
+ */
+export function topSourceShares(rows: SourceStat[], limit: number): SourceShareRow[] {
+  const top: SourceShareRow[] = rows
+    .slice(0, limit)
+    .map((row) => ({ key: row.key, label: row.label, total: row.total }));
+  const rest = rows.slice(limit).reduce((sum, row) => sum + row.total, 0);
+  return rest > 0 ? [...top, { key: "other", label: "Other", total: rest }] : top;
+}
+
+export type ActiveLostRow = { key: "active" | "lost"; label: string; count: number };
+
+/** Leads currently in play versus closed lost. */
+export function activeVsLost(leads: Lead[]): ActiveLostRow[] {
+  const lost = leads.filter((lead) => lead.lost).length;
+  return [
+    { key: "active", label: "Active", count: leads.length - lost },
+    { key: "lost", label: "Lost", count: lost },
+  ];
+}
+
+export type StageShareRow = { key: OpenStageKey; label: string; count: number };
+
+/**
+ * Where active (non-lost) leads currently sit, one row per open stage.
+ *
+ * Only leads still in play are counted — a lead's `lost` flag freezes its
+ * `stage`, so a lost lead's last stage is not "where it currently sits"; that
+ * split is `activeVsLost`'s job, not this one's.
+ */
+export function activeStageBreakdown(leads: Lead[]): StageShareRow[] {
+  const counts = Object.fromEntries(OPEN_STAGE_KEYS.map((key) => [key, 0])) as Record<
+    OpenStageKey,
+    number
+  >;
+  for (const lead of leads) {
+    if (!lead.lost) counts[lead.stage] += 1;
+  }
+  return OPEN_STAGE_KEYS.map((key) => ({ key, label: STAGES[key].label, count: counts[key] }));
+}
+
 export type MonthlyRow = { key: string; label: string; count: number };
 
 /** Leads created per calendar month, oldest first, with empty months filled in. */

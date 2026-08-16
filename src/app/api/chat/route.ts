@@ -10,15 +10,13 @@
 import {
   askChatWebhook,
   ChatWebhookError,
-  MAX_MESSAGE_CHARS,
+  MAX_MESSAGE_CHARS as FALLBACK_MAX_MESSAGE_CHARS,
   type ChatTurn,
 } from "@/lib/chat/webhook";
+import { getSettingsSafe } from "@/lib/settings/store";
 
 /** Never prerender or cache: every request is a distinct conversation turn. */
 export const dynamic = "force-dynamic";
-
-/** Turns of prior conversation forwarded to the workflow. Enough for context, short enough to stay cheap. */
-const MAX_HISTORY_TURNS = 8;
 
 // ---------------------------------------------------------------------------
 // Throttling
@@ -28,20 +26,18 @@ const MAX_HISTORY_TURNS = 8;
 // a multi-instance deployment each instance keeps its own counter, which is
 // fine for that purpose. A shared store would only be worth it if the workflow
 // ever became expensive enough to be worth defending properly.
+//
+// Window/max-requests are admin-configurable (settings.chat.rateLimit*), read
+// fresh per request below — the store's own 30s cache keeps this cheap.
 // ---------------------------------------------------------------------------
-
-const RATE_LIMIT_WINDOW_MS = 60_000;
-const RATE_LIMIT_MAX_REQUESTS = 15;
 
 const hits = new Map<string, number[]>();
 
-function isRateLimited(key: string): boolean {
+function isRateLimited(key: string, windowMs: number, maxRequests: number): boolean {
   const now = Date.now();
-  const recent = (hits.get(key) ?? []).filter(
-    (at) => now - at < RATE_LIMIT_WINDOW_MS,
-  );
+  const recent = (hits.get(key) ?? []).filter((at) => now - at < windowMs);
 
-  if (recent.length >= RATE_LIMIT_MAX_REQUESTS) {
+  if (recent.length >= maxRequests) {
     hits.set(key, recent);
     return true;
   }
@@ -52,7 +48,7 @@ function isRateLimited(key: string): boolean {
   // The map would otherwise grow one entry per visitor for the process's life.
   if (hits.size > 500) {
     for (const [entryKey, times] of hits) {
-      if (times.every((at) => now - at >= RATE_LIMIT_WINDOW_MS)) {
+      if (times.every((at) => now - at >= windowMs)) {
         hits.delete(entryKey);
       }
     }
@@ -69,7 +65,7 @@ function clientKey(request: Request): string {
 
 // ---------------------------------------------------------------------------
 
-function parseHistory(value: unknown): ChatTurn[] {
+function parseHistory(value: unknown, maxHistoryTurns: number, maxMessageChars: number): ChatTurn[] {
   if (!Array.isArray(value)) return [];
 
   return value
@@ -82,10 +78,10 @@ function parseHistory(value: unknown): ChatTurn[] {
         turn.content.trim() !== ""
       );
     })
-    .slice(-MAX_HISTORY_TURNS)
+    .slice(-maxHistoryTurns)
     .map((turn) => ({
       role: turn.role,
-      content: turn.content.slice(0, MAX_MESSAGE_CHARS),
+      content: turn.content.slice(0, maxMessageChars),
     }));
 }
 
@@ -94,7 +90,10 @@ function fail(message: string, status: number) {
 }
 
 export async function POST(request: Request) {
-  if (isRateLimited(clientKey(request))) {
+  const { chat } = await getSettingsSafe();
+  const maxMessageChars = chat.maxMessageChars || FALLBACK_MAX_MESSAGE_CHARS;
+
+  if (isRateLimited(clientKey(request), chat.rateLimitWindowMs, chat.rateLimitMaxRequests)) {
     return fail(
       "That is a lot of questions at once. Give it a minute, then try again.",
       429,
@@ -114,9 +113,9 @@ export async function POST(request: Request) {
   if (message === "") {
     return fail("Type a question first.", 400);
   }
-  if (message.length > MAX_MESSAGE_CHARS) {
+  if (message.length > maxMessageChars) {
     return fail(
-      `Please keep your question under ${MAX_MESSAGE_CHARS} characters.`,
+      `Please keep your question under ${maxMessageChars} characters.`,
       400,
     );
   }
@@ -131,7 +130,7 @@ export async function POST(request: Request) {
       message,
       sessionId,
       page: typeof body.page === "string" ? body.page.slice(0, 200) : undefined,
-      history: parseHistory(body.history),
+      history: parseHistory(body.history, chat.maxHistoryTurns, maxMessageChars),
     });
 
     return Response.json({ reply, sessionId });

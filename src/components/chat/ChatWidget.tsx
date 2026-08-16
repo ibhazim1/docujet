@@ -45,19 +45,20 @@ type Message = {
   content: string;
 };
 
-const GREETING =
+/** Fallback copy, used when no parent thread supplies props (Plasmic canvas, etc.). Matches `DEFAULT_SETTINGS.chat` in `src/lib/settings/defaults.ts`. */
+const DEFAULT_GREETING =
   "Hi! I'm the DocuJet assistant. Ask me about the WorkForce Enterprise range, pricing direction, or booking a consultation.";
 
-const SUGGESTIONS = [
+const DEFAULT_SUGGESTIONS = [
   "What resolution and geometry do the Epson MicroTFP print chips have?",
   "What is Heat-Free Technology?",
   "How fast do the Epson WorkForce Enterprise printers print on A4?",
 ];
 
-const MAX_MESSAGE_CHARS = 1000;
+const DEFAULT_MAX_MESSAGE_CHARS = 1000;
 
 /** Turns kept in the panel and forwarded as context. Matches the API's own cap. */
-const MAX_HISTORY_TURNS = 8;
+const DEFAULT_MAX_HISTORY_TURNS = 8;
 
 const STORAGE_KEY = "docujet.chat.transcript";
 const SESSION_KEY = "docujet.chat.session";
@@ -69,7 +70,19 @@ function newId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-export default function ChatWidget() {
+type ChatWidgetProps = {
+  greeting?: string;
+  suggestions?: string[];
+  maxMessageChars?: number;
+  maxHistoryTurns?: number;
+};
+
+export default function ChatWidget({
+  greeting = DEFAULT_GREETING,
+  suggestions = DEFAULT_SUGGESTIONS,
+  maxMessageChars = DEFAULT_MAX_MESSAGE_CHARS,
+  maxHistoryTurns = DEFAULT_MAX_HISTORY_TURNS,
+}: ChatWidgetProps) {
   const pathname = usePathname();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -193,7 +206,7 @@ export default function ChatWidget() {
     // visitor can actually see, minus any failure notices.
     const history = messages
       .filter((message) => message.role !== "error")
-      .slice(-MAX_HISTORY_TURNS)
+      .slice(-maxHistoryTurns)
       .map(({ role, content }) => ({ role: role as "user" | "assistant", content }));
 
     setMessages((current) => [
@@ -307,7 +320,7 @@ export default function ChatWidget() {
             className="flex flex-1 flex-col gap-3 overflow-y-auto bg-stone-50 px-4 py-4"
           >
             <Bubble role="assistant">
-              <PlainText text={GREETING} />
+              <PlainText text={greeting} />
             </Bubble>
 
             {messages.map((message) =>
@@ -334,7 +347,7 @@ export default function ChatWidget() {
 
             {messages.length === 0 && (
               <div className="mt-1 flex flex-wrap gap-2">
-                {SUGGESTIONS.map((suggestion) => (
+                {suggestions.map((suggestion) => (
                   <button
                     key={suggestion}
                     type="button"
@@ -364,7 +377,7 @@ export default function ChatWidget() {
                 ref={inputRef}
                 rows={1}
                 value={input}
-                maxLength={MAX_MESSAGE_CHARS}
+                maxLength={maxMessageChars}
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={onKeyDown}
                 placeholder="Ask a question..."

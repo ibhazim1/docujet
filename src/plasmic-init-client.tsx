@@ -13,6 +13,7 @@ import BookingPage from "./components/pages/BookingPage";
 import FAQPage from "./components/pages/FAQPage";
 import ContactPage from "./components/pages/ContactPage";
 import LeadTracker from "./components/crm/LeadTracker";
+import { faqItems, serviceItems } from "./lib/site-data";
 
 PLASMIC.registerComponent(ServiceCard, {
   name: "ServiceCard",
@@ -104,6 +105,24 @@ PLASMIC.registerComponent(ServicesSection, {
       type: "string",
       defaultValue:
         "Explore the three Epson WorkForce Enterprise models and review the key product details highlighted in the brochure.",
+    },
+    // The real current 3 WF-C models, not a placeholder — so Studio's canvas
+    // starts populated. This is captured once at registration time; it will
+    // not retroactively follow later edits to site-data.ts, and once a Studio
+    // editor touches the array, Studio's own stored value takes over from
+    // this default entirely — normal Plasmic behavior, not a bug to fix.
+    serviceItems: {
+      type: "array",
+      itemType: {
+        type: "object",
+        fields: {
+          title: { type: "string" },
+          description: { type: "string" },
+          buttonText: { type: "string" },
+          buttonUrl: { type: "string" },
+        },
+      },
+      defaultValue: serviceItems,
     },
   },
 });
@@ -314,6 +333,20 @@ PLASMIC.registerComponent(FAQPage, {
       type: "string",
       defaultValue:
         "Review common questions about appointments, demonstrations, printer recommendations, pricing discussions, business printing, and support.",
+    },
+    // The real current 7 Q&As, not placeholders — same "captured once, won't
+    // retroactively follow site-data.ts, Studio's own value wins after a
+    // first edit" caveat as ServicesSection's serviceItems above.
+    faqItems: {
+      type: "array",
+      itemType: {
+        type: "object",
+        fields: {
+          question: { type: "string" },
+          answer: { type: "string" },
+        },
+      },
+      defaultValue: faqItems,
     },
     ctaTitle: {
       type: "string",

@@ -1,11 +1,13 @@
 import CallToAction from "@/components/CallToAction";
 import FaqAccordion from "@/components/FaqAccordion";
-import { faqItems } from "@/lib/site-data";
+import { faqItems as defaultFaqItems } from "@/lib/site-data";
+import type { FaqItem } from "@/lib/site-data";
 
 type FAQPageProps = {
   className?: string;
   pageTitle?: string;
   pageDescription?: string;
+  faqItems?: FaqItem[];
   ctaTitle?: string;
   ctaDescription?: string;
   ctaButtonText?: string;
@@ -16,6 +18,7 @@ export default function FAQPage({
   className,
   pageTitle = "Questions about Epson WorkForce Enterprise printers",
   pageDescription = "Review the key brochure-driven questions around Heat-Free Technology, print speed, consumables, workflow tools, media handling, and security.",
+  faqItems = defaultFaqItems,
   ctaTitle = "Need a tailored recommendation?",
   ctaDescription = "Book a consultation to discuss your expected print volume, duplex needs, media requirements, workflow software, and finishing setup.",
   ctaButtonText = "Book Consultation",

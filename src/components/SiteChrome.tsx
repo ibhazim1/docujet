@@ -3,12 +3,14 @@
 import { usePathname } from "next/navigation";
 
 import ChatWidget from "@/components/chat/ChatWidget";
+import type { ChatConfig } from "@/lib/settings/types";
 
 type SiteChromeProps = {
   children: React.ReactNode;
+  chatConfig: ChatConfig;
 };
 
-export default function SiteChrome({ children }: SiteChromeProps) {
+export default function SiteChrome({ children, chatConfig }: SiteChromeProps) {
   const pathname = usePathname();
   const isPlasmicHost = pathname === "/plasmic-host";
   const isAdminRoute = pathname.startsWith("/admin");
@@ -26,7 +28,12 @@ export default function SiteChrome({ children }: SiteChromeProps) {
   return (
     <>
       {children}
-      <ChatWidget />
+      <ChatWidget
+        greeting={chatConfig.greeting}
+        suggestions={chatConfig.suggestions}
+        maxMessageChars={chatConfig.maxMessageChars}
+        maxHistoryTurns={chatConfig.maxHistoryTurns}
+      />
     </>
   );
 }
