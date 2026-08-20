@@ -20,7 +20,8 @@ const statusStyles: Record<string, string> = {
   Disabled: "bg-rose-100 text-rose-800",
   "Not configured": "bg-slate-200 text-slate-700",
   // Where a settings value's live copy actually came from.
-  "Saved here": "bg-emerald-100 text-emerald-800",
+  "Saved on server": "bg-emerald-100 text-emerald-800",
+  "Saved in browser": "bg-amber-100 text-amber-800",
   "From .env": "bg-sky-100 text-sky-800",
   Planned: "bg-amber-100 text-amber-800",
   Connected: "bg-emerald-100 text-emerald-800",

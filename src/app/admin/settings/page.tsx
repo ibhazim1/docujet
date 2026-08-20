@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminSettingsPage() {
   let notice: string | null = null;
 
-  if (!isSettingsConfigured()) {
+  if (!(await isSettingsConfigured())) {
     notice =
       "No sheet endpoint and secret are configured — neither saved below nor set as " +
       "CRM_SHEET_ENDPOINT / CRM_SHEET_SECRET in .env.";
@@ -39,7 +39,7 @@ export default async function AdminSettingsPage() {
   }
 
   const safeSettings = toSafeSettingsView(settings);
-  const safeConnection = toSafeConnectionView(resolveConnection());
+  const safeConnection = toSafeConnectionView(await resolveConnection());
 
   return (
     <>

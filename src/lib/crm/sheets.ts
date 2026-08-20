@@ -49,16 +49,20 @@ export const SHEET_COLUMNS = CANONICAL_HEADERS;
 /** How long a read is reused before the sheet is consulted again. */
 const CACHE_TTL_MS = 30_000;
 
-let cache: { leads: Lead[]; at: number } | null = null;
+// Keyed by connection: an admin whose browser points at a different sheet
+// must not be served rows another request cached from the previous one. See
+// `ResolvedConnection.fingerprint`.
+let cache: { key: string; leads: Lead[]; at: number } | null = null;
 
 /**
  * True when the endpoint and secret are present. Lets the page degrade instead
  * of crashing.
  *
  * Either half may come from the environment or from what an admin saved on
- * /admin/settings — see `sheet-connection.ts` for the precedence.
+ * /admin/settings — see `sheet-connection.ts` for the precedence. Async
+ * because one of those layers is the request's own cookies.
  */
-export function isSheetConfigured(): boolean {
+export async function isSheetConfigured(): Promise<boolean> {
   return isConnectionConfigured();
 }
 
@@ -93,7 +97,7 @@ type ScriptResponse = {
  * intended flow, not an accident.
  */
 async function call(action: string, payload: Record<string, unknown> = {}): Promise<ScriptResponse> {
-  const { endpoint, secret } = requireConnection();
+  const { endpoint, secret } = await requireConnection();
 
   const response = await fetch(endpoint, {
     method: "POST",
@@ -185,13 +189,14 @@ function rowToLead(row: string[], columns: ColumnMap): Lead | null {
  * would affect every existing page, so it is left for later.)
  */
 export async function fetchLeads(): Promise<Lead[]> {
-  if (cache && Date.now() - cache.at < CACHE_TTL_MS) {
+  const { fingerprint } = await requireConnection();
+  if (cache && cache.key === fingerprint && Date.now() - cache.at < CACHE_TTL_MS) {
     return cache.leads;
   }
 
   const rows = (await call("list")).values ?? [];
   if (rows.length < 2) {
-    cache = { leads: [], at: Date.now() };
+    cache = { key: fingerprint, leads: [], at: Date.now() };
     return [];
   }
 
@@ -209,7 +214,7 @@ export async function fetchLeads(): Promise<Lead[]> {
     .map((row) => rowToLead(row, columns))
     .filter((lead): lead is Lead => lead !== null);
 
-  cache = { leads, at: Date.now() };
+  cache = { key: fingerprint, leads, at: Date.now() };
   return leads;
 }
 

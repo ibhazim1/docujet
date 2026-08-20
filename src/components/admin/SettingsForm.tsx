@@ -234,12 +234,16 @@ export default function SettingsForm({ initialSettings, connection }: SettingsFo
           .
         </p>
         <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs leading-6 text-amber-900">
-          This page saves itself through this connection, so it can&apos;t be stored in the sheet
-          like the fields above — it goes to a local{" "}
+          This page saves itself through this connection, so it can&apos;t live in the sheet like
+          the fields above. It goes to{" "}
           <code className="rounded bg-white px-1 py-0.5 font-mono">.docujet/connection.json</code>{" "}
-          instead, which needs a writable disk. A wrong value here breaks saving until it&apos;s
-          corrected, but this form keeps rendering either way; deleting that file falls back to
-          .env.
+          where the disk is writable, and to a secure cookie in this browser where it isn&apos;t
+          (Vercel and similar hosts mount the app read-only). A cookie-scoped connection makes
+          these admin pages work for you, but visitors carry no cookie — set{" "}
+          <code className="rounded bg-white px-1 py-0.5 font-mono">CRM_SHEET_ENDPOINT</code> /{" "}
+          <code className="rounded bg-white px-1 py-0.5 font-mono">CRM_SHEET_SECRET</code> when the
+          public site needs the sheet too. A wrong value breaks saving until it&apos;s corrected,
+          but this form keeps rendering either way.
         </div>
 
         <div className="mt-5 space-y-4">
@@ -250,7 +254,7 @@ export default function SettingsForm({ initialSettings, connection }: SettingsFo
                 <SourceBadge source={connection.endpointSource} />
               </span>
             }
-            caption="The /exec URL of the Apps Script web app deployment. Clear it to fall back to CRM_SHEET_ENDPOINT."
+            caption="The /exec URL of the Apps Script web app deployment. Clearing it falls back to CRM_SHEET_ENDPOINT."
           >
             <input
               name="sheetEndpoint"
@@ -301,11 +305,16 @@ function Field({
   );
 }
 
-/** Where the live value came from — .env, or a previous save on this page. */
+/** Which layer the live value came from — see sheet-connection.ts. */
+const sourceLabels: Record<ConnectionSource, string> = {
+  file: "Saved on server",
+  browser: "Saved in browser",
+  env: "From .env",
+  none: "Not configured",
+};
+
 function SourceBadge({ source }: { source: ConnectionSource }) {
-  const label =
-    source === "saved" ? "Saved here" : source === "env" ? "From .env" : "Not configured";
-  return <StatusBadge status={label} />;
+  return <StatusBadge status={sourceLabels[source]} />;
 }
 
 function SecretField({

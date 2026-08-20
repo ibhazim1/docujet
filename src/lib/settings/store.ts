@@ -19,20 +19,24 @@
  * throws.
  */
 
-import { isConnectionConfigured, requireConnection } from "../sheet-connection";
+import { isConnectionConfigured, requireConnection, resolveConnection } from "../sheet-connection";
 import { DEFAULT_SETTINGS } from "./defaults";
 import type { SiteSettings } from "./types";
 
 const CACHE_TTL_MS = 30_000;
 
-let cache: { settings: SiteSettings; at: number } | null = null;
+// Keyed by connection — see `ResolvedConnection.fingerprint`. Without this,
+// settings read through one admin's saved connection would be served to every
+// other visitor for the next 30 seconds.
+let cache: { key: string; settings: SiteSettings; at: number } | null = null;
 
 /**
- * True when both halves of the connection resolve — from the environment, or
- * from what an admin saved on the Settings page itself. That second source is
- * why this is not a plain `process.env` check; see `sheet-connection.ts`.
+ * True when both halves of the connection resolve — from the environment, from
+ * a file, or from what an admin saved on the Settings page itself. Those extra
+ * sources are why this is not a plain `process.env` check, and why it is
+ * async; see `sheet-connection.ts`.
  */
-export function isSettingsConfigured(): boolean {
+export async function isSettingsConfigured(): Promise<boolean> {
   return isConnectionConfigured();
 }
 
@@ -48,7 +52,7 @@ type ScriptResponse = {
 
 /** Calls the shared Apps Script web app. Same POST/redirect/parse shape as `sheets.ts`'s `call()`. */
 async function call(action: string, payload: Record<string, unknown> = {}): Promise<ScriptResponse> {
-  const { endpoint, secret } = requireConnection();
+  const { endpoint, secret } = await requireConnection();
 
   const response = await fetch(endpoint, {
     method: "POST",
@@ -139,18 +143,19 @@ function mergeEntries(rows: [string, string][]): SiteSettings {
  * `getSettingsSafe()` below is for callers that must not.
  */
 export async function getSettings(): Promise<SiteSettings> {
-  if (!isSettingsConfigured()) {
+  const { endpoint, secret, fingerprint } = await resolveConnection();
+  if (!endpoint || !secret) {
     return DEFAULT_SETTINGS;
   }
 
-  if (cache && Date.now() - cache.at < CACHE_TTL_MS) {
+  if (cache && cache.key === fingerprint && Date.now() - cache.at < CACHE_TTL_MS) {
     return cache.settings;
   }
 
   const rows = (await call("getSettings")).values ?? [];
   const settings = mergeEntries(rows);
 
-  cache = { settings, at: Date.now() };
+  cache = { key: fingerprint, settings, at: Date.now() };
   return settings;
 }
 

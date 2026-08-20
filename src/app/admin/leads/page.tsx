@@ -20,7 +20,7 @@ export default async function AdminLeadsPage() {
   let leads: Lead[] | null = null;
   let notice: string | null = null;
 
-  if (!isSheetConfigured()) {
+  if (!(await isSheetConfigured())) {
     notice =
       "No sheet endpoint and secret are configured — neither saved on the Settings page nor " +
       "set as CRM_SHEET_ENDPOINT / CRM_SHEET_SECRET in .env.";
