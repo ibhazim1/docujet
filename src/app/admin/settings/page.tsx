@@ -5,8 +5,9 @@ import SettingsForm from "@/components/admin/SettingsForm";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { integrationStatuses } from "@/lib/admin-mock-data";
 import { DEFAULT_SETTINGS } from "@/lib/settings/defaults";
-import { toSafeSettingsView } from "@/lib/settings/mask";
+import { toSafeConnectionView, toSafeSettingsView } from "@/lib/settings/mask";
 import { getSettings, isSettingsConfigured } from "@/lib/settings/store";
+import { resolveConnection } from "@/lib/sheet-connection";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -21,7 +22,9 @@ export default async function AdminSettingsPage() {
   let notice: string | null = null;
 
   if (!isSettingsConfigured()) {
-    notice = "CRM_SHEET_ENDPOINT and CRM_SHEET_SECRET are not set in .env.";
+    notice =
+      "No sheet endpoint and secret are configured — neither saved below nor set as " +
+      "CRM_SHEET_ENDPOINT / CRM_SHEET_SECRET in .env.";
   }
 
   // getSettings() already falls back to DEFAULT_SETTINGS with no network call
@@ -36,6 +39,7 @@ export default async function AdminSettingsPage() {
   }
 
   const safeSettings = toSafeSettingsView(settings);
+  const safeConnection = toSafeConnectionView(resolveConnection());
 
   return (
     <>
@@ -57,11 +61,13 @@ export default async function AdminSettingsPage() {
                 scripts/apps-script/Code.gs
               </code>
               . Settings shares that deployment and secret with Leads; it just needs its own
-              &quot;Settings&quot; tab in the same spreadsheet.
+              &quot;Settings&quot; tab in the same spreadsheet. Once it&apos;s deployed, fill in
+              the Sheet connection fields at the bottom of this form — or set the environment
+              variables — and everything here starts saving.
             </DemoNotice>
           ) : null}
 
-          <SettingsForm initialSettings={safeSettings} />
+          <SettingsForm initialSettings={safeSettings} connection={safeConnection} />
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

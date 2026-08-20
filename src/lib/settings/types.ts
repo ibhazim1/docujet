@@ -26,12 +26,13 @@ export type ChatConfig = {
 };
 
 /**
- * CRM_SHEET_ENDPOINT/CRM_SHEET_SECRET deliberately do NOT appear here.
+ * The sheet endpoint/secret pair deliberately does NOT appear here.
  *
- * Settings is itself persisted through that same Apps Script deployment (see
- * `store.ts`), so letting an admin "override" it from within Settings would
- * be circular — the value telling the app where settings live would itself
- * live inside settings. Those two stay env-var-only, exactly like today.
+ * It IS admin-editable — the Settings page has a "Sheet connection" section
+ * for it — but it cannot be *stored* here: `SiteSettings` is persisted through
+ * that very connection (see `store.ts`), so a value telling the app where
+ * settings live would itself live inside settings. It is kept in a local
+ * override file instead; see `../sheet-connection.ts`.
  */
 export type IntegrationSettings = {
   /** Secret-ish: a live workflow URL. Wins over N8N_CHAT_WEBHOOK_URL when set. */

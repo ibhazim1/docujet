@@ -12,13 +12,16 @@ import { useState, useTransition } from "react";
 import StatusBadge from "./StatusBadge";
 import { compactInputClassName, inputClassName, pillButtonClassName } from "./field-styles";
 import { updateSettingsAction, type SettingsActionResult } from "@/lib/settings/actions";
-import type { SafeSiteSettings } from "@/lib/settings/mask";
+import type { SafeSheetConnection, SafeSiteSettings } from "@/lib/settings/mask";
+import type { ConnectionSource } from "@/lib/sheet-connection";
 
 type SettingsFormProps = {
   initialSettings: SafeSiteSettings;
+  /** Not part of `initialSettings`: it is stored outside the sheet. See sheet-connection.ts. */
+  connection: SafeSheetConnection;
 };
 
-export default function SettingsForm({ initialSettings }: SettingsFormProps) {
+export default function SettingsForm({ initialSettings, connection }: SettingsFormProps) {
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<SettingsActionResult | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>(
@@ -214,12 +217,55 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
             name="plasmicApiToken"
             masked={initialSettings.integrations.plasmicApiToken}
           />
-          <p className="text-xs leading-5 text-slate-400">
-            The CRM sheet connection (endpoint/secret) isn&apos;t editable here — Settings itself
-            is stored through that same connection, so it stays env-var-only to avoid a
-            chicken-and-egg config problem. Change CRM_SHEET_ENDPOINT / CRM_SHEET_SECRET directly
-            if it ever needs to move.
-          </p>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+        <h2 className="text-xl font-semibold text-slate-950">Sheet connection</h2>
+        <p className="mt-2 text-sm leading-6 text-slate-600">
+          The Apps Script deployment behind both Leads and Settings. Saved here, these override{" "}
+          <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+            CRM_SHEET_ENDPOINT
+          </code>{" "}
+          /{" "}
+          <code className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs">
+            CRM_SHEET_SECRET
+          </code>
+          .
+        </p>
+        <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs leading-6 text-amber-900">
+          This page saves itself through this connection, so it can&apos;t be stored in the sheet
+          like the fields above — it goes to a local{" "}
+          <code className="rounded bg-white px-1 py-0.5 font-mono">.docujet/connection.json</code>{" "}
+          instead, which needs a writable disk. A wrong value here breaks saving until it&apos;s
+          corrected, but this form keeps rendering either way; deleting that file falls back to
+          .env.
+        </div>
+
+        <div className="mt-5 space-y-4">
+          <Field
+            label={
+              <span className="flex items-center gap-2">
+                Endpoint URL
+                <SourceBadge source={connection.endpointSource} />
+              </span>
+            }
+            caption="The /exec URL of the Apps Script web app deployment. Clear it to fall back to CRM_SHEET_ENDPOINT."
+          >
+            <input
+              name="sheetEndpoint"
+              defaultValue={connection.endpoint}
+              placeholder="https://script.google.com/macros/s/…/exec"
+              className={inputClassName}
+            />
+          </Field>
+          <SecretField
+            label="Shared secret"
+            name="sheetSecret"
+            masked={connection.secret}
+            caption="Must match SECRET in scripts/apps-script/Code.gs. Blank keeps the saved value; retyping the .env value un-saves the override."
+            badge={<SourceBadge source={connection.secretSource} />}
+          />
         </div>
       </section>
 
@@ -255,23 +301,33 @@ function Field({
   );
 }
 
+/** Where the live value came from — .env, or a previous save on this page. */
+function SourceBadge({ source }: { source: ConnectionSource }) {
+  const label =
+    source === "saved" ? "Saved here" : source === "env" ? "From .env" : "Not configured";
+  return <StatusBadge status={label} />;
+}
+
 function SecretField({
   label,
   name,
   masked,
   caption,
+  badge,
 }: {
   label: string;
   name: string;
   masked: { isSet: boolean; masked: string };
   caption?: string;
+  /** Replaces the default set/unset badge where a field has a more specific story to tell. */
+  badge?: React.ReactNode;
 }) {
   return (
     <Field
       label={
         <span className="flex items-center gap-2">
           {label}
-          <StatusBadge status={masked.isSet ? "Connected" : "Not configured"} />
+          {badge ?? <StatusBadge status={masked.isSet ? "Connected" : "Not configured"} />}
         </span>
       }
       caption={caption}

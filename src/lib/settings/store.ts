@@ -19,6 +19,7 @@
  * throws.
  */
 
+import { isConnectionConfigured, requireConnection } from "../sheet-connection";
 import { DEFAULT_SETTINGS } from "./defaults";
 import type { SiteSettings } from "./types";
 
@@ -26,22 +27,17 @@ const CACHE_TTL_MS = 30_000;
 
 let cache: { settings: SiteSettings; at: number } | null = null;
 
+/**
+ * True when both halves of the connection resolve — from the environment, or
+ * from what an admin saved on the Settings page itself. That second source is
+ * why this is not a plain `process.env` check; see `sheet-connection.ts`.
+ */
 export function isSettingsConfigured(): boolean {
-  return Boolean(process.env.CRM_SHEET_ENDPOINT && process.env.CRM_SHEET_SECRET);
+  return isConnectionConfigured();
 }
 
 export function settingsTab(): string {
   return process.env.SETTINGS_SHEET_TAB || "Settings";
-}
-
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(
-      `${name} is not set. See scripts/apps-script/Code.gs for the setup steps.`,
-    );
-  }
-  return value;
 }
 
 type ScriptResponse = {
@@ -52,8 +48,7 @@ type ScriptResponse = {
 
 /** Calls the shared Apps Script web app. Same POST/redirect/parse shape as `sheets.ts`'s `call()`. */
 async function call(action: string, payload: Record<string, unknown> = {}): Promise<ScriptResponse> {
-  const endpoint = requireEnv("CRM_SHEET_ENDPOINT");
-  const secret = requireEnv("CRM_SHEET_SECRET");
+  const { endpoint, secret } = requireConnection();
 
   const response = await fetch(endpoint, {
     method: "POST",
@@ -136,8 +131,8 @@ function mergeEntries(rows: [string, string][]): SiteSettings {
 /**
  * Reads site settings.
  *
- * Returns `DEFAULT_SETTINGS` directly, with no network call, when
- * `CRM_SHEET_ENDPOINT`/`CRM_SHEET_SECRET` aren't set — this is what makes the
+ * Returns `DEFAULT_SETTINGS` directly, with no network call, when no
+ * connection resolves (neither saved nor env) — this is what makes the
  * settings page (and everything reading it) fully testable with zero Google
  * Cloud setup. Configured-but-unreachable (wrong secret, deployment not yet
  * updated with the Settings actions, network failure, ...) still throws —

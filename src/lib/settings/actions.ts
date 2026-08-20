@@ -8,8 +8,9 @@
  */
 
 import { refresh, revalidatePath } from "next/cache";
+import { updateConnection } from "../sheet-connection";
 import { SECRET_KEYS } from "./types";
-import { updateSettings } from "./store";
+import { invalidateSettingsCache, updateSettings } from "./store";
 
 export type SettingsActionResult = {
   ok: boolean;
@@ -64,6 +65,28 @@ export async function updateSettingsAction(
     if (submitted !== "") {
       patch[`integrations.${key}`] = submitted;
     }
+  }
+
+  // The connection is saved first, and separately: it does not live in the
+  // sheet (see sheet-connection.ts), and the sheet write below is the very
+  // thing it decides the destination of. Saving it first is also what lets an
+  // admin repair a broken connection — the write that follows then either
+  // succeeds against the corrected endpoint, or fails with a message while the
+  // correction itself stays saved.
+  try {
+    updateConnection({
+      endpoint: str(formData, "sheetEndpoint"),
+      // Blank means "keep", exactly as for the secrets above.
+      secret: str(formData, "sheetSecret") || undefined,
+    });
+    // A different endpoint or secret is a different sheet; anything read from
+    // the old one is no longer the answer.
+    invalidateSettingsCache();
+  } catch (cause) {
+    return {
+      ok: false,
+      message: cause instanceof Error ? cause.message : "Could not save the sheet connection.",
+    };
   }
 
   try {

@@ -36,6 +36,7 @@
  * throws.
  */
 
+import { isConnectionConfigured, requireConnection } from "../sheet-connection";
 import { CANONICAL_HEADERS, coerceLost, resolveColumns } from "./columns";
 import type { ColumnMap } from "./columns";
 import { SAMPLE_LEADS } from "./sample-leads";
@@ -50,19 +51,15 @@ const CACHE_TTL_MS = 30_000;
 
 let cache: { leads: Lead[]; at: number } | null = null;
 
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(
-      `${name} is not set. See .env.example and scripts/apps-script/Code.gs for the setup steps.`,
-    );
-  }
-  return value;
-}
-
-/** True when the endpoint and secret are present. Lets the page degrade instead of crashing. */
+/**
+ * True when the endpoint and secret are present. Lets the page degrade instead
+ * of crashing.
+ *
+ * Either half may come from the environment or from what an admin saved on
+ * /admin/settings — see `sheet-connection.ts` for the precedence.
+ */
 export function isSheetConfigured(): boolean {
-  return Boolean(process.env.CRM_SHEET_ENDPOINT && process.env.CRM_SHEET_SECRET);
+  return isConnectionConfigured();
 }
 
 /**
@@ -96,8 +93,7 @@ type ScriptResponse = {
  * intended flow, not an accident.
  */
 async function call(action: string, payload: Record<string, unknown> = {}): Promise<ScriptResponse> {
-  const endpoint = requireEnv("CRM_SHEET_ENDPOINT");
-  const secret = requireEnv("CRM_SHEET_SECRET");
+  const { endpoint, secret } = requireConnection();
 
   const response = await fetch(endpoint, {
     method: "POST",

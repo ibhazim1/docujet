@@ -21,7 +21,9 @@ export default async function AdminLeadsPage() {
   let notice: string | null = null;
 
   if (!isSheetConfigured()) {
-    notice = "CRM_SHEET_ENDPOINT and CRM_SHEET_SECRET are not set in .env.";
+    notice =
+      "No sheet endpoint and secret are configured — neither saved on the Settings page nor " +
+      "set as CRM_SHEET_ENDPOINT / CRM_SHEET_SECRET in .env.";
   } else {
     try {
       leads = await fetchLeads();
@@ -49,7 +51,7 @@ export default async function AdminLeadsPage() {
             <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
               scripts/apps-script/Code.gs
             </code>
-            , then run{" "}
+            , enter the endpoint and secret under Sheet connection on the Settings page, then run{" "}
             <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
               npm run crm:seed
             </code>
