@@ -320,26 +320,14 @@ export default function ChatWidget({
                 Products, pricing direction, and bookings
               </p>
             </div>
-            <div className="-mr-1 -mt-1 flex items-start gap-1">
-              <button
-                type="button"
-                onClick={resetSession}
-                disabled={messages.length === 0}
-                aria-label="Start a new conversation"
-                title="Start a new conversation"
-                className="rounded-full p-2 text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-400"
-              >
-                <RefreshIcon className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                onClick={close}
-                aria-label="Close the assistant"
-                className="rounded-full p-2 text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-              >
-                <CloseIcon className="h-4 w-4" />
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={close}
+              aria-label="Close the assistant"
+              className="-mr-1 -mt-1 rounded-full p-2 text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+            >
+              <CloseIcon className="h-4 w-4" />
+            </button>
           </header>
 
           <div
@@ -399,6 +387,16 @@ export default function ChatWidget({
             className="border-t border-slate-200 bg-white p-3"
           >
             <div className="flex items-end gap-2">
+              <button
+                type="button"
+                onClick={resetSession}
+                disabled={messages.length === 0}
+                aria-label="Start a new conversation"
+                title="Start a new conversation"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-300 text-slate-500 transition hover:border-sky-700 hover:text-sky-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300"
+              >
+                <PlusIcon className="h-5 w-5" />
+              </button>
               <label htmlFor="docujet-chat-input" className="sr-only">
                 Your question
               </label>
@@ -511,7 +509,7 @@ function CloseIcon({ className }: { className?: string }) {
   );
 }
 
-function RefreshIcon({ className }: { className?: string }) {
+function PlusIcon({ className }: { className?: string }) {
   return (
     <svg
       className={className}
@@ -523,8 +521,7 @@ function RefreshIcon({ className }: { className?: string }) {
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d="M3 12a9 9 0 0 1 15.4-6.36M21 12a9 9 0 0 1-15.4 6.36" />
-      <path d="M17.5 3.5v4.5H13M6.5 20.5V16H11" />
+      <path d="M12 5v14M5 12h14" />
     </svg>
   );
 }
