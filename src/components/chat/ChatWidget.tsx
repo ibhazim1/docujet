@@ -187,6 +187,24 @@ export default function ChatWidget({
     setIsOpen(false);
   }, []);
 
+  /**
+   * Starts a clean conversation: a fresh session id so the workflow's memory
+   * node (if any) does not carry old context forward, and an empty transcript
+   * so the visitor sees a blank panel to match.
+   */
+  const resetSession = useCallback(() => {
+    sessionIdRef.current = newId();
+    try {
+      sessionStorage.setItem(SESSION_KEY, sessionIdRef.current);
+      sessionStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Private browsing, or storage disabled — the in-memory id still resets.
+    }
+    setMessages([]);
+    setInput("");
+    inputRef.current?.focus();
+  }, []);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -302,14 +320,26 @@ export default function ChatWidget({
                 Products, pricing direction, and bookings
               </p>
             </div>
-            <button
-              type="button"
-              onClick={close}
-              aria-label="Close the assistant"
-              className="-mr-1 -mt-1 rounded-full p-2 text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
-            >
-              <CloseIcon className="h-4 w-4" />
-            </button>
+            <div className="-mr-1 -mt-1 flex items-start gap-1">
+              <button
+                type="button"
+                onClick={resetSession}
+                disabled={messages.length === 0}
+                aria-label="Start a new conversation"
+                title="Start a new conversation"
+                className="rounded-full p-2 text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-slate-400"
+              >
+                <RefreshIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={close}
+                aria-label="Close the assistant"
+                className="rounded-full p-2 text-slate-400 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-200"
+              >
+                <CloseIcon className="h-4 w-4" />
+              </button>
+            </div>
           </header>
 
           <div
@@ -477,6 +507,24 @@ function CloseIcon({ className }: { className?: string }) {
       aria-hidden
     >
       <path d="M6 6l12 12M18 6L6 18" />
+    </svg>
+  );
+}
+
+function RefreshIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.8}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M3 12a9 9 0 0 1 15.4-6.36M21 12a9 9 0 0 1-15.4 6.36" />
+      <path d="M17.5 3.5v4.5H13M6.5 20.5V16H11" />
     </svg>
   );
 }
