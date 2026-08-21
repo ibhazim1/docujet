@@ -390,7 +390,7 @@ export default function ChatWidget({
               <button
                 type="button"
                 onClick={resetSession}
-                disabled={messages.length === 0}
+                disabled={messages.length === 0 || isPending}
                 aria-label="Start a new conversation"
                 title="Start a new conversation"
                 className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-300 text-slate-500 transition hover:border-sky-700 hover:text-sky-800 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-300"
