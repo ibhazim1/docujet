@@ -13,7 +13,7 @@ type PublicSiteFallbackProps = {
  * whatever a Plasmic editor has (or hasn't) authored.
  *
  * Uses `getSettingsSafe()`, not `getSettings()`: this is the composition
- * root for every non-Plasmic public page, so a broken Settings sheet must
+ * root for every non-Plasmic public page, so unreadable settings must
  * degrade to the default business info, never 500 the page.
  */
 export default async function PublicSiteFallback({

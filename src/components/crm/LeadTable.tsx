@@ -28,7 +28,7 @@ type LeadTableProps = {
  *
  * Every captured field is edited in place: click a value, type, press Enter.
  * Stage and source are closed sets and get controls; the rest are free text.
- * Only the id is fixed, because it is the row's identity in the sheet.
+ * Only the id is fixed, because it is the row's identity in the database.
  */
 export default function LeadTable({
   leads,

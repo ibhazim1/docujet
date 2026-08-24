@@ -39,7 +39,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // getSettingsSafe(), not getSettings(): the whole site renders through this
-  // layout, so a broken Settings sheet must degrade to defaults here, never
+  // layout, so unreadable settings must degrade to defaults here, never
   // 500 every page. Only the public-safe chat subset crosses into a Client
   // Component prop — settings also holds integration secrets, which must
   // never reach here.

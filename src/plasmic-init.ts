@@ -424,7 +424,7 @@ PLASMIC.registerComponent(LeadTracker, {
       defaultValue: true,
     },
     // Presentational only. Writes are blocked in the canvas regardless, because
-    // the sample rows the component falls back to are not in the sheet.
+    // the sample rows the component falls back to are not in the database.
     readOnly: {
       type: "boolean",
       defaultValue: false,

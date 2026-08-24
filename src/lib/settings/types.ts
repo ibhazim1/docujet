@@ -26,13 +26,11 @@ export type ChatConfig = {
 };
 
 /**
- * The sheet endpoint/secret pair deliberately does NOT appear here.
- *
- * It IS admin-editable — the Settings page has a "Sheet connection" section
- * for it — but it cannot be *stored* here: `SiteSettings` is persisted through
- * that very connection (see `store.ts`), so a value telling the app where
- * settings live would itself live inside settings. It is kept in a local
- * override file instead; see `../sheet-connection.ts`.
+ * The database connection deliberately does NOT appear here, and is not
+ * admin-editable at all: `SiteSettings` is persisted *through* it (see
+ * `store.ts`), so a value telling the app where settings live would itself
+ * live inside settings. `SUPABASE_URL` / `SUPABASE_SECRET_KEY` are environment
+ * variables and nothing else.
  */
 export type IntegrationSettings = {
   /** Secret-ish: a live workflow URL. Wins over N8N_CHAT_WEBHOOK_URL when set. */

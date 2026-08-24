@@ -8,9 +8,8 @@
  */
 
 import { refresh, revalidatePath } from "next/cache";
-import { updateConnection, type ConnectionSaveScope } from "../sheet-connection";
 import { SECRET_KEYS } from "./types";
-import { invalidateSettingsCache, updateSettings } from "./store";
+import { updateSettings } from "./store";
 
 export type SettingsActionResult = {
   ok: boolean;
@@ -67,35 +66,12 @@ export async function updateSettingsAction(
     }
   }
 
-  // The connection is saved first, and separately: it does not live in the
-  // sheet (see sheet-connection.ts), and the sheet write below is the very
-  // thing it decides the destination of. Saving it first is also what lets an
-  // admin repair a broken connection — the write that follows then either
-  // succeeds against the corrected endpoint, or fails with a message while the
-  // correction itself stays saved.
-  let connectionScope: ConnectionSaveScope;
-  try {
-    connectionScope = await updateConnection({
-      endpoint: str(formData, "sheetEndpoint"),
-      // Blank means "keep", exactly as for the secrets above.
-      secret: str(formData, "sheetSecret") || undefined,
-    });
-    // A different endpoint or secret is a different sheet; anything read from
-    // the old one is no longer the answer.
-    invalidateSettingsCache();
-  } catch (cause) {
-    return {
-      ok: false,
-      message: cause instanceof Error ? cause.message : "Could not save the sheet connection.",
-    };
-  }
-
   try {
     await updateSettings(patch);
   } catch (cause) {
     return {
       ok: false,
-      message: cause instanceof Error ? cause.message : "Could not write to the settings sheet.",
+      message: cause instanceof Error ? cause.message : "Could not save settings.",
     };
   }
 
@@ -104,17 +80,5 @@ export async function updateSettingsAction(
   // visitor-facing page must pick up the change, not just this admin session.
   revalidatePath("/", "layout");
 
-  // A browser-scoped connection is a materially weaker save than a file one —
-  // it works, but only here, and only until the cookie goes. Saying so is the
-  // difference between an admin knowing to set the env vars and finding out
-  // when a colleague sees sample data.
-  return {
-    ok: true,
-    message:
-      connectionScope === "browser"
-        ? "Settings saved. The sheet connection was stored in this browser only — the server's " +
-          "filesystem is read-only. Set CRM_SHEET_ENDPOINT / CRM_SHEET_SECRET to make it " +
-          "site-wide and survive a redeploy."
-        : "Settings saved.",
-  };
+  return { ok: true, message: "Settings saved." };
 }

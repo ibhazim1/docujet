@@ -46,10 +46,10 @@ export default function StageSelect({
       onChange={(event) => {
         const choice = event.target.value;
         // The control still renders and still looks live, but sample rows are
-        // not in the sheet, so nothing is written. The select snaps back on
+        // not in the database, so nothing is written. The select snaps back on
         // the next render because its value comes from the lead.
         if (isSample) {
-          onResult?.({ ok: false, message: "Preview data — connect the leads sheet to edit leads." });
+          onResult?.({ ok: false, message: "Preview data — connect the database to edit leads." });
           return;
         }
         startTransition(async () => {

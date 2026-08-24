@@ -3,11 +3,11 @@
  *
  * A verbatim transcription of `leads()` in `crm/lib/data.php`. It has two jobs:
  *
- *   1. `npm run crm:seed` writes these rows into the Google Sheet, which is the
- *      real database once seeded.
+ *   1. `npm run db:seed` writes these rows into the `crm_leads` table, which is
+ *      the real database once seeded.
  *   2. `LeadTracker` falls back to them when it is handed no leads — which is
  *      what happens in the Plasmic Studio canvas, where there is no server to
- *      read the sheet.
+ *      read the database.
  *
  * `chatTopic` / `cited` are set only for chatbot-sourced leads — the question
  * that triggered capture and the knowledge-base entries that answered it.

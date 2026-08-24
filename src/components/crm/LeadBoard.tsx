@@ -44,10 +44,10 @@ function CardActions({
   if (readOnly) return null;
 
   function run(action: () => Promise<StageActionResult>) {
-    // Sample rows are not in the sheet, so the buttons stay visible and
+    // Sample rows are not in the database, so the buttons stay visible and
     // clickable for preview but write nothing.
     if (isSample) {
-      onResult?.({ ok: false, message: "Preview data — connect the leads sheet to edit leads." });
+      onResult?.({ ok: false, message: "Preview data — connect the database to edit leads." });
       return;
     }
     startTransition(async () => {

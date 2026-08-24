@@ -8,7 +8,6 @@
 
 import { SECRET_KEYS } from "./types";
 import type { SiteSettings } from "./types";
-import type { ConnectionSource, ResolvedConnection } from "../sheet-connection";
 
 export type MaskedSecret = { isSet: boolean; masked: string };
 
@@ -44,31 +43,4 @@ export function toSafeSettingsView(settings: SiteSettings): SafeSiteSettings {
 
 export function isSecretKey(key: string): key is (typeof SECRET_KEYS)[number] {
   return (SECRET_KEYS as readonly string[]).includes(key);
-}
-
-/**
- * The sheet connection as the admin form may see it.
- *
- * The endpoint goes through in plaintext: it is a URL anyone could hold, which
- * is exactly why every request to it also carries the secret (see
- * `crm/sheets.ts`). The secret itself is masked like any other.
- *
- * `source` travels with each field so the form can say where the live value
- * came from — an admin needs to know whether they are looking at .env or at
- * something a previous save put on top of it.
- */
-export type SafeSheetConnection = {
-  endpoint: string;
-  endpointSource: ConnectionSource;
-  secret: MaskedSecret;
-  secretSource: ConnectionSource;
-};
-
-export function toSafeConnectionView(connection: ResolvedConnection): SafeSheetConnection {
-  return {
-    endpoint: connection.endpoint,
-    endpointSource: connection.endpointSource,
-    secret: maskSecret(connection.secret),
-    secretSource: connection.secretSource,
-  };
 }

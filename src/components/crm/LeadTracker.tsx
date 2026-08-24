@@ -39,7 +39,7 @@ export type LeadTrackerProps = {
    *
    * Purely presentational, and always honoured — including in the Plasmic
    * canvas, so the two looks can be compared there. Whether an edit can
-   * actually reach the sheet is a separate question; see `isSample` below.
+   * actually reach the database is a separate question; see `isSample` below.
    */
   readOnly?: boolean;
 };
@@ -68,13 +68,13 @@ export default function LeadTracker({
   const searchParams = useSearchParams();
   const [flash, setFlash] = useState<StageActionResult | null>(null);
 
-  // No `leads` prop means nobody read the sheet — the Plasmic Studio canvas,
+  // No `leads` prop means nobody read the database — the Plasmic Studio canvas,
   // or a bare render — so these rows are the bundled samples.
   //
   // This gates the *write*, not the *look*. `readOnly` still decides whether a
   // badge or a control renders, so a designer can preview either in Studio;
   // `isSample` stops the control from calling a Server Action against rows
-  // that aren't in the sheet, which would either write to the wrong place or,
+  // that aren't in the database, which would either write to the wrong place or,
   // with no endpoint in scope, throw on click.
   const isSample = leads === undefined;
   const allLeads = leads ?? SAMPLE_LEADS;

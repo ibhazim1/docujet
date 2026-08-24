@@ -1,5 +1,5 @@
 /**
- * The settings store's fallback — and, until a Settings sheet is deployed,
+ * The settings store's fallback — and, until the database is connected,
  * its only source of truth. Seeded from today's real hardcoded values so
  * turning this feature on changes nothing about what visitors see.
  *

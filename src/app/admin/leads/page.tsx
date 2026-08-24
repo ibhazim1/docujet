@@ -4,14 +4,15 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import DemoNotice from "@/components/admin/DemoNotice";
 import LeadTracker from "@/components/crm/LeadTracker";
 import { resolveToday } from "@/lib/crm/analytics";
-import { fetchLeads, isSheetConfigured } from "@/lib/crm/sheets";
+import { fetchLeads, isSupabaseConfigured } from "@/lib/crm/leads";
 import type { Lead } from "@/lib/crm/types";
 
 export const metadata: Metadata = {
   title: "Lead Tracker",
 };
 
-// The sheet is the database, so this page is always request-time fresh.
+// Leads change from under this page — another admin session, a direct edit in
+// the Supabase table editor — so it is always request-time fresh.
 export const dynamic = "force-dynamic";
 
 export default async function AdminLeadsPage() {
@@ -20,15 +21,15 @@ export default async function AdminLeadsPage() {
   let leads: Lead[] | null = null;
   let notice: string | null = null;
 
-  if (!(await isSheetConfigured())) {
+  if (!isSupabaseConfigured()) {
     notice =
-      "No sheet endpoint and secret are configured — neither saved on the Settings page nor " +
-      "set as CRM_SHEET_ENDPOINT / CRM_SHEET_SECRET in .env.";
+      "No Supabase project is configured — SUPABASE_URL and SUPABASE_SECRET_KEY are not set " +
+      "in .env.";
   } else {
     try {
       leads = await fetchLeads();
     } catch (cause) {
-      notice = cause instanceof Error ? cause.message : "Could not read the leads sheet.";
+      notice = cause instanceof Error ? cause.message : "Could not read the leads table.";
     }
   }
 
@@ -42,18 +43,25 @@ export default async function AdminLeadsPage() {
       <div className="space-y-6 p-5 md:p-8">
         {notice ? (
           <DemoNotice
-            title="Showing sample data — the leads sheet is not connected."
+            title="Showing sample data — the database is not connected."
             reason={notice}
           >
             Every view below works on the 46 seed leads. The stage controls still respond, but
-            nothing is saved — these rows exist in no sheet. Connect one by following the header
-            of{" "}
+            nothing is saved — these rows exist in no database. Apply{" "}
             <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
-              scripts/apps-script/Code.gs
-            </code>
-            , enter the endpoint and secret under Sheet connection on the Settings page, then run{" "}
+              supabase/migrations/0001_crm_leads_and_settings.sql
+            </code>{" "}
+            in the Supabase SQL Editor, set{" "}
+            <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">SUPABASE_URL</code>{" "}
+            and{" "}
             <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
-              npm run crm:seed
+              SUPABASE_SECRET_KEY
+            </code>{" "}
+            in{" "}
+            <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">.env</code>, then
+            run{" "}
+            <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
+              npm run db:seed
             </code>
             .
           </DemoNotice>

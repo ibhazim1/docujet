@@ -271,8 +271,14 @@ export const integrationStatuses: Array<{
     description: "Workflow automation can be connected later for alerts and follow-ups.",
   },
   {
+    // The only row here whose status is not fixed copy — the Settings page
+    // replaces it with the live answer, because a sidebar claiming the
+    // database is unwired next to a page reading from it is worse than no
+    // sidebar at all.
     name: "Supabase",
     status: "Not configured",
-    description: "Authentication and persistent admin data are not wired yet.",
+    description:
+      "Leads and site settings are stored in Postgres. Authentication is not wired up yet, " +
+      "so /admin is unprotected.",
   },
 ];

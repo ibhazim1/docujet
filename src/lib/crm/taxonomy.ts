@@ -2,9 +2,9 @@
  * The lifecycle and the channel list — the two vocabularies the whole tracker
  * is built on. Ported from `stages()` and `sources()` in `crm/lib/data.php`.
  *
- * These stay in code rather than in the leads sheet because they carry
+ * These stay in code rather than in the database because they carry
  * presentation (colour) and analysis (group) alongside their labels, and
- * because a stage key appearing in the sheet that is not defined here would
+ * because a stage key appearing in a row that is not defined here would
  * corrupt the funnel's suffix sums.
  */
 

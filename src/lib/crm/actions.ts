@@ -11,7 +11,7 @@
 
 import { refresh } from "next/cache";
 import { findLead } from "./analytics";
-import { fetchLeads, updateLeadFields, updateLeadStage } from "./sheets";
+import { fetchLeads, updateLeadFields, updateLeadStage } from "./leads";
 import { isStageKey, isTerminal, STAGES } from "./taxonomy";
 import type { EditableField, OpenStageKey } from "./types";
 
@@ -41,10 +41,10 @@ export async function setStageAction(
 
   try {
     // Read the lead as it currently stands. Closing or reopening has to
-    // preserve the stage it is on now, not the stage the sheet was seeded with.
+    // preserve the stage it is on now, not the stage the row was seeded with.
     const lead = findLead(await fetchLeads(), leadId);
     if (lead === null) {
-      return { ok: false, message: `${leadId} no longer exists in the sheet.` };
+      return { ok: false, message: `${leadId} no longer exists.` };
     }
 
     lost = isTerminal(choice);
@@ -55,11 +55,11 @@ export async function setStageAction(
       return { ok: false, message: `Could not find a row for ${leadId}.` };
     }
   } catch (cause) {
-    // A misconfigured or unreachable sheet must surface as a message next to
+    // A misconfigured or unreachable database must surface as a message next to
     // the control the user just touched, not as a 500 that loses the page.
     return {
       ok: false,
-      message: cause instanceof Error ? cause.message : "Could not write to the leads sheet.",
+      message: cause instanceof Error ? cause.message : "Could not save the lead.",
     };
   }
 
@@ -75,7 +75,7 @@ export async function setStageAction(
  *
  * Trimmed but otherwise unvalidated: a lead book is a working document, and a
  * half-typed phone number a rep means to come back to is more useful than a
- * rejected one. The sheet is the record of what was actually captured.
+ * rejected one. The database is the record of what was actually captured.
  */
 export async function updateLeadFieldAction(
   leadId: string,
@@ -87,13 +87,13 @@ export async function updateLeadFieldAction(
     if (written.length === 0) {
       return {
         ok: false,
-        message: `The sheet has no ${skipped.join(", ")} column, so there was nowhere to save that.`,
+        message: `${skipped.join(", ")} is not an editable field, so nothing was saved.`,
       };
     }
   } catch (cause) {
     return {
       ok: false,
-      message: cause instanceof Error ? cause.message : "Could not write to the leads sheet.",
+      message: cause instanceof Error ? cause.message : "Could not save the lead.",
     };
   }
 
@@ -109,11 +109,11 @@ export async function reopenAction(leadId: string): Promise<StageActionResult> {
   } catch (cause) {
     return {
       ok: false,
-      message: cause instanceof Error ? cause.message : "Could not read the leads sheet.",
+      message: cause instanceof Error ? cause.message : "Could not read the leads table.",
     };
   }
   if (lead === null) {
-    return { ok: false, message: `${leadId} no longer exists in the sheet.` };
+    return { ok: false, message: `${leadId} no longer exists.` };
   }
   return setStageAction(leadId, lead.stage);
 }

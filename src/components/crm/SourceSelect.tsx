@@ -43,7 +43,7 @@ export default function SourceSelect({
         if (isSample) {
           onResult?.({
             ok: false,
-            message: "Preview data — connect the leads sheet to edit leads.",
+            message: "Preview data — connect the database to edit leads.",
           });
           return;
         }

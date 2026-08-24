@@ -5,41 +5,47 @@ import SettingsForm from "@/components/admin/SettingsForm";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { integrationStatuses } from "@/lib/admin-mock-data";
 import { DEFAULT_SETTINGS } from "@/lib/settings/defaults";
-import { toSafeConnectionView, toSafeSettingsView } from "@/lib/settings/mask";
+import { toSafeSettingsView } from "@/lib/settings/mask";
 import { getSettings, isSettingsConfigured } from "@/lib/settings/store";
-import { resolveConnection } from "@/lib/sheet-connection";
 
 export const metadata: Metadata = {
   title: "Settings",
 };
 
-// Settings can change between requests (another admin session, a direct
-// sheet edit), so this page is always request-time fresh — same reasoning as
-// admin/leads/page.tsx.
+// Settings can change between requests (another admin session, a direct edit
+// in the Supabase table editor), so this page is always request-time fresh —
+// same reasoning as admin/leads/page.tsx.
 export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
   let notice: string | null = null;
 
-  if (!(await isSettingsConfigured())) {
+  if (!isSettingsConfigured()) {
     notice =
-      "No sheet endpoint and secret are configured — neither saved below nor set as " +
-      "CRM_SHEET_ENDPOINT / CRM_SHEET_SECRET in .env.";
+      "No Supabase project is configured — SUPABASE_URL and SUPABASE_SECRET_KEY are not set " +
+      "in .env.";
   }
 
   // getSettings() already falls back to DEFAULT_SETTINGS with no network call
-  // when unconfigured, so a throw here only happens when the sheet IS
-  // configured but unreachable — fall back to defaults so the form still
-  // renders rather than the whole page failing.
+  // when unconfigured, so a throw here only happens when Supabase IS configured
+  // but unreachable — fall back to defaults so the form still renders rather
+  // than the whole page failing.
   let settings = DEFAULT_SETTINGS;
   try {
     settings = await getSettings();
   } catch (cause) {
-    notice = cause instanceof Error ? cause.message : "Could not read the settings sheet.";
+    notice = cause instanceof Error ? cause.message : "Could not read settings.";
   }
 
   const safeSettings = toSafeSettingsView(settings);
-  const safeConnection = toSafeConnectionView(await resolveConnection());
+
+  // The rest of the sidebar is fixed copy, but the database is the one thing
+  // this page can actually answer for, so it answers.
+  const integrations = integrationStatuses.map((integration) =>
+    integration.name === "Supabase"
+      ? { ...integration, status: notice === null ? ("Connected" as const) : integration.status }
+      : integration,
+  );
 
   return (
     <>
@@ -52,22 +58,29 @@ export default async function AdminSettingsPage() {
         <div className="space-y-6">
           {notice ? (
             <DemoNotice
-              title="Showing default values — the settings sheet is not connected."
+              title="Showing default values — the database is not connected."
               reason={notice}
             >
-              Nothing you edit here will be saved until the same Apps Script deployment the CRM
-              uses is set up — see{" "}
+              Nothing you edit here will be saved until Supabase is set up. Apply{" "}
               <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
-                scripts/apps-script/Code.gs
-              </code>
-              . Settings shares that deployment and secret with Leads; it just needs its own
-              &quot;Settings&quot; tab in the same spreadsheet. Once it&apos;s deployed, fill in
-              the Sheet connection fields at the bottom of this form — or set the environment
-              variables — and everything here starts saving.
+                supabase/migrations/0001_crm_leads_and_settings.sql
+              </code>{" "}
+              in the SQL Editor, then set{" "}
+              <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">SUPABASE_URL</code>{" "}
+              and{" "}
+              <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
+                SUPABASE_SECRET_KEY
+              </code>{" "}
+              in{" "}
+              <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">.env</code> — see{" "}
+              <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">.env.example</code>
+              . Settings shares the database with Leads; it just uses its own{" "}
+              <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">app_settings</code>{" "}
+              table.
             </DemoNotice>
           ) : null}
 
-          <SettingsForm initialSettings={safeSettings} connection={safeConnection} />
+          <SettingsForm initialSettings={safeSettings} />
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -76,7 +89,7 @@ export default async function AdminSettingsPage() {
             A read-only summary of what&apos;s wired up. Edit the values in Integrations.
           </p>
           <div className="mt-5 space-y-4">
-            {integrationStatuses.map((integration) => (
+            {integrations.map((integration) => (
               <article
                 key={integration.name}
                 className="rounded-2xl border border-slate-200 bg-slate-50 p-4"

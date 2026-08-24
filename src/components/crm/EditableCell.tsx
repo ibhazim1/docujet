@@ -28,11 +28,11 @@ type EditableCellProps = {
  * is not written, so tabbing through a row costs nothing.
  *
  * While a save is in flight the typed text is shown rather than the server's,
- * because the round-trip goes to a spreadsheet and can take a second. That
+ * because the round-trip goes to the database and can take a moment. That
  * override is a single piece of state layered over the prop — not a mirror of
  * it — so once the write lands and the page refreshes, clearing the override
  * reveals the server's own value. A rejected write clears it too, which snaps
- * the cell back to what the sheet still holds.
+ * the cell back to what the database still holds.
  */
 export default function EditableCell({
   leadId,
@@ -61,7 +61,7 @@ export default function EditableCell({
     if (isSample) {
       onResult?.({
         ok: false,
-        message: "Preview data — connect the leads sheet to edit leads.",
+        message: "Preview data — connect the database to edit leads.",
       });
       return;
     }

@@ -114,19 +114,3 @@ export type EditableField =
   | "source"
   | "interest"
   | "notes";
-
-/** The sheet columns a lead is assembled from. See `columns.ts`. */
-export type LeadField =
-  | "id"
-  | "name"
-  | "title"
-  | "email"
-  | "phone"
-  | "source"
-  | "stage"
-  | "created_at"
-  | "interest"
-  | "chat_topic"
-  | "cited"
-  | "notes"
-  | "lost";
