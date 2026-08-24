@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdminShell from "@/components/admin/AdminShell";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminTable from "@/components/admin/AdminTable";
 import SearchInput from "@/components/admin/SearchInput";
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function AdminLeadsPage() {
   return (
-    <>
+    <AdminShell>
       <AdminHeader
         title="Leads"
         description="Track mock lead entries, statuses, and next-step actions for the admin UI."
@@ -85,7 +86,7 @@ export default function AdminLeadsPage() {
           </table>
         </AdminTable>
       </div>
-    </>
+    </AdminShell>
   );
 }
 

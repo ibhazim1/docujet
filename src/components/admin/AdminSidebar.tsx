@@ -5,14 +5,18 @@ import { usePathname } from "next/navigation";
 import { adminNavItems } from "@/lib/admin-mock-data";
 
 type AdminSidebarProps = {
+  className?: string;
   onNavigate?: () => void;
 };
 
-export default function AdminSidebar({ onNavigate }: AdminSidebarProps) {
+export default function AdminSidebar({
+  className,
+  onNavigate,
+}: AdminSidebarProps) {
   const pathname = usePathname();
 
   return (
-    <div className="flex h-full flex-col">
+    <div className={`flex h-full flex-col ${className ?? ""}`}>
       <div className="border-b border-slate-200 px-6 py-6">
         <Link href="/admin" className="text-2xl font-semibold tracking-tight text-slate-950">
           DocuJet

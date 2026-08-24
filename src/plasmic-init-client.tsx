@@ -3,6 +3,7 @@
 import { PLASMIC } from "./plasmic-init";
 import ServiceCard from "./components/ServiceCard";
 import Navbar from "./components/Navbar";
+import AdminSidebar from "./components/admin/AdminSidebar";
 import Hero from "./components/Hero";
 import ServicesSection from "./components/ServicesSection";
 import CallToAction from "./components/CallToAction";
@@ -43,6 +44,16 @@ PLASMIC.registerComponent(ServiceCard, {
 PLASMIC.registerComponent(Navbar, {
   name: "Navbar",
   displayName: "Navbar",
+  props: {
+    className: {
+      type: "class",
+    },
+  },
+});
+
+PLASMIC.registerComponent(AdminSidebar, {
+  name: "AdminSidebar",
+  displayName: "Admin Sidebar",
   props: {
     className: {
       type: "class",
@@ -381,5 +392,18 @@ PLASMIC.registerComponent(ContactPage, {
 PLASMIC.registerComponent(LoginPage, {
   name: "LoginPage",
   displayName: "DocuJet Login Page",
-  props: {},
+  props: {
+    className: {
+      type: "class",
+    },
+    shellClassName: {
+      type: "class",
+    },
+    leftPanelClassName: {
+      type: "class",
+    },
+    rightPanelClassName: {
+      type: "class",
+    },
+  },
 });

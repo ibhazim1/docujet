@@ -1,15 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-export default function LoginPage() {
+type LoginPageProps = {
+  className?: string;
+  shellClassName?: string;
+  leftPanelClassName?: string;
+  rightPanelClassName?: string;
+};
+
+export default function LoginPage({
+  className,
+  shellClassName,
+  leftPanelClassName,
+  rightPanelClassName,
+}: LoginPageProps) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSigningIn(true);
+    setErrorMessage(null);
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setErrorMessage(error.message);
+      setIsSigningIn(false);
+      return;
+    }
+
+    router.replace("/admin");
+    router.refresh();
+  }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 px-6 py-16">
-      <section className="grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_80px_-50px_rgba(15,23,42,0.35)] lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="bg-slate-950 px-8 py-10 text-white md:px-10 md:py-12">
+    <main
+      className={`flex min-h-screen items-center justify-center bg-slate-100 px-6 py-16 ${className ?? ""}`}
+    >
+      <section
+        className={`grid w-full max-w-5xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_80px_-50px_rgba(15,23,42,0.35)] lg:grid-cols-[0.95fr_1.05fr] ${shellClassName ?? ""}`}
+      >
+        <div
+          className={`bg-slate-950 px-8 py-10 text-white md:px-10 md:py-12 ${leftPanelClassName ?? ""}`}
+        >
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-200">
             DocuJet
           </p>
@@ -32,15 +78,17 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <div className="px-8 py-10 md:px-10 md:py-12">
+        <div className={`px-8 py-10 md:px-10 md:py-12 ${rightPanelClassName ?? ""}`}>
           <p className="text-sm font-medium text-slate-500">
-            Staff sign-in preview
+            Staff sign-in
           </p>
-          <form className="mt-6 space-y-5">
+          <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
             <Field label="Email Address" htmlFor="login-email">
               <input
                 id="login-email"
                 type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
                 className={inputClassName}
                 placeholder="name@company.com"
               />
@@ -51,6 +99,8 @@ export default function LoginPage() {
                 <input
                   id="login-password"
                   type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                   className={`${inputClassName} pr-20`}
                   placeholder="Enter your password"
                 />
@@ -74,21 +124,31 @@ export default function LoginPage() {
               </span>
             </div>
 
-            <div
-              className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
-              role="status"
-              aria-live="polite"
-            >
-              Authentication is currently disabled for preview use. Click Sign In
-              to open the admin dashboard.
-            </div>
+            {errorMessage ? (
+              <div
+                className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900"
+                role="alert"
+              >
+                {errorMessage}
+              </div>
+            ) : (
+              <div
+                className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-900"
+                role="status"
+                aria-live="polite"
+              >
+                Admin access is invite-only. Use a Supabase-issued staff
+                account to continue.
+              </div>
+            )}
 
-            <Link
-              href="/admin"
+            <button
+              type="submit"
+              disabled={isSigningIn}
               className="inline-flex w-full items-center justify-center rounded-full bg-sky-800 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sky-900"
             >
-              Sign In
-            </Link>
+              {isSigningIn ? "Signing in..." : "Sign In"}
+            </button>
           </form>
         </div>
       </section>

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import AdminShell from "@/components/admin/AdminShell";
 
 export const metadata: Metadata = {
   title: {
@@ -14,6 +13,7 @@ export default function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // TODO: Protect /admin/* with Supabase Auth and server-side session checks.
-  return <AdminShell>{children}</AdminShell>;
+  // Route protection happens in src/proxy.ts so protected pages never render
+  // without a valid Supabase session.
+  return children;
 }

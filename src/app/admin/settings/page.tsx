@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdminShell from "@/components/admin/AdminShell";
 import AdminHeader from "@/components/admin/AdminHeader";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { integrationStatuses } from "@/lib/admin-mock-data";
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 
 export default function AdminSettingsPage() {
   return (
-    <>
+    <AdminShell>
       <AdminHeader
         title="Settings"
         description="Business details, notification preferences, and planned integrations."
@@ -94,7 +95,7 @@ export default function AdminSettingsPage() {
           </div>
         </section>
       </div>
-    </>
+    </AdminShell>
   );
 }
 
