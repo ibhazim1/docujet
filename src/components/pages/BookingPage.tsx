@@ -41,13 +41,12 @@ export default function BookingPage({
                 discuss, and your preferred timing.
               </p>
               <p>
-                This frontend is intentionally structured so it can later be
-                connected to Xano or another no-code backend without changing
-                the form experience.
+                Booking requests are saved to Supabase, so the form keeps its
+                same experience while connecting directly to the database.
               </p>
               <p>
-                No live backend is connected yet, so submission currently shows
-                a clearly labeled demo result.
+                You still get the same clean frontend, but now the submission
+                creates a real appointment record.
               </p>
             </div>
           </div>

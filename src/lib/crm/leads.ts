@@ -13,12 +13,12 @@
  * the mapping.
  *
  * ---------------------------------------------------------------------------
- * Server-side only, via `supabase()` — see `src/lib/supabase/server.ts` for why
+ * Server-side only, via `supabase()` — see `src/lib/supabase/service.ts` for why
  * there is no `server-only` marker.
  * ---------------------------------------------------------------------------
  */
 
-import { supabase } from "../supabase/server";
+import { supabase } from "../supabase/service";
 import { SAMPLE_LEADS } from "./sample-leads";
 import { isOpenStageKey, isSourceKey } from "./taxonomy";
 import type { EditableField, Lead, OpenStageKey, SourceKey } from "./types";
@@ -66,7 +66,7 @@ const EDITABLE_COLUMNS: Record<EditableField, string> = {
  * True when a Supabase project is configured. Lets the page degrade instead of
  * crashing.
  */
-export { isSupabaseConfigured } from "../supabase/server";
+export { isSupabaseConfigured } from "../supabase/service";
 
 // ---------------------------------------------------------------------------
 // Reading

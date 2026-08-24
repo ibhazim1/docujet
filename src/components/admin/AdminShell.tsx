@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import AdminSidebar from "./AdminSidebar";
+import LogoutButton from "./LogoutButton";
 
 type AdminShellProps = {
   children: React.ReactNode;
@@ -29,12 +30,7 @@ export default function AdminShell({ children }: AdminShellProps) {
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-sky-800">
               DocuJet Admin
             </p>
-            <button
-              type="button"
-              className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
-            >
-              Logout
-            </button>
+            <LogoutButton className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700" />
           </div>
 
           {children}

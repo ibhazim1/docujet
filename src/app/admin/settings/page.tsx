@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdminShell from "@/components/admin/AdminShell";
 import AdminHeader from "@/components/admin/AdminHeader";
 import DemoNotice from "@/components/admin/DemoNotice";
 import SettingsForm from "@/components/admin/SettingsForm";
@@ -48,7 +49,7 @@ export default async function AdminSettingsPage() {
   );
 
   return (
-    <>
+    <AdminShell>
       <AdminHeader
         title="Settings"
         description="Business details, chat assistant configuration, and integrations."
@@ -132,6 +133,6 @@ export default async function AdminSettingsPage() {
           </div>
         </section>
       </div>
-    </>
+    </AdminShell>
   );
 }

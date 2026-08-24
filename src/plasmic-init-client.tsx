@@ -3,6 +3,7 @@
 import { PLASMIC } from "./plasmic-init";
 import ServiceCard from "./components/ServiceCard";
 import Navbar from "./components/Navbar";
+import AdminSidebar from "./components/admin/AdminSidebar";
 import Hero from "./components/Hero";
 import ServicesSection from "./components/ServicesSection";
 import CallToAction from "./components/CallToAction";
@@ -12,6 +13,7 @@ import ServicesPage from "./components/pages/ServicesPage";
 import BookingPage from "./components/pages/BookingPage";
 import FAQPage from "./components/pages/FAQPage";
 import ContactPage from "./components/pages/ContactPage";
+import LoginPage from "./components/pages/LoginPage";
 import LeadTracker from "./components/crm/LeadTracker";
 import { faqItems, serviceItems } from "./lib/site-data";
 
@@ -44,6 +46,16 @@ PLASMIC.registerComponent(ServiceCard, {
 PLASMIC.registerComponent(Navbar, {
   name: "Navbar",
   displayName: "Navbar",
+  props: {
+    className: {
+      type: "class",
+    },
+  },
+});
+
+PLASMIC.registerComponent(AdminSidebar, {
+  name: "AdminSidebar",
+  displayName: "Admin Sidebar",
   props: {
     className: {
       type: "class",
@@ -411,7 +423,24 @@ PLASMIC.registerComponent(ContactPage, {
   },
 });
 
-PLASMIC.registerComponent(LeadTracker, {
+PLASMIC.registerComponent(LoginPage, {
+  name: "LoginPage",
+  displayName: "DocuJet Login Page",
+  props: {
+    className: {
+      type: "class",
+    },
+    shellClassName: {
+      type: "class",
+    },
+    leftPanelClassName: {
+      type: "class",
+    },
+    rightPanelClassName: {
+      type: "class",
+    },
+  },
+});PLASMIC.registerComponent(LeadTracker, {
   name: "LeadTracker",
   displayName: "CRM Lead Tracker",
   props: {

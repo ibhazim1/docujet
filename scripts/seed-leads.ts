@@ -4,7 +4,7 @@
  *   npm run db:seed            -- refuses if the table already has rows
  *   npm run db:seed -- --force -- upsert over whatever is there
  *
- * Runs outside Next, which is why `src/lib/supabase/server.ts` and
+ * Runs outside Next, which is why `src/lib/supabase/service.ts` and
  * `src/lib/crm/leads.ts` carry no `server-only` marker — that marker throws
  * here. Run through `tsx` rather than Node's own type stripping: Node loads
  * this as ESM and so demands a file extension on every specifier in the whole
@@ -17,7 +17,7 @@
 
 import { countLeads, seedLeads } from "../src/lib/crm/leads";
 import { SAMPLE_LEADS } from "../src/lib/crm/sample-leads";
-import { isSupabaseConfigured } from "../src/lib/supabase/server";
+import { isSupabaseConfigured } from "../src/lib/supabase/service";
 
 async function main(): Promise<void> {
   if (!isSupabaseConfigured()) {

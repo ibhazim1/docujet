@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { bookingProducts, bookingTypes } from "@/lib/site-data";
+import { createClient } from "@/lib/supabase/client";
 
 type FormValues = {
   fullName: string;
@@ -16,6 +17,10 @@ type FormValues = {
 };
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
+
+const timeSlotStart = "09:00";
+const timeSlotEnd = "17:30";
+const timeSlotStepMinutes = 30;
 
 const initialValues: FormValues = {
   fullName: "",
@@ -56,32 +61,138 @@ function validate(values: FormValues): FormErrors {
   return errors;
 }
 
+function buildTimeSlots(
+  start: string,
+  end: string,
+  stepMinutes: number,
+) {
+  const slots: string[] = [];
+  const [startHour, startMinute] = start.split(":").map(Number);
+  const [endHour, endMinute] = end.split(":").map(Number);
+  let currentMinutes = startHour * 60 + startMinute;
+  const endMinutes = endHour * 60 + endMinute;
+
+  while (currentMinutes <= endMinutes) {
+    const hours = Math.floor(currentMinutes / 60);
+    const minutes = currentMinutes % 60;
+    slots.push(
+      `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`,
+    );
+    currentMinutes += stepMinutes;
+  }
+
+  return slots;
+}
+
 export default function BookingForm() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const timeSlots = useMemo(
+    () => buildTimeSlots(timeSlotStart, timeSlotEnd, timeSlotStepMinutes),
+    [],
+  );
+
+  useEffect(() => {
+    if (!values.preferredDate) {
+      return;
+    }
+
+    let active = true;
+
+    async function loadBookedSlots() {
+      setIsLoadingSlots(true);
+
+      const supabase = createClient();
+      const { data, error } = await supabase.rpc("get_booked_time_slots", {
+        p_date: values.preferredDate,
+      });
+
+      if (!active) {
+        return;
+      }
+
+      setIsLoadingSlots(false);
+
+      if (error) {
+        setBookedSlots([]);
+        setSubmitError(error.message);
+        return;
+      }
+
+      setBookedSlots(
+        (data ?? []).map((slot: { preferred_time: string }) =>
+          String(slot.preferred_time).slice(0, 5),
+        ),
+      );
+      setSubmitError(null);
+    }
+
+    loadBookedSlots();
+
+    return () => {
+      active = false;
+    };
+  }, [values.preferredDate]);
 
   function updateField<Key extends keyof FormValues>(
     field: Key,
     value: FormValues[Key],
   ) {
-    setValues((current) => ({ ...current, [field]: value }));
+    setValues((current) => {
+      const next = { ...current, [field]: value };
+
+      if (field === "preferredDate") {
+        next.preferredTime = "";
+        setBookedSlots([]);
+      }
+
+      return next;
+    });
     setErrors((current) => ({ ...current, [field]: undefined }));
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const nextErrors = validate(values);
     setErrors(nextErrors);
     setSubmitted(false);
+    setSubmitError(null);
 
     if (Object.keys(nextErrors).length > 0) {
       return;
     }
 
+    setIsSubmitting(true);
+
+    const supabase = createClient();
+    const { error } = await supabase.rpc("create_booking", {
+      p_full_name: values.fullName,
+      p_company_name: values.companyName,
+      p_email: values.email,
+      p_phone: values.phoneNumber,
+      p_product_interest: values.productOfInterest,
+      p_appointment_type: values.appointmentType,
+      p_preferred_date: values.preferredDate,
+      p_preferred_time: values.preferredTime,
+      p_additional_notes: values.additionalNotes,
+    });
+
+    setIsSubmitting(false);
+
+    if (error) {
+      setSubmitError(error.message);
+      return;
+    }
+
+    setValues(initialValues);
     setSubmitted(true);
   }
 
@@ -213,21 +324,82 @@ export default function BookingForm() {
             />
           }
         />
+      </div>
+
+      <div className="mt-5">
         <Field
           label="Preferred Time"
           htmlFor="preferredTime"
           error={errors.preferredTime}
           input={
-            <input
-              id="preferredTime"
-              name="preferredTime"
-              type="time"
-              value={values.preferredTime}
-              onChange={(event) =>
-                updateField("preferredTime", event.target.value)
-              }
-              className={inputClassName}
-            />
+            <div className="space-y-4">
+              <input
+                id="preferredTime"
+                name="preferredTime"
+                type="hidden"
+                value={values.preferredTime}
+                readOnly
+              />
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                {values.preferredDate ? (
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <p className="text-sm font-medium text-slate-700">
+                      Select a 30-minute slot
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Booked slots are greyed out
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-500">
+                    Choose a date first to see available time slots.
+                  </p>
+                )}
+
+                {values.preferredDate ? (
+                  isLoadingSlots ? (
+                    <p className="text-sm text-slate-500">Checking availability...</p>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+                      {timeSlots.map((slot) => {
+                        const isBooked = bookedSlots.includes(slot);
+                        const isSelected = values.preferredTime === slot;
+
+                        return (
+                          <button
+                            key={slot}
+                            type="button"
+                            disabled={isBooked}
+                            onClick={() => updateField("preferredTime", slot)}
+                            className={`rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+                              isBooked
+                                ? "cursor-not-allowed border-slate-200 bg-slate-200 text-slate-400 opacity-80"
+                                : isSelected
+                                  ? "border-sky-800 bg-sky-800 text-white"
+                                  : "border-slate-300 bg-white text-slate-700 hover:border-sky-700 hover:text-sky-900"
+                            }`}
+                            aria-pressed={isSelected}
+                            aria-disabled={isBooked}
+                            title={isBooked ? "Already booked" : `Select ${slot}`}
+                          >
+                            {isBooked ? (
+                              <span className="flex flex-col items-center gap-1">
+                                <span>{slot}</span>
+                                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                  Booked
+                                </span>
+                              </span>
+                            ) : (
+                              slot
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )
+                ) : null}
+              </div>
+            </div>
           }
         />
       </div>
@@ -253,21 +425,27 @@ export default function BookingForm() {
 
       <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-xl text-sm leading-6 text-slate-500">
-          This booking form is ready for frontend use and can be connected to a
-          no-code backend or API later without changing the user-facing
-          structure.
+          The form sends appointment requests straight to Supabase while
+          keeping the same user-facing experience.
         </p>
         <button
           type="submit"
+          disabled={isSubmitting}
           className="inline-flex items-center justify-center rounded-full bg-sky-800 px-6 py-3 text-sm font-semibold text-white transition hover:bg-sky-900"
         >
-          Submit Appointment Request
+          {isSubmitting ? "Submitting..." : "Submit Appointment Request"}
         </button>
       </div>
 
+      {submitError ? (
+        <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
+          {submitError}
+        </div>
+      ) : null}
+
       {submitted ? (
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          Demo form submitted. Backend integration pending.
+          Appointment request submitted successfully.
         </div>
       ) : null}
     </form>

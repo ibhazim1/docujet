@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdminShell from "@/components/admin/AdminShell";
 import { Suspense } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
 import DemoNotice from "@/components/admin/DemoNotice";
@@ -34,7 +35,7 @@ export default async function AdminLeadsPage() {
   }
 
   return (
-    <>
+    <AdminShell>
       <AdminHeader
         title="Lead Tracker"
         description="Which channels produce leads, and which of those leads are worth anything."
@@ -78,6 +79,6 @@ export default async function AdminLeadsPage() {
           )}
         </Suspense>
       </div>
-    </>
+    </AdminShell>
   );
 }

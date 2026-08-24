@@ -1,3 +1,5 @@
+import LogoutButton from "./LogoutButton";
+
 type AdminHeaderProps = {
   title: string;
   description: string;
@@ -21,14 +23,12 @@ export default function AdminHeader({
       <div className="flex w-full flex-col gap-3 self-start sm:w-auto sm:flex-row sm:items-center md:self-auto">
         <div className="rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-600">
           <p className="font-medium text-slate-950">Admin Profile</p>
-          <p>Placeholder staff account</p>
+          <p>Supabase authenticated staff account</p>
         </div>
-        <button
-          type="button"
+        <LogoutButton
+          label="Logout"
           className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:self-auto"
-        >
-          Logout
-        </button>
+        />
       </div>
     </header>
   );

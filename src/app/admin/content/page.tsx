@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdminShell from "@/components/admin/AdminShell";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { contentCards } from "@/lib/admin-mock-data";
 
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function AdminContentPage() {
   return (
-    <>
+    <AdminShell>
       <AdminHeader
         title="Website Content"
         description="Content management guidance for Plasmic-maintained public pages."
@@ -60,6 +61,6 @@ export default function AdminContentPage() {
           ))}
         </section>
       </div>
-    </>
+    </AdminShell>
   );
 }

@@ -10,7 +10,7 @@
  * configured-or-degrade rule, and its reasoning about the `server-only` marker.
  */
 
-import { isSupabaseConfigured, supabase } from "../supabase/server";
+import { isSupabaseConfigured, supabase } from "../supabase/service";
 import { DEFAULT_SETTINGS } from "./defaults";
 import type { SiteSettings } from "./types";
 

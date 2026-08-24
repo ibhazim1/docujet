@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import AdminShell from "@/components/admin/AdminShell";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AdminTable from "@/components/admin/AdminTable";
 import SearchInput from "@/components/admin/SearchInput";
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function AdminServicesPage() {
   return (
-    <>
+    <AdminShell>
       <AdminHeader
         title="Services"
         description="Manage service listings and status labels in a frontend-only admin view."
@@ -73,6 +74,6 @@ export default function AdminServicesPage() {
           </table>
         </AdminTable>
       </div>
-    </>
+    </AdminShell>
   );
 }
