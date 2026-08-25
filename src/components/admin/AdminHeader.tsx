@@ -3,17 +3,24 @@ import LogoutButton from "./LogoutButton";
 type AdminHeaderProps = {
   title: string;
   description: string;
+  /** The eyebrow above the title. */
+  eyebrow?: string;
+  className?: string;
 };
 
 export default function AdminHeader({
   title,
   description,
+  eyebrow = "DocuJet Admin",
+  className = "",
 }: AdminHeaderProps) {
   return (
-    <header className="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 md:flex-row md:items-center md:justify-between md:px-8">
+    <header
+      className={`flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 md:flex-row md:items-center md:justify-between md:px-8 ${className}`}
+    >
       <div>
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-800">
-          DocuJet Admin
+          {eyebrow}
         </p>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
           {title}

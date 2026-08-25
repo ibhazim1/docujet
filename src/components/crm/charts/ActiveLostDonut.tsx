@@ -1,9 +1,19 @@
+"use client";
+
 import ChartCard from "./ChartCard";
 import DonutChart from "./DonutChart";
 import { ACCENT } from "./tokens";
+import { useLeadTracker } from "../TrackerContext";
 import { activeVsLost, pct } from "@/lib/crm/analytics";
 import { STAGES } from "@/lib/crm/taxonomy";
-import type { Lead } from "@/lib/crm/types";
+
+type ActiveLostDonutProps = {
+  title?: string;
+  subtitle?: string;
+  centerCaption?: string;
+  showTable?: boolean;
+  className?: string;
+};
 
 /**
  * Active versus lost, as a donut.
@@ -13,9 +23,16 @@ import type { Lead } from "@/lib/crm/types";
  * play", the desaturated Lost grey for closed — never a status red, because
  * losing leads here is normal volume, not an alarm.
  */
-export default function ActiveLostDonut({ leads }: { leads: Lead[] }) {
-  const rows = activeVsLost(leads);
-  const total = leads.length;
+export default function ActiveLostDonut({
+  title = "Active vs lost",
+  subtitle = "Every lead, still in play or closed lost",
+  centerCaption = "leads",
+  showTable = true,
+  className = "",
+}: ActiveLostDonutProps) {
+  const { visible } = useLeadTracker();
+  const rows = activeVsLost(visible);
+  const total = visible.length;
 
   const segments = rows.map((row) => ({
     key: row.key,
@@ -26,12 +43,14 @@ export default function ActiveLostDonut({ leads }: { leads: Lead[] }) {
 
   return (
     <ChartCard
-      title="Active vs lost"
-      subtitle="Every lead, still in play or closed lost"
+      title={title}
+      subtitle={subtitle}
+      showTable={showTable}
+      className={className}
       columns={["Status", "Leads", "Share"]}
       rows={rows.map((row) => [row.label, row.count, pct(total > 0 ? row.count / total : 0)])}
     >
-      <DonutChart segments={segments} centerValue={String(total)} centerCaption="leads" />
+      <DonutChart segments={segments} centerValue={String(total)} centerCaption={centerCaption} />
     </ChartCard>
   );
 }

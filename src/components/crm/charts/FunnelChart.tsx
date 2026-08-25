@@ -1,8 +1,18 @@
+"use client";
+
 import BarRow from "./BarRow";
 import ChartCard from "./ChartCard";
-import type { FunnelRow } from "@/lib/crm/analytics";
-import { pct, pctOf } from "@/lib/crm/analytics";
+import { useLeadTracker } from "../TrackerContext";
+import { funnelStats, pct, pctOf } from "@/lib/crm/analytics";
 import { STAGES } from "@/lib/crm/taxonomy";
+
+type FunnelChartProps = {
+  title?: string;
+  subtitle?: string;
+  footnote?: string;
+  showTable?: boolean;
+  className?: string;
+};
 
 /**
  * Lifecycle funnel.
@@ -18,14 +28,24 @@ import { STAGES } from "@/lib/crm/taxonomy";
  * tells you whether they were actively lost there or are simply still sitting.
  * There is no Lost bar — it is an exit from the funnel, not a step in it.
  */
-export default function FunnelChart({ rows }: { rows: FunnelRow[] }) {
+export default function FunnelChart({
+  title = "Lifecycle funnel",
+  subtitle = "Leads reaching each stage, counted at the furthest stage they got to",
+  footnote = "Step conversion counts lost leads in the denominator — otherwise the rate would rise as deals were lost.",
+  showTable = true,
+  className = "",
+}: FunnelChartProps) {
+  const { visible } = useLeadTracker();
+  const rows = funnelStats(visible);
   const max = Math.max(1, rows[0]?.reached ?? 1);
 
   return (
     <ChartCard
-      title="Lifecycle funnel"
-      subtitle="Leads reaching each stage, counted at the furthest stage they got to"
-      footnote="Step conversion counts lost leads in the denominator — otherwise the rate would rise as deals were lost."
+      title={title}
+      subtitle={subtitle}
+      footnote={footnote}
+      showTable={showTable}
+      className={className}
       columns={["Stage", "Reached", "Open here", "Lost here", "Step conversion"]}
       rows={rows.map((row) => [
         row.label,

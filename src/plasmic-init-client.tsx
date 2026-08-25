@@ -4,6 +4,8 @@ import { PLASMIC } from "./plasmic-init";
 import ServiceCard from "./components/ServiceCard";
 import Navbar from "./components/Navbar";
 import AdminSidebar from "./components/admin/AdminSidebar";
+import AdminHeader from "./components/admin/AdminHeader";
+import DemoNotice from "./components/admin/DemoNotice";
 import Hero from "./components/Hero";
 import ServicesSection from "./components/ServicesSection";
 import CallToAction from "./components/CallToAction";
@@ -14,8 +16,12 @@ import BookingPage from "./components/pages/BookingPage";
 import FAQPage from "./components/pages/FAQPage";
 import ContactPage from "./components/pages/ContactPage";
 import LoginPage from "./components/pages/LoginPage";
-import LeadTracker from "./components/crm/LeadTracker";
 import { faqItems, serviceItems } from "./lib/site-data";
+
+// The CRM lead page registers roughly two dozen components of its own — every
+// tile, filter, chart and column is separately editable in Studio — so it lives
+// in its own file rather than doubling the length of this one.
+import "./plasmic-register-crm";
 
 PLASMIC.registerComponent(ServiceCard, {
   name: "ServiceCard",
@@ -59,6 +65,53 @@ PLASMIC.registerComponent(AdminSidebar, {
   props: {
     className: {
       type: "class",
+    },
+  },
+});
+
+PLASMIC.registerComponent(AdminHeader, {
+  name: "AdminHeader",
+  displayName: "Admin Page Header",
+  description: "The title bar at the top of an admin page, with the logout control.",
+  props: {
+    className: {
+      type: "class",
+    },
+    eyebrow: {
+      type: "string",
+      defaultValue: "DocuJet Admin",
+    },
+    title: {
+      type: "string",
+      defaultValue: "Lead Tracker",
+    },
+    description: {
+      type: "string",
+      defaultValue:
+        "Which channels produce leads, and which of those leads are worth anything.",
+    },
+  },
+});
+
+PLASMIC.registerComponent(DemoNotice, {
+  name: "DemoNotice",
+  displayName: "Admin Notice",
+  description: "The amber 'you are looking at sample data' banner.",
+  props: {
+    className: {
+      type: "class",
+    },
+    title: {
+      type: "string",
+      defaultValue: "Showing sample data — the database is not connected.",
+    },
+    reason: {
+      type: "string",
+      defaultValue: "No Supabase project is configured.",
+    },
+    children: {
+      type: "slot",
+      displayName: "Extra detail",
     },
   },
 });
@@ -438,43 +491,6 @@ PLASMIC.registerComponent(LoginPage, {
     },
     rightPanelClassName: {
       type: "class",
-    },
-  },
-});PLASMIC.registerComponent(LeadTracker, {
-  name: "LeadTracker",
-  displayName: "CRM Lead Tracker",
-  props: {
-    className: {
-      type: "class",
-    },
-    defaultView: {
-      type: "choice",
-      options: ["table", "board", "charts"],
-      defaultValue: "table",
-    },
-    showKpis: {
-      type: "boolean",
-      defaultValue: true,
-    },
-    showPipeline: {
-      type: "boolean",
-      defaultValue: true,
-    },
-    showFilters: {
-      type: "boolean",
-      defaultValue: true,
-    },
-    // Presentational only. Writes are blocked in the canvas regardless, because
-    // the sample rows the component falls back to are not in the database.
-    readOnly: {
-      type: "boolean",
-      defaultValue: false,
-      description:
-        "Show each lead's stage as a coloured badge instead of an editable control.",
-    },
-    today: {
-      type: "string",
-      defaultValue: "2026-07-31",
     },
   },
 });

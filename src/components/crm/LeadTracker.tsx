@@ -1,55 +1,187 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
-import EmptyState from "@/components/admin/EmptyState";
+import { DataProvider } from "@plasmicapp/loader-nextjs";
+import type { ReactNode } from "react";
 import FilterBar from "./FilterBar";
+import FlashMessage from "./FlashMessage";
+import KpiCard from "./KpiCard";
 import KpiRow from "./KpiRow";
 import LeadBoard from "./LeadBoard";
 import LeadCharts from "./LeadCharts";
+import LeadCountLabel from "./LeadCountLabel";
 import LeadDetail from "./LeadDetail";
+import LeadEmptyState from "./LeadEmptyState";
 import LeadTable from "./LeadTable";
 import PipelineBar from "./PipelineBar";
+import StageTile from "./StageTile";
+import ViewSwitch from "./ViewSwitch";
 import ViewToggle from "./ViewToggle";
-import {
-  filterLeads,
-  findLead,
-  sortLeads,
-  sourceStats,
-  summarise,
-} from "@/lib/crm/analytics";
-import type { StageActionResult } from "@/lib/crm/actions";
-import { parseQuery } from "@/lib/crm/query";
-import { SAMPLE_LEADS, SAMPLE_TODAY } from "@/lib/crm/sample-leads";
+import ActiveLostDonut from "./charts/ActiveLostDonut";
+import FunnelChart from "./charts/FunnelChart";
+import MonthlyChart from "./charts/MonthlyChart";
+import SocialSplitMeter from "./charts/SocialSplitMeter";
+import SourceQualityChart from "./charts/SourceQualityChart";
+import SourceShareDonut from "./charts/SourceShareDonut";
+import SourceStageMatrix from "./charts/SourceStageMatrix";
+import SourceVolumeChart from "./charts/SourceVolumeChart";
+import StageShareDonut from "./charts/StageShareDonut";
+import ApplyButton from "./filters/ApplyButton";
+import ClearFilters from "./filters/ClearFilters";
+import FilterSelect from "./filters/FilterSelect";
+import SearchInput from "./filters/SearchInput";
+import { LeadTrackerProvider, useLeadTracker } from "./TrackerContext";
+import { STAGE_KEYS } from "@/lib/crm/taxonomy";
 import type { Lead, ViewKey } from "@/lib/crm/types";
 
 export type LeadTrackerProps = {
   className?: string;
   /** The lead book. Falls back to the seed rows when absent — the Studio canvas. */
   leads?: Lead[];
-  /** Y-m-d, resolved on the server so client and server agree on "this week". */
+  /**
+   * Y-m-d, resolved on the server so client and server agree on "this week".
+   * Empty means whatever the loaded book came with.
+   */
   today?: string;
+  /**
+   * With no `leads` prop, read the book from `/api/crm/leads` in the browser —
+   * how a Plasmic-authored page gets real rows instead of the seed ones.
+   */
+  autoLoad?: boolean;
   /** Used when the URL carries no `view`. */
   defaultView?: ViewKey;
+  /** Renders stage and source as badges instead of editors. Presentational only. */
+  readOnly?: boolean;
   showKpis?: boolean;
   showPipeline?: boolean;
   showFilters?: boolean;
   /**
-   * Renders stage controls as badges instead of editors.
+   * The tracker's contents.
    *
-   * Purely presentational, and always honoured — including in the Plasmic
-   * canvas, so the two looks can be compared there. Whether an edit can
-   * actually reach the database is a separate question; see `isSample` below.
+   * Empty means the standard dashboard below. In Plasmic this slot is filled
+   * with that same tree as real, editable elements, so a designer rearranges
+   * or deletes the parts instead of toggling props.
    */
-  readOnly?: boolean;
+  children?: ReactNode;
 };
+
+/** The dashboard as shipped — the layout the app renders when nothing overrides it. */
+function StandardLayout({
+  showKpis,
+  showPipeline,
+  showFilters,
+}: {
+  showKpis: boolean;
+  showPipeline: boolean;
+  showFilters: boolean;
+}) {
+  return (
+    <>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <ViewToggle />
+        <LeadCountLabel />
+      </div>
+
+      <FlashMessage />
+
+      {showKpis ? (
+        <KpiRow>
+          <KpiCard metric="total" />
+          <KpiCard metric="topSource" />
+          <KpiCard metric="social" />
+          <KpiCard metric="qualified" />
+          <KpiCard metric="customers" />
+          <KpiCard metric="lost" />
+        </KpiRow>
+      ) : null}
+
+      {showPipeline ? (
+        <PipelineBar>
+          {STAGE_KEYS.map((key) => (
+            <StageTile key={key} stage={key} />
+          ))}
+        </PipelineBar>
+      ) : null}
+
+      {showFilters ? (
+        <FilterBar>
+          <SearchInput />
+          <FilterSelect filter="source" />
+          <FilterSelect filter="stage" />
+          <FilterSelect filter="group" />
+          <ApplyButton />
+          <ClearFilters />
+        </FilterBar>
+      ) : null}
+
+      <ViewSwitch
+        emptyView={<LeadEmptyState />}
+        tableView={<LeadTable />}
+        boardView={<LeadBoard />}
+        chartsView={
+          <LeadCharts>
+            <SourceVolumeChart />
+            <SourceQualityChart />
+            <FunnelChart />
+            <MonthlyChart />
+            <SourceStageMatrix />
+            <SocialSplitMeter />
+            <SourceShareDonut />
+            <ActiveLostDonut />
+            <StageShareDonut />
+          </LeadCharts>
+        }
+      />
+
+      <LeadDetail />
+    </>
+  );
+}
+
+/**
+ * Publishes the tracker's numbers to Plasmic's data picker, so a designer can
+ * bind any text on the page to `$ctx.leadTracker.…` without writing code.
+ */
+function PublishTrackerData({ children }: { children: ReactNode }) {
+  const { visible, allLeads, stats, sources, query, view, today, selected, filtered } =
+    useLeadTracker();
+
+  return (
+    <DataProvider
+      name="leadTracker"
+      data={{
+        leads: visible,
+        allLeads,
+        count: visible.length,
+        total: allLeads.length,
+        stats,
+        sources,
+        filters: query.filters,
+        filtered,
+        sort: query.sort,
+        dir: query.dir,
+        view,
+        today,
+        selected,
+      }}
+    >
+      {children}
+    </DataProvider>
+  );
+}
 
 /**
  * The lead tracker.
  *
- * A port of `crm/index.php` — three views over one filtered list, with every
- * filter, the sort, the active view and the selected lead carried in the query
- * string, so any screen is a shareable URL and the back button behaves.
+ * A port of `crm/index.php` — three views over one filtered list. Every filter,
+ * the sort, the active view and the selected lead are carried in the query
+ * string, so any screen is a shareable URL and the back button behaves; inside
+ * the Plasmic canvas, where there is no route to carry them, the same state
+ * lives in the component so every control still responds.
+ *
+ * This component is now only the state and the frame. Each visible part — a KPI
+ * tile, a filter, a chart, the table — is a free-standing element that reads
+ * the tracker itself, which is what lets Plasmic move, restyle or delete any of
+ * them independently.
  *
  * Filtering and aggregation run here in the browser over the whole book. At
  * this size that is instant and lets a filter change land without a server
@@ -58,114 +190,35 @@ export type LeadTrackerProps = {
 export default function LeadTracker({
   className = "",
   leads,
-  today = SAMPLE_TODAY,
+  today,
+  autoLoad = true,
   defaultView = "table",
+  readOnly = false,
   showKpis = true,
   showPipeline = true,
   showFilters = true,
-  readOnly = false,
+  children,
 }: LeadTrackerProps) {
-  const searchParams = useSearchParams();
-  const [flash, setFlash] = useState<StageActionResult | null>(null);
-
-  // No `leads` prop means nobody read the database — the Plasmic Studio canvas,
-  // or a bare render — so these rows are the bundled samples.
-  //
-  // This gates the *write*, not the *look*. `readOnly` still decides whether a
-  // badge or a control renders, so a designer can preview either in Studio;
-  // `isSample` stops the control from calling a Server Action against rows
-  // that aren't in the database, which would either write to the wrong place or,
-  // with no endpoint in scope, throw on click.
-  const isSample = leads === undefined;
-  const allLeads = leads ?? SAMPLE_LEADS;
-
-  const params = useMemo(
-    () => new URLSearchParams(searchParams.toString()),
-    [searchParams],
-  );
-  const query = useMemo(() => parseQuery(params), [params]);
-  const view = params.get("view") ? query.view : defaultView;
-
-  const visible = useMemo(
-    () => sortLeads(filterLeads(allLeads, query.filters), query.sort, query.dir),
-    [allLeads, query.filters, query.sort, query.dir],
-  );
-  const stats = useMemo(() => summarise(visible, today), [visible, today]);
-  const sources = useMemo(() => sourceStats(visible), [visible]);
-  const selected = findLead(allLeads, query.leadId);
-
   return (
-    <div className={`space-y-6 ${className}`}>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <ViewToggle view={view} params={params} />
-        <p className="text-sm text-slate-500">
-          Showing {visible.length} of {allLeads.length} leads
-        </p>
-      </div>
-
-      {flash ? (
-        <p
-          role={flash.ok ? "status" : "alert"}
-          className={`rounded-2xl border px-4 py-3 text-sm font-medium ${
-            flash.ok
-              ? "border-sky-200 bg-sky-50 text-sky-900"
-              : "border-rose-200 bg-rose-50 text-rose-900"
-          }`}
-        >
-          {flash.message}
-        </p>
-      ) : null}
-
-      {showKpis ? <KpiRow stats={stats} filters={query.filters} params={params} /> : null}
-      {showPipeline ? (
-        <PipelineBar stats={stats} filters={query.filters} params={params} />
-      ) : null}
-      {showFilters ? <FilterBar filters={query.filters} params={params} /> : null}
-
-      {visible.length === 0 ? (
-        <EmptyState
-          title="No leads match these filters"
-          description="Clear a filter or widen the search to bring rows back."
-        />
-      ) : view === "table" ? (
-        <LeadTable
-          leads={visible}
-          selectedId={query.leadId}
-          sort={query.sort}
-          dir={query.dir}
-          params={params}
-          readOnly={readOnly}
-          isSample={isSample}
-          onResult={setFlash}
-        />
-      ) : view === "board" ? (
-        <LeadBoard
-          leads={visible}
-          byStage={stats.byStage}
-          params={params}
-          readOnly={readOnly}
-          isSample={isSample}
-          onResult={setFlash}
-        />
-      ) : (
-        <LeadCharts
-          leads={visible}
-          sources={sources}
-          activeSource={query.filters.source}
-          params={params}
-        />
-      )}
-
-      {selected ? (
-        <LeadDetail
-          lead={selected}
-          today={today}
-          params={params}
-          readOnly={readOnly}
-          isSample={isSample}
-          onResult={setFlash}
-        />
-      ) : null}
-    </div>
+    <LeadTrackerProvider
+      leads={leads}
+      // An empty string is Studio's "not set", not a date.
+      today={today || undefined}
+      autoLoad={autoLoad}
+      defaultView={defaultView}
+      readOnly={readOnly}
+    >
+      <PublishTrackerData>
+        <div className={`space-y-6 ${className}`}>
+          {children ?? (
+            <StandardLayout
+              showKpis={showKpis}
+              showPipeline={showPipeline}
+              showFilters={showFilters}
+            />
+          )}
+        </div>
+      </PublishTrackerData>
+    </LeadTrackerProvider>
   );
 }

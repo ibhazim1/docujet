@@ -1,11 +1,21 @@
+"use client";
+
 import BarRow from "./BarRow";
 import ChartCard from "./ChartCard";
 import { ACCENT } from "./tokens";
-import type { SourceStat } from "@/lib/crm/analytics";
+import { useLeadTracker } from "../TrackerContext";
 import { pct } from "@/lib/crm/analytics";
 
 /** Below this, one conversion swings the rate too far to rank on. */
 const THIN_SAMPLE = 4;
+
+type SourceQualityChartProps = {
+  title?: string;
+  subtitle?: string;
+  footnote?: string;
+  showTable?: boolean;
+  className?: string;
+};
 
 /**
  * Source quality — share of each source's leads that reached SQL or beyond.
@@ -14,18 +24,25 @@ const THIN_SAMPLE = 4;
  * actual finding, because the loudest channel is rarely the best one. Sources
  * with too few leads to mean anything are marked rather than ranked.
  */
-export default function SourceQualityChart({ rows }: { rows: SourceStat[] }) {
-  const ranked = [...rows].sort((a, b) => b.qualifiedRate - a.qualifiedRate);
+export default function SourceQualityChart({
+  title = "Source quality",
+  subtitle = "Share of each source's leads that reached SQL or beyond",
+  footnote = "Sources with fewer than 4 leads are dimmed — the percentage is not yet meaningful. " +
+    "A lead that qualified and was later lost still counts here, so this measures what a " +
+    "channel brings in, not what closed.",
+  showTable = true,
+  className = "",
+}: SourceQualityChartProps) {
+  const { sources } = useLeadTracker();
+  const ranked = [...sources].sort((a, b) => b.qualifiedRate - a.qualifiedRate);
 
   return (
     <ChartCard
-      title="Source quality"
-      subtitle="Share of each source's leads that reached SQL or beyond"
-      footnote={
-        "Sources with fewer than 4 leads are dimmed — the percentage is not yet meaningful. " +
-        "A lead that qualified and was later lost still counts here, so this measures what a " +
-        "channel brings in, not what closed."
-      }
+      title={title}
+      subtitle={subtitle}
+      footnote={footnote}
+      showTable={showTable}
+      className={className}
       columns={["Source", "Leads", "Reached SQL+", "Rate", "Lost"]}
       rows={ranked.map((row) => [
         row.label,

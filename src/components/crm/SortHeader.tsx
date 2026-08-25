@@ -1,40 +1,30 @@
 "use client";
 
-import Link from "next/link";
-import { buildHref } from "@/lib/crm/query";
-import type { SortDirection, SortKey } from "@/lib/crm/types";
+import { TrackerLink, useLeadTracker } from "./TrackerContext";
+import type { SortKey } from "@/lib/crm/types";
 
 type SortHeaderProps = {
   sortKey: SortKey;
   label: string;
-  activeKey: SortKey;
-  activeDir: SortDirection;
-  params: URLSearchParams;
 };
 
 /** A sortable column header that toggles direction on the active column. */
-export default function SortHeader({
-  sortKey,
-  label,
-  activeKey,
-  activeDir,
-  params,
-}: SortHeaderProps) {
-  const isActive = sortKey === activeKey;
-  const nextDir = isActive && activeDir === "asc" ? "desc" : "asc";
+export default function SortHeader({ sortKey, label }: SortHeaderProps) {
+  const { query } = useLeadTracker();
+  const isActive = sortKey === query.sort;
+  const nextDir = isActive && query.dir === "asc" ? "desc" : "asc";
 
   return (
-    <Link
-      href={buildHref(params, { sort: sortKey, dir: nextDir, lead: null })}
-      aria-sort={isActive ? (activeDir === "asc" ? "ascending" : "descending") : undefined}
+    <TrackerLink
+      overrides={{ sort: sortKey, dir: nextDir, lead: null }}
       className={`inline-flex items-center gap-1 transition hover:text-slate-950 ${
         isActive ? "text-slate-950" : ""
       }`}
     >
       {label}
       <span aria-hidden="true" className="text-[10px]">
-        {isActive ? (activeDir === "asc" ? "↑" : "↓") : ""}
+        {isActive ? (query.dir === "asc" ? "↑" : "↓") : ""}
       </span>
-    </Link>
+    </TrackerLink>
   );
 }

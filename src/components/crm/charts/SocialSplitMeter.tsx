@@ -1,7 +1,18 @@
+"use client";
+
 import ChartCard from "./ChartCard";
 import { ACCENT } from "./tokens";
-import type { SourceStat } from "@/lib/crm/analytics";
+import { useLeadTracker } from "../TrackerContext";
 import { pct, pctOf } from "@/lib/crm/analytics";
+
+type SocialSplitMeterProps = {
+  title?: string;
+  subtitle?: string;
+  socialLabel?: string;
+  webLabel?: string;
+  showTable?: boolean;
+  className?: string;
+};
 
 /**
  * Social versus owned web properties.
@@ -11,12 +22,16 @@ import { pct, pctOf } from "@/lib/crm/analytics";
  * measure.
  */
 export default function SocialSplitMeter({
-  rows,
-  total,
-}: {
-  rows: SourceStat[];
-  total: number;
-}) {
+  title = "Social vs owned channels",
+  subtitle = "Social platforms against the website chatbot and contact form",
+  socialLabel = "social",
+  webLabel = "owned web",
+  showTable = true,
+  className = "",
+}: SocialSplitMeterProps) {
+  const { sources: rows, visible } = useLeadTracker();
+  const total = visible.length;
+
   const social = rows
     .filter((row) => row.group === "social")
     .reduce((sum, row) => sum + row.total, 0);
@@ -24,8 +39,10 @@ export default function SocialSplitMeter({
 
   return (
     <ChartCard
-      title="Social vs owned channels"
-      subtitle="Social platforms against the website chatbot and contact form"
+      title={title}
+      subtitle={subtitle}
+      showTable={showTable}
+      className={className}
       columns={["Channel group", "Leads", "Share"]}
       rows={[
         ["Social", social, pct(total > 0 ? social / total : 0)],
@@ -47,11 +64,11 @@ export default function SocialSplitMeter({
       </div>
       <div className="mt-3 flex flex-wrap justify-between gap-2 text-xs text-slate-600">
         <span>
-          <b className="text-slate-950">{social}</b> from social (
+          <b className="text-slate-950">{social}</b> from {socialLabel} (
           {pct(total > 0 ? social / total : 0)})
         </span>
         <span>
-          <b className="text-slate-950">{web}</b> from owned web (
+          <b className="text-slate-950">{web}</b> from {webLabel} (
           {pct(total > 0 ? web / total : 0)})
         </span>
       </div>

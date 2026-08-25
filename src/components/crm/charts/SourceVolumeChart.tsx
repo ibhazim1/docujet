@@ -1,18 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import BarRow from "./BarRow";
 import ChartCard from "./ChartCard";
 import { ACCENT } from "./tokens";
-import type { SourceStat } from "@/lib/crm/analytics";
+import { TrackerLink, useLeadTracker } from "../TrackerContext";
 import { pct, pctOf } from "@/lib/crm/analytics";
-import { toggleHref } from "@/lib/crm/query";
-import type { SourceKey } from "@/lib/crm/types";
 
 type SourceVolumeChartProps = {
-  rows: SourceStat[];
-  activeSource: SourceKey | "";
-  params: URLSearchParams;
+  title?: string;
+  subtitle?: string;
+  footnote?: string;
+  /** Clicking a bar filters the whole tracker to that source. */
+  clickToFilter?: boolean;
+  showTable?: boolean;
+  className?: string;
 };
 
 /**
@@ -22,30 +23,30 @@ type SourceVolumeChartProps = {
  * because sources are nominal categories.
  */
 export default function SourceVolumeChart({
-  rows,
-  activeSource,
-  params,
+  title = "Lead source distribution",
+  subtitle = "Where every lead came from, highest first",
+  footnote = "Click a bar to filter the whole dashboard by that source.",
+  clickToFilter = true,
+  showTable = true,
+  className = "",
 }: SourceVolumeChartProps) {
+  const { sources: rows, query } = useLeadTracker();
+  const activeSource = query.filters.source;
   const max = Math.max(1, ...rows.map((row) => row.total));
 
   return (
     <ChartCard
-      title="Lead source distribution"
-      subtitle="Where every lead came from, highest first"
-      footnote="Click a bar to filter the whole dashboard by that source."
+      title={title}
+      subtitle={subtitle}
+      footnote={clickToFilter ? footnote : undefined}
+      showTable={showTable}
+      className={className}
       columns={["Source", "Leads", "Share"]}
       rows={rows.map((row) => [row.label, row.total, pct(row.share)])}
     >
       <div className="space-y-2">
-        {rows.map((row) => (
-          <Link
-            key={row.key}
-            href={toggleHref(params, "source", row.key, { lead: null })}
-            title={`${row.label}: ${row.total} leads (${pct(row.share)} of total)`}
-            className={`block rounded-lg px-1 py-0.5 transition hover:bg-slate-50 ${
-              activeSource === row.key ? "bg-sky-50 ring-1 ring-sky-200" : ""
-            }`}
-          >
+        {rows.map((row) => {
+          const bar = (
             <BarRow
               label={row.label}
               width={pctOf(row.total, max)}
@@ -53,8 +54,33 @@ export default function SourceVolumeChart({
               value={row.total}
               share={pct(row.share)}
             />
-          </Link>
-        ))}
+          );
+          const hint = `${row.label}: ${row.total} leads (${pct(row.share)} of total)`;
+
+          if (!clickToFilter) {
+            return (
+              <div key={row.key} title={hint} className="px-1 py-0.5">
+                {bar}
+              </div>
+            );
+          }
+
+          return (
+            <TrackerLink
+              key={row.key}
+              overrides={{
+                source: activeSource === row.key ? null : row.key,
+                lead: null,
+              }}
+              title={hint}
+              className={`block rounded-lg px-1 py-0.5 transition hover:bg-slate-50 ${
+                activeSource === row.key ? "bg-sky-50 ring-1 ring-sky-200" : ""
+              }`}
+            >
+              {bar}
+            </TrackerLink>
+          );
+        })}
       </div>
     </ChartCard>
   );

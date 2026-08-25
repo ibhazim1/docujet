@@ -1,22 +1,24 @@
 "use client";
 
-import Link from "next/link";
 import { useTransition } from "react";
 import SourcePill from "./SourcePill";
+import { TrackerLink, useLeadTracker } from "./TrackerContext";
 import { pillButtonClassName } from "@/components/admin/field-styles";
 import { displayStage } from "@/lib/crm/analytics";
 import { reopenAction, setStageAction, type StageActionResult } from "@/lib/crm/actions";
-import { buildHref } from "@/lib/crm/query";
 import { LOST_STAGE, STAGES, STAGE_KEYS, nextOpenStage } from "@/lib/crm/taxonomy";
 import type { Lead, StageKey } from "@/lib/crm/types";
 
 type LeadBoardProps = {
-  leads: Lead[];
-  byStage: Record<StageKey, number>;
-  params: URLSearchParams;
-  readOnly: boolean;
-  isSample: boolean;
-  onResult?: (result: StageActionResult) => void;
+  /** Which columns to show, in order. Empty means every stage. */
+  stages?: StageKey[];
+  /** The Move / Lost / Reopen buttons on each card. */
+  showActions?: boolean;
+  showSourcePill?: boolean;
+  emptyLabel?: string;
+  /** Overrides the tracker's setting for this board only. */
+  readOnly?: boolean;
+  className?: string;
 };
 
 /**
@@ -30,18 +32,14 @@ type LeadBoardProps = {
  */
 function CardActions({
   lead,
-  readOnly,
   isSample,
   onResult,
 }: {
   lead: Lead;
-  readOnly: boolean;
   isSample: boolean;
   onResult?: (result: StageActionResult) => void;
 }) {
   const [isPending, startTransition] = useTransition();
-
-  if (readOnly) return null;
 
   function run(action: () => Promise<StageActionResult>) {
     // Sample rows are not in the database, so the buttons stay visible and
@@ -103,19 +101,32 @@ function CardActions({
 }
 
 export default function LeadBoard({
-  leads,
-  byStage,
-  params,
+  stages,
+  showActions = true,
+  showSourcePill = true,
+  emptyLabel = "Empty",
   readOnly,
-  isSample,
-  onResult,
+  className = "",
 }: LeadBoardProps) {
+  const tracker = useLeadTracker();
+  const { visible, stats, isSample, setFlash } = tracker;
+  const isReadOnly = readOnly ?? tracker.readOnly;
+
+  const columns = stages?.length ? stages : STAGE_KEYS;
+
   return (
-    <div className="-mx-1 overflow-x-auto px-1 pb-2">
-      <div className="grid min-w-[1100px] grid-cols-6 gap-4">
-        {STAGE_KEYS.map((key) => {
+    <div className={`-mx-1 overflow-x-auto px-1 pb-2 ${className}`}>
+      <div
+        className="grid gap-4"
+        style={{
+          minWidth: Math.max(320, columns.length * 184),
+          gridTemplateColumns: `repeat(${columns.length}, minmax(0, 1fr))`,
+        }}
+      >
+        {columns.map((key) => {
           const stage = STAGES[key];
-          const column = leads.filter((lead) => displayStage(lead) === key);
+          if (!stage) return null;
+          const column = visible.filter((lead) => displayStage(lead) === key);
 
           return (
             <section
@@ -133,7 +144,7 @@ export default function LeadBoard({
                   />
                   {stage.label}
                 </h3>
-                <span className="text-sm font-semibold text-slate-500">{byStage[key]}</span>
+                <span className="text-sm font-semibold text-slate-500">{stats.byStage[key]}</span>
               </header>
 
               <div className="mt-3 space-y-3">
@@ -142,8 +153,9 @@ export default function LeadBoard({
                     key={lead.id}
                     className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
                   >
-                    <Link
-                      href={`${buildHref(params, { lead: lead.id })}#lead-detail`}
+                    <TrackerLink
+                      overrides={{ lead: lead.id }}
+                      scrollTo="lead-detail"
                       className="block"
                     >
                       <strong className="block text-sm font-semibold text-slate-950">
@@ -152,25 +164,22 @@ export default function LeadBoard({
                       <span className="mt-0.5 block text-xs text-slate-600">
                         {lead.title || lead.email}
                       </span>
-                    </Link>
+                    </TrackerLink>
                     <div className="mt-3 flex flex-wrap items-center gap-2">
-                      <SourcePill source={lead.source} size="sm" />
+                      {showSourcePill ? <SourcePill source={lead.source} size="sm" /> : null}
                       {lead.lost ? (
                         <span className="inline-flex rounded-full bg-slate-200 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
                           at {STAGES[lead.stage].label}
                         </span>
                       ) : null}
                     </div>
-                    <CardActions
-                      lead={lead}
-                      readOnly={readOnly}
-                      isSample={isSample}
-                      onResult={onResult}
-                    />
+                    {showActions && !isReadOnly ? (
+                      <CardActions lead={lead} isSample={isSample} onResult={setFlash} />
+                    ) : null}
                   </article>
                 ))}
                 {column.length === 0 ? (
-                  <p className="py-6 text-center text-xs text-slate-400">Empty</p>
+                  <p className="py-6 text-center text-xs text-slate-400">{emptyLabel}</p>
                 ) : null}
               </div>
             </section>

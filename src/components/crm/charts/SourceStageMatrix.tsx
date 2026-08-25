@@ -1,8 +1,17 @@
+"use client";
+
 import ChartCard from "./ChartCard";
 import { HEAT_FILL, HEAT_INK } from "./tokens";
-import type { SourceStat } from "@/lib/crm/analytics";
+import { useLeadTracker } from "../TrackerContext";
 import { heatBin } from "@/lib/crm/analytics";
 import { STAGES, STAGE_KEYS } from "@/lib/crm/taxonomy";
+
+type SourceStageMatrixProps = {
+  title?: string;
+  subtitle?: string;
+  showTable?: boolean;
+  className?: string;
+};
 
 /**
  * Source × stage matrix.
@@ -16,7 +25,14 @@ import { STAGES, STAGE_KEYS } from "@/lib/crm/taxonomy";
  * splitting the scale would break the comparison the grid exists to support.
  * The column header carries the meaning; the ramp carries only the count.
  */
-export default function SourceStageMatrix({ rows }: { rows: SourceStat[] }) {
+export default function SourceStageMatrix({
+  title = "Source × stage",
+  subtitle = "Where each source's leads currently sit — darker means more",
+  showTable = true,
+  className = "",
+}: SourceStageMatrixProps) {
+  const { sources: rows } = useLeadTracker();
+
   let max = 1;
   for (const row of rows) {
     max = Math.max(max, ...STAGE_KEYS.map((key) => row.byStage[key]));
@@ -24,8 +40,10 @@ export default function SourceStageMatrix({ rows }: { rows: SourceStat[] }) {
 
   return (
     <ChartCard
-      title="Source × stage"
-      subtitle="Where each source's leads currently sit — darker means more"
+      title={title}
+      subtitle={subtitle}
+      showTable={showTable}
+      className={className}
       columns={["Source", ...STAGE_KEYS.map((key) => STAGES[key].label)]}
       rows={rows.map((row) => [row.label, ...STAGE_KEYS.map((key) => row.byStage[key])])}
     >

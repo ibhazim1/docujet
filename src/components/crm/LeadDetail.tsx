@@ -1,22 +1,33 @@
 "use client";
 
-import Link from "next/link";
 import EditableCell from "./EditableCell";
 import SourceSelect from "./SourceSelect";
 import StageSelect from "./StageSelect";
-import type { StageActionResult } from "@/lib/crm/actions";
+import { TrackerLink, useLeadTracker } from "./TrackerContext";
 import { ago, prettyDate } from "@/lib/crm/analytics";
-import { buildHref } from "@/lib/crm/query";
 import { STAGES } from "@/lib/crm/taxonomy";
-import type { Lead } from "@/lib/crm/types";
 
 type LeadDetailProps = {
-  lead: Lead;
-  today: string;
-  params: URLSearchParams;
-  readOnly: boolean;
-  isSample: boolean;
-  onResult?: (result: StageActionResult) => void;
+  /**
+   * Falls back to the first lead in the list when none is selected, so the
+   * panel can be seen and styled without clicking a row first.
+   */
+  alwaysShow?: boolean;
+  stageLabel?: string;
+  sourceLabel?: string;
+  capturedLabel?: string;
+  emailLabel?: string;
+  phoneLabel?: string;
+  interestLabel?: string;
+  notesLabel?: string;
+  closeLabel?: string;
+  /** The "closed — lost" explainer, shown only on a lost lead. */
+  showLostPanel?: boolean;
+  /** The captured-from-chatbot quote, shown only on a chatbot lead. */
+  showChatbotPanel?: boolean;
+  /** Overrides the tracker's setting for this panel only. */
+  readOnly?: boolean;
+  className?: string;
 };
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -32,19 +43,33 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 /** Everything the book holds about one lead. */
 export default function LeadDetail({
-  lead,
-  today,
-  params,
+  alwaysShow = false,
+  stageLabel = "Stage",
+  sourceLabel = "Source",
+  capturedLabel = "Captured",
+  emailLabel = "Email",
+  phoneLabel = "Phone",
+  interestLabel = "Interest",
+  notesLabel = "Notes",
+  closeLabel = "Close",
+  showLostPanel = true,
+  showChatbotPanel = true,
   readOnly,
-  isSample,
-  onResult,
+  className = "",
 }: LeadDetailProps) {
-  const edit = { readOnly, isSample, onResult };
+  const tracker = useLeadTracker();
+  const { selected, visible, today, isSample, setFlash } = tracker;
+  const isReadOnly = readOnly ?? tracker.readOnly;
+
+  const lead = selected ?? (alwaysShow ? visible[0] ?? null : null);
+  if (!lead) return null;
+
+  const edit = { readOnly: isReadOnly, isSample, onResult: setFlash };
 
   return (
     <section
       id="lead-detail"
-      className="scroll-mt-6 rounded-3xl border border-slate-200 border-l-4 border-l-sky-800 bg-white p-6 shadow-sm"
+      className={`scroll-mt-6 rounded-3xl border border-slate-200 border-l-4 border-l-sky-800 bg-white p-6 shadow-sm ${className}`}
     >
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -68,34 +93,34 @@ export default function LeadDetail({
             />
           </p>
         </div>
-        <Link
-          href={buildHref(params, { lead: null })}
+        <TrackerLink
+          overrides={{ lead: null }}
           className="rounded-full border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
         >
-          Close
-        </Link>
+          {closeLabel}
+        </TrackerLink>
       </header>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        <Field label="Stage">
+        <Field label={stageLabel}>
           <StageSelect
             lead={lead}
-            readOnly={readOnly}
+            readOnly={isReadOnly}
             isSample={isSample}
             size="md"
-            onResult={onResult}
+            onResult={setFlash}
           />
         </Field>
-        <Field label="Source">
+        <Field label={sourceLabel}>
           <SourceSelect
             leadId={lead.id}
             source={lead.source}
-            readOnly={readOnly}
+            readOnly={isReadOnly}
             isSample={isSample}
-            onResult={onResult}
+            onResult={setFlash}
           />
         </Field>
-        <Field label="Captured">
+        <Field label={capturedLabel}>
           <EditableCell
             leadId={lead.id}
             field="created_at"
@@ -106,7 +131,7 @@ export default function LeadDetail({
             {...edit}
           />
         </Field>
-        <Field label="Email">
+        <Field label={emailLabel}>
           <EditableCell
             leadId={lead.id}
             field="email"
@@ -116,7 +141,7 @@ export default function LeadDetail({
             {...edit}
           />
         </Field>
-        <Field label="Phone">
+        <Field label={phoneLabel}>
           <EditableCell
             leadId={lead.id}
             field="phone"
@@ -128,7 +153,7 @@ export default function LeadDetail({
         </Field>
       </div>
 
-      {lead.lost ? (
+      {showLostPanel && lead.lost ? (
         <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
             Closed — lost
@@ -142,7 +167,7 @@ export default function LeadDetail({
       ) : null}
 
       <div className="mt-6">
-        <Field label="Interest">
+        <Field label={interestLabel}>
           <EditableCell
             leadId={lead.id}
             field="interest"
@@ -155,7 +180,7 @@ export default function LeadDetail({
         </Field>
       </div>
 
-      {lead.chatTopic !== null ? (
+      {showChatbotPanel && lead.chatTopic !== null ? (
         <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-4">
           <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-sky-800">
             Captured from chatbot
@@ -184,7 +209,7 @@ export default function LeadDetail({
       ) : null}
 
       <div className="mt-6">
-        <Field label="Notes">
+        <Field label={notesLabel}>
           <EditableCell
             leadId={lead.id}
             field="notes"

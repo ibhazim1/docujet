@@ -6,6 +6,9 @@ type ChartCardProps = {
   footnote?: string;
   columns: string[];
   rows: Array<Array<string | number>>;
+  /** The "View as table" twin. Hiding it costs the chart its text alternative. */
+  showTable?: boolean;
+  className?: string;
   children: ReactNode;
 };
 
@@ -21,10 +24,14 @@ export default function ChartCard({
   footnote,
   columns,
   rows,
+  showTable = true,
+  className = "",
   children,
 }: ChartCardProps) {
   return (
-    <section className="self-start rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+    <section
+      className={`self-start rounded-3xl border border-slate-200 bg-white p-5 shadow-sm ${className}`}
+    >
       <header>
         <h3 className="text-base font-semibold text-slate-950">{title}</h3>
         {subtitle ? <p className="mt-1 text-sm text-slate-500">{subtitle}</p> : null}
@@ -34,6 +41,7 @@ export default function ChartCard({
 
       {footnote ? <p className="mt-4 text-xs leading-5 text-slate-500">{footnote}</p> : null}
 
+      {showTable ? (
       <details className="group mt-4 border-t border-slate-200 pt-3">
         <summary className="cursor-pointer text-xs font-semibold text-sky-800 marker:content-['']">
           View as table
@@ -69,6 +77,7 @@ export default function ChartCard({
           </table>
         </div>
       </details>
+      ) : null}
     </section>
   );
 }

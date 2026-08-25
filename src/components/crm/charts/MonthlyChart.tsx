@@ -1,7 +1,16 @@
+"use client";
+
 import ChartCard from "./ChartCard";
 import { ACCENT } from "./tokens";
-import type { MonthlyRow } from "@/lib/crm/analytics";
-import { niceTop, pctOf } from "@/lib/crm/analytics";
+import { useLeadTracker } from "../TrackerContext";
+import { monthlyStats, niceTop, pctOf } from "@/lib/crm/analytics";
+
+type MonthlyChartProps = {
+  title?: string;
+  subtitle?: string;
+  showTable?: boolean;
+  className?: string;
+};
 
 /**
  * Leads captured per month — a magnitude-over-time column chart, one hue.
@@ -9,14 +18,23 @@ import { niceTop, pctOf } from "@/lib/crm/analytics";
  * The axis top rounds to a clean number so the midpoint tick is whole, and the
  * gridlines are solid hairlines rather than dashes.
  */
-export default function MonthlyChart({ rows }: { rows: MonthlyRow[] }) {
+export default function MonthlyChart({
+  title = "Leads captured per month",
+  subtitle = "All sources combined",
+  showTable = true,
+  className = "",
+}: MonthlyChartProps) {
+  const { visible } = useLeadTracker();
+  const rows = monthlyStats(visible);
   if (rows.length === 0) return null;
   const top = niceTop(Math.max(1, ...rows.map((row) => row.count)));
 
   return (
     <ChartCard
-      title="Leads captured per month"
-      subtitle="All sources combined"
+      title={title}
+      subtitle={subtitle}
+      showTable={showTable}
+      className={className}
       columns={["Month", "Leads"]}
       rows={rows.map((row) => [row.label, row.count])}
     >
