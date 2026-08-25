@@ -4,8 +4,11 @@ import { PLASMIC } from "./plasmic-init";
 import ServiceCard from "./components/ServiceCard";
 import Navbar from "./components/Navbar";
 import AdminSidebar from "./components/admin/AdminSidebar";
+import AdminShell from "./components/admin/AdminShell";
 import AdminHeader from "./components/admin/AdminHeader";
 import DemoNotice from "./components/admin/DemoNotice";
+import LogoutButton from "./components/admin/LogoutButton";
+import { adminNavItems } from "./lib/admin-mock-data";
 import Hero from "./components/Hero";
 import ServicesSection from "./components/ServicesSection";
 import CallToAction from "./components/CallToAction";
@@ -59,12 +62,131 @@ PLASMIC.registerComponent(Navbar, {
   },
 });
 
-PLASMIC.registerComponent(AdminSidebar, {
-  name: "AdminSidebar",
-  displayName: "Admin Sidebar",
+// The admin frame. A coded admin page gets this from AdminSiteFallback; a
+// Plasmic-authored one does not, because Studio renders the page component on
+// its own — so the frame is an element a designer inserts and edits like any
+// other, rather than something the route welds on.
+PLASMIC.registerComponent(AdminShell, {
+  name: "AdminShell",
+  displayName: "Admin Shell",
+  description:
+    "The admin frame — fixed sidebar on desktop, drawer on mobile. Wrap an admin page in this to give it navigation.",
   props: {
     className: {
       type: "class",
+    },
+    showSidebar: {
+      type: "boolean",
+      displayName: "Sidebar",
+      description: "Off leaves only the content column — a full-bleed admin page.",
+      defaultValue: true,
+    },
+    menuLabel: {
+      type: "string",
+      displayName: "Mobile menu button",
+      defaultValue: "Menu",
+    },
+    mobileTitle: {
+      type: "string",
+      displayName: "Mobile bar title",
+      defaultValue: "DocuJet Admin",
+    },
+    drawerTitle: {
+      type: "string",
+      displayName: "Drawer title",
+      defaultValue: "Navigation",
+    },
+    closeLabel: {
+      type: "string",
+      displayName: "Drawer close button",
+      defaultValue: "Close",
+    },
+    children: {
+      type: "slot",
+      displayName: "Page",
+      unstable__isMainContentSlot: true,
+      // The shape every coded admin page uses: header flush to the top, then a
+      // padded column for the page's own content.
+      defaultValue: [
+        { type: "component", name: "AdminHeader" },
+        {
+          type: "vbox",
+          styles: {
+            width: "100%",
+            padding: "20px",
+            gap: "24px",
+            alignItems: "stretch",
+          },
+          children: [],
+        },
+      ],
+    },
+  },
+});
+
+PLASMIC.registerComponent(AdminSidebar, {
+  name: "AdminSidebar",
+  displayName: "Admin Sidebar",
+  description: "The admin navigation column. Already inside Admin Shell — insert it alone only when building a custom frame.",
+  props: {
+    className: {
+      type: "class",
+    },
+    brand: {
+      type: "string",
+      defaultValue: "DocuJet",
+    },
+    brandHref: {
+      type: "string",
+      displayName: "Brand link",
+      defaultValue: "/admin",
+    },
+    tagline: {
+      type: "string",
+      defaultValue: "Admin dashboard UI preview",
+    },
+    navItems: {
+      type: "array",
+      displayName: "Links",
+      itemType: {
+        type: "object",
+        nameFunc: (item: { label?: string }) => item?.label,
+        fields: {
+          label: { type: "string" },
+          href: { type: "string" },
+        },
+      },
+      // The real current nav, so Studio's canvas starts populated. Captured
+      // once at registration time; Studio's own value wins after a first edit.
+      defaultValue: [...adminNavItems],
+    },
+    showNote: {
+      type: "boolean",
+      displayName: "Bottom panel",
+      defaultValue: true,
+    },
+    noteTitle: {
+      type: "string",
+      defaultValue: "Security note",
+    },
+    noteBody: {
+      type: "string",
+      defaultValue: "Admin authentication and route protection are not active yet.",
+    },
+  },
+});
+
+PLASMIC.registerComponent(LogoutButton, {
+  name: "LogoutButton",
+  displayName: "Logout Button",
+  description: "Signs the admin out and returns to /login.",
+  props: {
+    className: {
+      type: "class",
+    },
+    label: {
+      type: "string",
+      defaultValue: "Logout",
     },
   },
 });
