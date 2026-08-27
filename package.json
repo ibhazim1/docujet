@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsx scripts/warm-embeddings.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

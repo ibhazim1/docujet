@@ -105,7 +105,16 @@ export async function retrieveContext(
   question: string,
   { limit = DEFAULT_LIMIT, minSimilarity = DEFAULT_MIN_SIMILARITY }: RetrieveOptions = {},
 ): Promise<RetrievedChunk[]> {
-  if (!isSupabaseConfigured()) return [];
+  if (!isSupabaseConfigured()) {
+    // Silent until now, which made an unconfigured deployment indistinguishable
+    // from a working one whose corpus simply had no answer — the assistant
+    // politely says "I don't know" to everything either way.
+    console.warn(
+      "[chat] SUPABASE_URL / SUPABASE_SECRET_KEY are not set — answering without the " +
+        "knowledge base, so the assistant knows nothing about the products.",
+    );
+    return [];
+  }
 
   let embedding: number[];
   try {

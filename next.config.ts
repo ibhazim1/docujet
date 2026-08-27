@@ -45,7 +45,13 @@ const nextConfig: NextConfig = {
    * together they are 53 MB against the 160 MB the excludes above remove.
    */
   outputFileTracingIncludes: {
-    "/api/chat": ["node_modules/onnxruntime-node/bin/napi-v6/linux/**"],
+    "/api/chat": [
+      "node_modules/onnxruntime-node/bin/napi-v6/linux/**",
+      // The embedding model itself, downloaded by the `prebuild` script. Ships
+      // with the function so the running server never has to write to disk or
+      // reach Hugging Face — see scripts/warm-embeddings.ts.
+      ".cache/transformers/**",
+    ],
   },
 };
 
