@@ -9,8 +9,9 @@
  * navigations, an open conversation survives moving between pages; the copy in
  * `sessionStorage` is what carries it across a hard reload.
  *
- * It knows nothing about n8n. It posts to `/api/chat` and renders whatever
- * comes back, which is what keeps the workflow swappable.
+ * It knows nothing about how an answer is produced. It posts to `/api/chat` and
+ * renders whatever comes back — which is why moving the assistant out of an n8n
+ * workflow and into this app (src/lib/chat/) did not touch this file.
  */
 
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
@@ -98,7 +99,11 @@ export default function ChatWidget({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   /**
-   * The id a memory node in the workflow can thread the conversation on.
+   * A stable id for this visitor's conversation.
+   *
+   * The server keeps no conversation state — the transcript below is what
+   * carries context, and it is sent with every question — so this is now only
+   * an abuse-control handle, passed through to the model provider as `user_id`.
    *
    * Created on first use rather than on mount, because most visitors never open
    * the panel and a page load should not be writing to their storage.
@@ -188,9 +193,9 @@ export default function ChatWidget({
   }, []);
 
   /**
-   * Starts a clean conversation: a fresh session id so the workflow's memory
-   * node (if any) does not carry old context forward, and an empty transcript
-   * so the visitor sees a blank panel to match.
+   * Starts a clean conversation: an empty transcript, so no earlier turn is
+   * sent as context again, and a fresh session id to match — the panel and the
+   * server should agree that this is a new conversation.
    */
   const resetSession = useCallback(() => {
     sessionIdRef.current = newId();

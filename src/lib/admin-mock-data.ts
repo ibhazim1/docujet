@@ -87,9 +87,13 @@ export const integrationStatuses: Array<{
     description: "Public site content components are already registered for visual editing.",
   },
   {
-    name: "n8n",
-    status: "Planned",
-    description: "Workflow automation can be connected later for alerts and follow-ups.",
+    // Status is fixed copy here and replaced by the Settings page, which can
+    // see whether the key is actually set — same treatment as Supabase below.
+    name: "DeepSeek",
+    status: "Not configured",
+    description:
+      "Answers the website assistant. It reads the knowledge base in kb_chunks, which is " +
+      "rebuilt by `npm run kb:ingest`.",
   },
   {
     // The only row here whose status is not fixed copy — the Settings page

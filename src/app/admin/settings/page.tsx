@@ -40,13 +40,19 @@ export default async function AdminSettingsPage() {
 
   const safeSettings = toSafeSettingsView(settings);
 
-  // The rest of the sidebar is fixed copy, but the database is the one thing
-  // this page can actually answer for, so it answers.
-  const integrations = integrationStatuses.map((integration) =>
-    integration.name === "Supabase"
-      ? { ...integration, status: notice === null ? ("Connected" as const) : integration.status }
-      : integration,
-  );
+  // The rest of the sidebar is fixed copy, but the database and the assistant's
+  // API key are the two things this page can actually answer for, so it answers.
+  // Neither check is a health check: a key that is set can still be rejected,
+  // and that shows up in the server log, not here.
+  const integrations = integrationStatuses.map((integration) => {
+    if (integration.name === "Supabase" && notice === null) {
+      return { ...integration, status: "Connected" as const };
+    }
+    if (integration.name === "DeepSeek" && process.env.DEEPSEEK_API_KEY?.trim()) {
+      return { ...integration, status: "Connected" as const };
+    }
+    return integration;
+  });
 
   return (
     <AdminShell>

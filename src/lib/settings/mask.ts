@@ -12,7 +12,6 @@ import type { SiteSettings } from "./types";
 export type MaskedSecret = { isSet: boolean; masked: string };
 
 export type SafeIntegrationSettings = {
-  n8nWebhookUrl: MaskedSecret;
   plasmicProjectId: string;
   plasmicApiToken: MaskedSecret;
 };
@@ -34,7 +33,6 @@ export function toSafeSettingsView(settings: SiteSettings): SafeSiteSettings {
     business: settings.business,
     chat: settings.chat,
     integrations: {
-      n8nWebhookUrl: maskSecret(settings.integrations.n8nWebhookUrl),
       plasmicProjectId: settings.integrations.plasmicProjectId,
       plasmicApiToken: maskSecret(settings.integrations.plasmicApiToken),
     },
