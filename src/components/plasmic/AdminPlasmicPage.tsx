@@ -1,4 +1,4 @@
-import { PLASMIC } from "@/plasmic-init";
+import { fetchPlasmicPage } from "./fetchPlasmicPage";
 import PublicPlasmicPageClient from "./PublicPlasmicPageClient";
 import AdminSiteFallback from "./AdminSiteFallback";
 
@@ -11,7 +11,7 @@ export default async function AdminPlasmicPage({
   path,
   fallback,
 }: AdminPlasmicPageProps) {
-  const plasmicData = await PLASMIC.maybeFetchComponentData(path);
+  const plasmicData = await fetchPlasmicPage(path);
 
   if (!plasmicData) {
     return <AdminSiteFallback>{fallback}</AdminSiteFallback>;

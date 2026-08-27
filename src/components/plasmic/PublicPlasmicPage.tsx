@@ -1,4 +1,4 @@
-import { PLASMIC } from "@/plasmic-init";
+import { fetchPlasmicPage } from "./fetchPlasmicPage";
 import PublicPlasmicPageClient from "./PublicPlasmicPageClient";
 import PublicSiteFallback from "./PublicSiteFallback";
 
@@ -11,7 +11,7 @@ export default async function PublicPlasmicPage({
   path,
   fallback,
 }: PublicPlasmicPageProps) {
-  const plasmicData = await PLASMIC.maybeFetchComponentData(path);
+  const plasmicData = await fetchPlasmicPage(path);
 
   if (!plasmicData) {
     return <PublicSiteFallback>{fallback}</PublicSiteFallback>;
