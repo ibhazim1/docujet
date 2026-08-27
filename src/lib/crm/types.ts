@@ -86,6 +86,33 @@ export type Lead = {
   lost: boolean;
 };
 
+/**
+ * One booked appointment, as the lead card shows it.
+ *
+ * It lives here, in the CRM's pure types, rather than beside the `appointments`
+ * reader — the components that render it are `"use client"`, and a type is the
+ * only thing they can safely take from a module that holds the service key.
+ *
+ * `leadId` is `appointments.lead_id`, the link 0003 established. What this
+ * leaves out — the additional notes, the booking source — is on
+ * /admin/appointments; this is the summary a rep needs while reading a lead,
+ * not the booking record.
+ */
+export type LeadAppointment = {
+  id: string;
+  leadId: string;
+  /** What they asked about. */
+  product: string;
+  /** 'Product Consultation', 'Pricing Discussion', … — a CHECK, not an enum. */
+  type: string;
+  /** Y-m-d. */
+  date: string;
+  /** 'HH:MM'. Postgres hands back 'HH:MM:SS'; the seconds are always zero. */
+  time: string;
+  /** 'Pending' | 'Confirmed' | 'Completed' | 'Cancelled'. */
+  status: string;
+};
+
 /** The dashboard's filter state, all of it carried in the query string. */
 export type LeadFilters = {
   q: string;

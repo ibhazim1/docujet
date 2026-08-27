@@ -19,7 +19,7 @@
  * problem, and a single "Lost" bucket cannot tell them apart.
  */
 
-import type { Lead, OpenStageKey, SourceKey } from "./types";
+import type { Lead, LeadAppointment, OpenStageKey, SourceKey } from "./types";
 
 /** The date the PHP prototype treats as "today", so its sample numbers stay stable. */
 export const SAMPLE_TODAY = "2026-07-31";
@@ -133,4 +133,73 @@ export const SAMPLE_LEADS: Lead[] = [
   lead("L-1060", "Jason Kok Wai Loon", "Facilities Manager", "jason@wismacemerlang.example", "+60 12-889 4470", "form", "sql", "2026-04-28", "Managed print for a 22-floor tower", { notes: "Walkthrough scheduled." }),
   lead("L-1069", "Ismail bin Daud", "Warehouse Manager", "ismail.d@cahayalog.example", "+60 12-664 3320", "form", "mql", "2026-06-16", "Delivery note archiving", { notes: "Requested a callback." }),
   lead("L-1089", "Mohd Faizal bin Yusof", "Admin Head", "faizal@pkn.example", "+60 19-882 6642", "form", "lead", "2026-07-30", "Records digitisation enquiry", { notes: "Form submission only, no detail given." }),
+];
+
+/**
+ * Seed appointments, for the same two jobs the leads above do — except that
+ * nothing writes these to the database. `appointments` rows are created by
+ * `create_booking`, never seeded, so these exist only so the lead card's
+ * Appointments section has something to show in the Plasmic canvas and in any
+ * bare render.
+ *
+ * They deliberately cover all four statuses and both sides of `SAMPLE_TODAY`
+ * (2026-07-31), so the section can be styled against a past booking and an
+ * upcoming one at once. `L-1076` is here because it is the lead a designer
+ * lands on first.
+ */
+export const SAMPLE_APPOINTMENTS: LeadAppointment[] = [
+  {
+    id: "sample-apt-1",
+    leadId: "L-1042",
+    product: "Document management rollout across 4 branches",
+    type: "Pricing Discussion",
+    date: "2026-08-04",
+    time: "10:00",
+    status: "Confirmed",
+  },
+  {
+    id: "sample-apt-2",
+    leadId: "L-1042",
+    product: "Document management rollout across 4 branches",
+    type: "Product Demonstration",
+    date: "2026-06-19",
+    time: "14:30",
+    status: "Completed",
+  },
+  {
+    id: "sample-apt-3",
+    leadId: "L-1076",
+    product: "Curious about scanning services",
+    type: "Product Consultation",
+    date: "2026-08-06",
+    time: "11:15",
+    status: "Pending",
+  },
+  {
+    id: "sample-apt-4",
+    leadId: "L-1030",
+    product: "Claims document processing, enterprise rollout",
+    type: "After-Sales Support",
+    date: "2026-07-22",
+    time: "09:30",
+    status: "Completed",
+  },
+  {
+    id: "sample-apt-5",
+    leadId: "L-1046",
+    product: "Back-office document workflow, 9 hotels",
+    type: "Technical Consultation",
+    date: "2026-07-09",
+    time: "16:00",
+    status: "Cancelled",
+  },
+  {
+    id: "sample-apt-6",
+    leadId: "L-1057",
+    product: "Regulated records archive with audit trail",
+    type: "Product Consultation",
+    date: "2026-08-11",
+    time: "15:00",
+    status: "Confirmed",
+  },
 ];

@@ -31,12 +31,17 @@ import FilterSelect from "./filters/FilterSelect";
 import SearchInput from "./filters/SearchInput";
 import { LeadTrackerProvider, useLeadTracker } from "./TrackerContext";
 import { STAGE_KEYS } from "@/lib/crm/taxonomy";
-import type { Lead, ViewKey } from "@/lib/crm/types";
+import type { Lead, LeadAppointment, ViewKey } from "@/lib/crm/types";
 
 export type LeadTrackerProps = {
   className?: string;
   /** The lead book. Falls back to the seed rows when absent — the Studio canvas. */
   leads?: Lead[];
+  /**
+   * The bookings behind those leads, shown on the lead card. Falls back to the
+   * seed appointments only when the book itself is sampled.
+   */
+  appointments?: LeadAppointment[];
   /**
    * Y-m-d, resolved on the server so client and server agree on "this week".
    * Empty means whatever the loaded book came with.
@@ -142,8 +147,19 @@ function StandardLayout({
  * bind any text on the page to `$ctx.leadTracker.…` without writing code.
  */
 function PublishTrackerData({ children }: { children: ReactNode }) {
-  const { visible, allLeads, stats, sources, query, view, today, selected, filtered } =
-    useLeadTracker();
+  const {
+    visible,
+    allLeads,
+    stats,
+    sources,
+    query,
+    view,
+    today,
+    selected,
+    filtered,
+    appointments,
+    appointmentsFor,
+  } = useLeadTracker();
 
   return (
     <DataProvider
@@ -162,6 +178,8 @@ function PublishTrackerData({ children }: { children: ReactNode }) {
         view,
         today,
         selected,
+        appointments,
+        selectedAppointments: selected ? appointmentsFor(selected.id) : [],
       }}
     >
       {children}
@@ -190,6 +208,7 @@ function PublishTrackerData({ children }: { children: ReactNode }) {
 export default function LeadTracker({
   className = "",
   leads,
+  appointments,
   today,
   autoLoad = true,
   defaultView = "table",
@@ -202,6 +221,7 @@ export default function LeadTracker({
   return (
     <LeadTrackerProvider
       leads={leads}
+      appointments={appointments}
       // An empty string is Studio's "not set", not a date.
       today={today || undefined}
       autoLoad={autoLoad}

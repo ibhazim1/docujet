@@ -8,6 +8,7 @@ import StageSelect from "./StageSelect";
 import { TrackerLink, useLeadTracker } from "./TrackerContext";
 import { prettyDate } from "@/lib/crm/analytics";
 import { STAGES } from "@/lib/crm/taxonomy";
+import type { MouseEvent } from "react";
 import type { Lead, SortKey } from "@/lib/crm/types";
 
 /** Every column the table knows how to draw. */
@@ -36,6 +37,8 @@ type LeadTableProps = {
   columns?: LeadColumn[];
   /** The `L-1088 · open` link under each name, which opens the detail panel. */
   showOpenLink?: boolean;
+  /** Clicking anywhere on a row that is not a control opens that lead's card. */
+  rowClickOpens?: boolean;
   /** Overrides the tracker's setting for this table only. */
   readOnly?: boolean;
   className?: string;
@@ -87,26 +90,45 @@ export const DEFAULT_COLUMNS: LeadColumn[] = [
   { field: "notes" },
 ];
 
+/** What a click has to miss for the row itself to claim it. */
+const CONTROLS = "a, button, select, input, textarea, label, [contenteditable]";
+
 /**
  * The working list.
  *
  * Every captured field is edited in place: click a value, type, press Enter.
  * Stage and source are closed sets and get controls; the rest are free text.
  * Only the id is fixed, because it is the row's identity in the database.
+ *
+ * The row is also a click target for opening the lead's card — but only where
+ * no cell control is, since every editable value is a button and clicking one
+ * means "edit this", not "open the lead".
  */
 export default function LeadTable({
   columns,
   showOpenLink = true,
+  rowClickOpens = true,
   readOnly,
   className = "",
 }: LeadTableProps) {
   const tracker = useLeadTracker();
-  const { visible, query, isSample, setFlash } = tracker;
+  const { visible, query, isSample, setFlash, apply } = tracker;
   const isReadOnly = readOnly ?? tracker.readOnly;
   const edit = { readOnly: isReadOnly, isSample, onResult: setFlash };
 
   const shown = (columns?.length ? columns : DEFAULT_COLUMNS).filter((column) => HEADERS[column.field]);
   const minWidth = Math.max(560, shown.length * 155);
+
+  function openLead(event: MouseEvent<HTMLTableRowElement>, lead: Lead) {
+    // A click that landed on a cell's own control belongs to that control: the
+    // editable values are buttons, stage and source are selects, and the id is
+    // a link that already opens the card.
+    if ((event.target as HTMLElement).closest(CONTROLS)) return;
+    // Nor one that ended a text selection — dragging across a phone number to
+    // copy it should not also open the card.
+    if (!window.getSelection()?.isCollapsed) return;
+    apply({ lead: lead.id });
+  }
 
   function cell(column: LeadColumn, lead: Lead) {
     switch (column.field) {
@@ -270,9 +292,17 @@ export default function LeadTable({
             {visible.map((lead) => (
               <tr
                 key={lead.id}
+                // The row is a mouse convenience, not the accessible control:
+                // the `L-1088 · open` link in the name cell is what a keyboard
+                // and a screen reader use, which is why it stays.
+                onClick={rowClickOpens ? (event) => openLead(event, lead) : undefined}
                 className={`border-t border-slate-200 align-top ${lead.lost ? "opacity-60" : ""} ${
-                  lead.id === query.leadId ? "bg-sky-50" : ""
-                }`}
+                  lead.id === query.leadId
+                    ? "bg-sky-50"
+                    : rowClickOpens
+                      ? "hover:bg-slate-50"
+                      : ""
+                } ${rowClickOpens ? "cursor-pointer" : ""}`}
               >
                 {shown.map((column, index) => (
                   <td

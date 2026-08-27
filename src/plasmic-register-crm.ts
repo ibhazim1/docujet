@@ -639,6 +639,13 @@ PLASMIC.registerComponent(LeadTable, {
       description: "The 'L-1088 · open' link under each name, which opens the detail panel.",
       defaultValue: true,
     },
+    rowClickOpens: {
+      type: "boolean",
+      displayName: "Click a row to open",
+      description:
+        "Clicking anywhere on a row that is not a control opens that lead's card. The row link stays the keyboard route either way.",
+      defaultValue: true,
+    },
     readOnly: {
       type: "boolean",
       displayName: "Read-only",
@@ -710,12 +717,23 @@ PLASMIC.registerComponent(LeadDetail, {
   name: "LeadDetail",
   displayName: "Lead Detail Panel",
   description:
-    "Everything the book holds about one lead. Appears when a lead is opened from the table or the board.",
+    "Everything the book holds about one lead, including the appointments they have booked. Appears when a lead is opened from the table or the board.",
   importPath: "@/components/crm/LeadDetail",
   isDefaultExport: true,
   parentComponentName: GROUP,
   props: {
     className: { type: "class" },
+    presentation: {
+      type: "choice",
+      displayName: "Appears as",
+      description:
+        "A pop-up floats over a dimmed page and closes on Escape or a backdrop click. In place renders it wherever this element sits.",
+      options: [
+        { value: "modal", label: "Pop-up over the page" },
+        { value: "panel", label: "In place" },
+      ],
+      defaultValue: "modal",
+    },
     alwaysShow: {
       type: "boolean",
       displayName: "Always visible",
@@ -730,7 +748,20 @@ PLASMIC.registerComponent(LeadDetail, {
     phoneLabel: { type: "string", defaultValue: "Phone" },
     interestLabel: { type: "string", defaultValue: "Interest" },
     notesLabel: { type: "string", defaultValue: "Notes" },
+    appointmentsLabel: { type: "string", defaultValue: "Appointments" },
+    noAppointmentsText: {
+      type: "string",
+      displayName: "No appointments text",
+      defaultValue: "No appointments booked.",
+    },
     closeLabel: { type: "string", defaultValue: "Close" },
+    showAppointments: {
+      type: "boolean",
+      displayName: "Appointments list",
+      description:
+        "What this lead has booked — date, time and status. Read-only; statuses are worked on the Appointments page.",
+      defaultValue: true,
+    },
     showLostPanel: {
       type: "boolean",
       displayName: "Lost explainer",

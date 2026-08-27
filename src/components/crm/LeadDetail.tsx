@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import StatusBadge from "@/components/admin/StatusBadge";
 import EditableCell from "./EditableCell";
 import SourceSelect from "./SourceSelect";
 import StageSelect from "./StageSelect";
@@ -13,6 +15,12 @@ type LeadDetailProps = {
    * panel can be seen and styled without clicking a row first.
    */
   alwaysShow?: boolean;
+  /**
+   * `modal` floats the card over a dimmed page and dismisses on Escape, the
+   * backdrop or Close — what clicking a table row does. `panel` renders it in
+   * place, below whatever it sits under.
+   */
+  presentation?: "modal" | "panel";
   stageLabel?: string;
   sourceLabel?: string;
   capturedLabel?: string;
@@ -20,7 +28,11 @@ type LeadDetailProps = {
   phoneLabel?: string;
   interestLabel?: string;
   notesLabel?: string;
+  appointmentsLabel?: string;
+  noAppointmentsText?: string;
   closeLabel?: string;
+  /** The booked-appointment list. */
+  showAppointments?: boolean;
   /** The "closed — lost" explainer, shown only on a lost lead. */
   showLostPanel?: boolean;
   /** The captured-from-chatbot quote, shown only on a chatbot lead. */
@@ -44,6 +56,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 /** Everything the book holds about one lead. */
 export default function LeadDetail({
   alwaysShow = false,
+  presentation = "modal",
   stageLabel = "Stage",
   sourceLabel = "Source",
   capturedLabel = "Captured",
@@ -51,22 +64,54 @@ export default function LeadDetail({
   phoneLabel = "Phone",
   interestLabel = "Interest",
   notesLabel = "Notes",
+  appointmentsLabel = "Appointments",
+  noAppointmentsText = "No appointments booked.",
   closeLabel = "Close",
+  showAppointments = true,
   showLostPanel = true,
   showChatbotPanel = true,
   readOnly,
   className = "",
 }: LeadDetailProps) {
   const tracker = useLeadTracker();
-  const { selected, visible, today, isSample, setFlash } = tracker;
+  const { selected, visible, today, isSample, setFlash, appointmentsFor, apply } = tracker;
   const isReadOnly = readOnly ?? tracker.readOnly;
 
   const lead = selected ?? (alwaysShow ? visible[0] ?? null : null);
+  const asModal = presentation === "modal" && lead !== null;
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Escape closes, and the page behind stops scrolling while the card is up.
+  // Both belong to the modal alone — in `panel` mode the card is part of the
+  // document, and taking the page's scroll away would be a bug.
+  useEffect(() => {
+    if (!asModal) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") apply({ lead: null });
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKeyDown);
+
+    // Focus moves into the card, so the keyboard is not left behind on the row
+    // that opened it. Not a full focus trap: Tab still reaches the page under
+    // the backdrop, which is the honest limit of this without <dialog>.
+    dialogRef.current?.focus();
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [asModal, apply]);
+
   if (!lead) return null;
 
   const edit = { readOnly: isReadOnly, isSample, onResult: setFlash };
+  const booked = appointmentsFor(lead.id);
 
-  return (
+  const card = (
     <section
       id="lead-detail"
       className={`scroll-mt-6 rounded-3xl border border-slate-200 border-l-4 border-l-sky-800 bg-white p-6 shadow-sm ${className}`}
@@ -189,6 +234,42 @@ export default function LeadDetail({
         </Field>
       </div>
 
+      {/* Read-only, unlike every field above it. A booking records something
+          that was agreed with the person; it is not a value a rep revises from
+          here, and /admin/appointments is where its status is worked. */}
+      {showAppointments ? (
+        <div className="mt-6">
+          <Field label={appointmentsLabel}>
+            {booked.length === 0 ? (
+              <p className="text-slate-500">{noAppointmentsText}</p>
+            ) : (
+              <ul className="space-y-2">
+                {booked.map((appointment) => (
+                  <li
+                    key={appointment.id}
+                    className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium text-slate-900">
+                        {prettyDate(appointment.date)} at {appointment.time}
+                        <span className="ml-2 font-normal text-slate-500">
+                          ({ago(appointment.date, today)})
+                        </span>
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        {appointment.type}
+                        {appointment.product ? ` · ${appointment.product}` : ""}
+                      </p>
+                    </div>
+                    <StatusBadge status={appointment.status} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Field>
+        </div>
+      ) : null}
+
       {showChatbotPanel && lead.chatTopic !== null ? (
         <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-4">
           <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-sky-800">
@@ -231,5 +312,32 @@ export default function LeadDetail({
         </Field>
       </div>
     </section>
+  );
+
+  if (!asModal) return card;
+
+  return (
+    <div
+      // z-50 clears the admin shell's sticky mobile bar (z-30) and its drawer
+      // (z-40). `items-start` inside a scrolling overlay rather than a centred
+      // flex child, so a long card scrolls instead of overflowing off both ends.
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-950/50 p-4 sm:p-8"
+      // Only a click that landed on the backdrop itself closes. Without the
+      // target check, releasing a text selection inside the card would too.
+      onClick={(event) => {
+        if (event.target === event.currentTarget) apply({ lead: null });
+      }}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Lead ${lead.name || lead.id}`}
+        tabIndex={-1}
+        className="w-full max-w-3xl outline-none"
+      >
+        {card}
+      </div>
+    </div>
   );
 }

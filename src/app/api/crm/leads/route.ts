@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { resolveToday } from "@/lib/crm/analytics";
 import { fetchLeads, isSupabaseConfigured } from "@/lib/crm/leads";
+import { getLeadAppointments } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * The lead book, for a tracker that was not handed one.
+ * The lead book and its appointments, for a tracker that was not handed them.
  *
  * `/admin/leads` reads the rows on the server and passes them straight down, so
  * it never touches this. It exists for the Plasmic-authored version of the
@@ -40,6 +41,7 @@ export async function GET() {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({
       leads: null,
+      appointments: null,
       today,
       notice:
         "No Supabase project is configured — SUPABASE_URL and SUPABASE_SECRET_KEY are not set in .env.",
@@ -47,10 +49,16 @@ export async function GET() {
   }
 
   try {
-    return NextResponse.json({ leads: await fetchLeads(), today, notice: null });
+    const [leads, booked] = await Promise.all([fetchLeads(), getLeadAppointments()]);
+
+    // A failed appointment read is not worth losing the book over: the card
+    // shows "No appointments booked", every other view is unaffected, and the
+    // notice is reserved for the failure that empties the page.
+    return NextResponse.json({ leads, appointments: booked.data, today, notice: null });
   } catch (cause) {
     return NextResponse.json({
       leads: null,
+      appointments: null,
       today,
       notice: cause instanceof Error ? cause.message : "Could not read the leads table.",
     });
