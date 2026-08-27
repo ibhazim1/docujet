@@ -3,22 +3,37 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import AdminTable from "@/components/admin/AdminTable";
 import SearchInput from "@/components/admin/SearchInput";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { getAdminCustomers } from "@/lib/supabase/admin";
+import { LOST_STAGE, STAGES } from "@/lib/crm/taxonomy";
+import { getCustomerLeads } from "@/lib/supabase/admin";
 
 type AdminCustomersPageProps = {
   className?: string;
 };
 
+/**
+ * The two labels a lead at the Customer stage can display.
+ *
+ * Read from the taxonomy rather than typed out, so renaming a stage renames it
+ * here too. The earlier vocabulary — Active / Prospect / Needs Follow-up — was
+ * a second lifecycle running alongside `stage`, and went away with the
+ * `customers` table.
+ */
+const statusOptions = [
+  "All Statuses",
+  STAGES.customer.label,
+  STAGES[LOST_STAGE].label,
+];
+
 export default async function AdminCustomersPage({
   className,
 }: AdminCustomersPageProps) {
-  const { data: customers, error } = await getAdminCustomers();
+  const { data: customers, error } = await getCustomerLeads();
 
   return (
     <div className={className ?? ""}>
       <AdminHeader
         title="Customers"
-        description="Customer directory synced from Supabase."
+        description="Leads that reached the Customer stage, with their appointment history."
       />
 
       <div className="space-y-6 p-5 md:p-8">
@@ -27,7 +42,7 @@ export default async function AdminCustomersPage({
           <label className="block">
             <span className="mb-2 block text-sm font-medium text-slate-700">Status</span>
             <select className={inputClassName} defaultValue="All Statuses">
-              {["All Statuses", "Active", "Prospect", "Needs Follow-up"].map((option) => (
+              {statusOptions.map((option) => (
                 <option key={option}>{option}</option>
               ))}
             </select>
@@ -39,7 +54,7 @@ export default async function AdminCustomersPage({
         ) : customers.length === 0 ? (
           <EmptyState
             title="No customers yet"
-            description="Customer records will appear here after bookings are created in Supabase."
+            description="A lead appears here once its stage is moved to Customer on the Leads page."
           />
         ) : (
           <AdminTable>
@@ -75,12 +90,12 @@ export default async function AdminCustomersPage({
                       <StatusBadge status={customer.status} />
                     </td>
                     <td className="px-5 py-4">
-                      <button
-                        type="button"
-                        className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                      <a
+                        href={`/admin/leads?lead=${encodeURIComponent(customer.id)}`}
+                        className="inline-flex rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                       >
                         View Details
-                      </button>
+                      </a>
                     </td>
                   </tr>
                 ))}

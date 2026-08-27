@@ -25,6 +25,14 @@ import type { Lead, OpenStageKey, SourceKey } from "./types";
 export const SAMPLE_TODAY = "2026-07-31";
 
 type LeadExtras = {
+  /**
+   * The organisation. An extra rather than a tenth positional argument: these
+   * rows are a verbatim transcription of `data.php`, which had no such column,
+   * and widening the signature would touch every one of the call sites below
+   * to say nothing. Seeded leads therefore carry no company until a rep fills
+   * one in — the booking form supplies it for every lead created from now on.
+   */
+  company?: string;
   chatTopic?: string;
   cited?: string[];
   notes?: string;
@@ -48,6 +56,7 @@ function lead(
     id,
     name,
     title,
+    company: extras.company ?? "",
     email,
     phone,
     source,
@@ -55,6 +64,7 @@ function lead(
     createdAt,
     interest,
     chatTopic: extras.chatTopic ?? null,
+    lastContactAt: null,
     cited: extras.cited ?? [],
     notes: extras.notes ?? "",
     lost: extras.lost ?? false,

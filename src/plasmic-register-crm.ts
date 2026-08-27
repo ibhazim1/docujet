@@ -58,6 +58,7 @@ const STAGE_OPTIONS = [
 
 const COLUMN_OPTIONS = [
   { value: "name", label: "Lead name" },
+  { value: "company", label: "Company" },
   { value: "email", label: "Email" },
   { value: "phone", label: "Phone" },
   { value: "source", label: "Source" },

@@ -18,8 +18,8 @@
  * importing the wrong one here fails silently rather than loudly.
  *
  * Importing this module is therefore a deliberate statement that the caller
- * intends to bypass RLS. Today that is exactly three places: the lead book,
- * the settings store, and the seed script.
+ * intends to bypass RLS. Today that is the lead book, the settings
+ * store, the two /admin tables in `admin.ts`, and the seed script.
  *
  * ---------------------------------------------------------------------------
  * Server-side only: `SUPABASE_SECRET_KEY` must never reach a `"use client"`

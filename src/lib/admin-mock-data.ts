@@ -12,8 +12,6 @@ export type LeadStatus =
   | "Won"
   | "Lost";
 
-export type CustomerStatus = "Active" | "Prospect" | "Needs Follow-up";
-
 export type ServiceStatus = "Active" | "Draft" | "Disabled";
 
 export type Appointment = {
@@ -39,17 +37,6 @@ export type Lead = {
   source: string;
   status: LeadStatus;
   createdDate: string;
-};
-
-export type Customer = {
-  id: string;
-  customer: string;
-  company: string;
-  email: string;
-  phone: string;
-  appointments: number;
-  lastContact: string;
-  status: CustomerStatus;
 };
 
 export type AdminService = {
@@ -81,7 +68,7 @@ export const dashboardStats = [
   { label: "Total Appointments", value: "128", helper: "Demo total for UI preview" },
   { label: "Pending Appointments", value: "14", helper: "Awaiting confirmation" },
   { label: "New Leads", value: "22", helper: "Captured this month" },
-  { label: "Total Customers", value: "64", helper: "Mock customer directory count" },
+  { label: "Total Customers", value: "64", helper: "Leads at the Customer stage" },
 ];
 
 export const appointments: Appointment[] = [
@@ -168,39 +155,6 @@ export const leads: Lead[] = [
     source: "Manual Entry",
     status: "Proposal",
     createdDate: "2026-08-05",
-  },
-];
-
-export const customers: Customer[] = [
-  {
-    id: "CUS-301",
-    customer: "Joanne Lee",
-    company: "Brightpath Consulting",
-    email: "joanne@example.com",
-    phone: "+60 14-555 3011",
-    appointments: 3,
-    lastContact: "2026-08-08",
-    status: "Active",
-  },
-  {
-    id: "CUS-302",
-    customer: "Irfan Salleh",
-    company: "Horizon Printworks",
-    email: "irfan@example.com",
-    phone: "+60 14-555 3012",
-    appointments: 1,
-    lastContact: "2026-08-04",
-    status: "Prospect",
-  },
-  {
-    id: "CUS-303",
-    customer: "Melissa Chua",
-    company: "Sapphire Interiors",
-    email: "melissa@example.com",
-    phone: "+60 14-555 3013",
-    appointments: 5,
-    lastContact: "2026-08-10",
-    status: "Needs Follow-up",
   },
 ];
 
