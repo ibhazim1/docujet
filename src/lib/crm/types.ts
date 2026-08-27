@@ -64,6 +64,8 @@ export type Lead = {
   id: string;
   name: string;
   title: string;
+  /** The organisation. Was `customers.company_name` before that table folded in. */
+  company: string;
   email: string;
   phone: string;
   source: SourceKey;
@@ -72,6 +74,12 @@ export type Lead = {
   interest: string;
   /** The chatbot question that triggered capture. Chatbot-sourced leads only. */
   chatTopic: string | null;
+  /**
+   * When someone last spoke to them. Stamped by `create_booking`, never typed,
+   * which is why this is a real timestamp and `createdAt` above is not.
+   * Null means never contacted.
+   */
+  lastContactAt: string | null;
   /** Knowledge-base entry ids that answered it. Empty means the bot could not. */
   cited: string[];
   notes: string;
@@ -108,6 +116,7 @@ export type ViewKey = "table" | "board" | "charts";
 export type EditableField =
   | "name"
   | "title"
+  | "company"
   | "email"
   | "phone"
   | "created_at"

@@ -13,6 +13,7 @@ import type { Lead, SortKey } from "@/lib/crm/types";
 /** Every column the table knows how to draw. */
 export type ColumnKey =
   | "name"
+  | "company"
   | "email"
   | "phone"
   | "source"
@@ -42,6 +43,7 @@ type LeadTableProps = {
 
 const HEADERS: Record<ColumnKey, string> = {
   name: "Lead",
+  company: "Company",
   email: "Email",
   phone: "Phone",
   source: "Source",
@@ -55,6 +57,7 @@ const HEADERS: Record<ColumnKey, string> = {
 /** Fixed shares rather than auto widths — a long note must not move every other column. */
 const WIDTHS: Record<ColumnKey, string> = {
   name: "17%",
+  company: "16%",
   email: "19%",
   phone: "13%",
   source: "12%",
@@ -191,6 +194,16 @@ export default function LeadTable({
               </span>
             ) : null}
           </>
+        );
+      case "company":
+        return (
+          <EditableCell
+            leadId={lead.id}
+            field="company"
+            value={lead.company}
+            placeholder="No company"
+            {...edit}
+          />
         );
       case "title":
         return (

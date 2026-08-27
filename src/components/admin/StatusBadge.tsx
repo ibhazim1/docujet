@@ -12,10 +12,23 @@ const statusStyles: Record<string, string> = {
   Qualified: "bg-cyan-100 text-cyan-800",
   Proposal: "bg-orange-100 text-orange-800",
   Won: "bg-emerald-100 text-emerald-800",
-  Lost: "bg-rose-100 text-rose-800",
-  Active: "bg-emerald-100 text-emerald-800",
-  Prospect: "bg-blue-100 text-blue-800",
-  "Needs Follow-up": "bg-amber-100 text-amber-800",
+  // The lead lifecycle from src/lib/crm/taxonomy.ts. It is an ordered scale,
+  // not a set of categories, so it wears a single-hue ordinal ramp: further
+  // along reads as darker, exactly as STAGES encodes it.
+  //
+  // Lost deliberately leaves that ramp for grey. A lost lead has not
+  // progressed past Customer, so the next darker blue would encode it as the
+  // end of the progression — the one thing it is not — and losing leads is
+  // normal, so it should recede rather than alarm.
+  //
+  // These replaced Active / Prospect / Needs Follow-up, the parallel
+  // vocabulary that went away with the `customers` table.
+  Lead: "bg-blue-50 text-blue-700",
+  MQL: "bg-blue-100 text-blue-800",
+  SQL: "bg-blue-200 text-blue-900",
+  Opportunity: "bg-blue-300 text-blue-950",
+  Customer: "bg-blue-800 text-blue-50",
+  Lost: "bg-slate-200 text-slate-600",
   Draft: "bg-slate-200 text-slate-700",
   Disabled: "bg-rose-100 text-rose-800",
   "Not configured": "bg-slate-200 text-slate-700",

@@ -1,8 +1,28 @@
-import { createClient } from "./server";
+/**
+ * The two admin tables that read appointments.
+ *
+ * Both of these used to join `appointments` against a separate `customers`
+ * table. That table is gone: a person is a row in `crm_leads` now, and an
+ * appointment points at one through `appointments.lead_id`. "Customer" is no
+ * longer a table — it is `stage = 'customer'` in the lead lifecycle, which is
+ * what it always meant in the CRM.
+ *
+ * ---------------------------------------------------------------------------
+ * These read through the **service** client, not `server.ts`. `crm_leads` has
+ * RLS on with zero policies, so a publishable-key client reads it as an empty
+ * array *with no error* — every appointment would silently render "Unknown
+ * lead" and nothing would report a failure. `/admin/*` is already behind the
+ * route guard in `src/proxy.ts`, which is what makes bypassing RLS here safe.
+ * ---------------------------------------------------------------------------
+ */
+
+import { LOST_STAGE, STAGES } from "../crm/taxonomy";
+import type { StageKey } from "../crm/types";
+import { isSupabaseConfigured, supabase } from "./service";
 
 type AppointmentRow = {
   id: string;
-  customer_id: string;
+  lead_id: string;
   product_interest: string;
   appointment_type: string;
   preferred_date: string;
@@ -10,15 +30,20 @@ type AppointmentRow = {
   status: string;
 };
 
-type CustomerRow = {
+/** Only the columns these two views need — not the whole `Lead`. */
+type LeadContactRow = {
   id: string;
-  full_name: string;
-  company_name: string;
+  name: string;
+  company: string;
   email: string;
   phone: string;
-  status: string;
+  stage: string;
+  lost: boolean;
   last_contact_at: string | null;
 };
+
+const LEAD_CONTACT_COLUMNS =
+  "id, name, company, email, phone, stage, lost, last_contact_at";
 
 export type AdminAppointment = {
   id: string;
@@ -41,20 +66,41 @@ export type AdminCustomer = {
   phone: string;
   appointments: number;
   lastContact: string;
+  /** A stage *label* ("Customer", "Lost") — what `StatusBadge` colours. */
   status: string;
 };
 
-export async function getAdminAppointments() {
-  const supabase = await createClient();
+/**
+ * The label a lead's lifecycle wears in the admin tables.
+ *
+ * Mirrors `displayStage()` in `crm/analytics.ts` — a lost lead shows as Lost
+ * while its `stage` keeps recording how far it actually got — but takes a row
+ * rather than a full `Lead`, since that is all these queries select.
+ */
+function stageLabel(row: Pick<LeadContactRow, "stage" | "lost">): string {
+  const key = (row.lost ? LOST_STAGE : row.stage) as StageKey;
+  return STAGES[key]?.label ?? row.stage;
+}
 
-  const [appointmentsResult, customersResult] = await Promise.all([
-    supabase
+/** The same "we cannot reach the database" answer both callers return. */
+const NOT_CONFIGURED =
+  "Supabase is not configured. Set SUPABASE_URL and SUPABASE_SECRET_KEY in .env.";
+
+export async function getAdminAppointments() {
+  if (!isSupabaseConfigured()) {
+    return { data: [] as AdminAppointment[], error: NOT_CONFIGURED };
+  }
+
+  const client = supabase();
+
+  const [appointmentsResult, leadsResult] = await Promise.all([
+    client
       .from("appointments")
-      .select("id, customer_id, product_interest, appointment_type, preferred_date, preferred_time, status")
+      .select(
+        "id, lead_id, product_interest, appointment_type, preferred_date, preferred_time, status",
+      )
       .order("created_at", { ascending: false }),
-    supabase
-      .from("customers")
-      .select("id, full_name, company_name, email, phone, status, last_contact_at"),
+    client.from("crm_leads").select(LEAD_CONTACT_COLUMNS),
   ]);
 
   if (appointmentsResult.error) {
@@ -64,30 +110,24 @@ export async function getAdminAppointments() {
     };
   }
 
-  if (customersResult.error) {
-    return {
-      data: [] as AdminAppointment[],
-      error: customersResult.error.message,
-    };
+  if (leadsResult.error) {
+    return { data: [] as AdminAppointment[], error: leadsResult.error.message };
   }
 
-  const customerMap = new Map(
-    ((customersResult.data ?? []) as CustomerRow[]).map((customer) => [
-      customer.id,
-      customer,
-    ]),
+  const leadMap = new Map(
+    ((leadsResult.data ?? []) as LeadContactRow[]).map((lead) => [lead.id, lead]),
   );
 
   const data = ((appointmentsResult.data ?? []) as AppointmentRow[]).map(
     (appointment) => {
-      const customer = customerMap.get(appointment.customer_id);
+      const lead = leadMap.get(appointment.lead_id);
 
       return {
         id: appointment.id,
-        customer: customer?.full_name ?? "Unknown customer",
-        company: customer?.company_name ?? "Unknown company",
-        email: customer?.email ?? "Unknown email",
-        phone: customer?.phone ?? "Unknown phone",
+        customer: lead?.name ?? "Unknown lead",
+        company: lead?.company ?? "Unknown company",
+        email: lead?.email ?? "Unknown email",
+        phone: lead?.phone ?? "Unknown phone",
         product: appointment.product_interest,
         appointmentType: appointment.appointment_type,
         preferredDate: appointment.preferred_date,
@@ -100,22 +140,33 @@ export async function getAdminAppointments() {
   return { data, error: null };
 }
 
-export async function getAdminCustomers() {
-  const supabase = await createClient();
+/**
+ * The customer directory — leads that reached the Customer stage.
+ *
+ * Lost ones are kept rather than filtered out. `stage` records how far a lead
+ * got and never moves backwards, so a churned customer still has
+ * `stage = 'customer'`; hiding them would make the directory quietly disagree
+ * with the funnel, and their appointment history is exactly what someone
+ * looking at this page wants. `stageLabel` shows them as Lost.
+ */
+export async function getCustomerLeads() {
+  if (!isSupabaseConfigured()) {
+    return { data: [] as AdminCustomer[], error: NOT_CONFIGURED };
+  }
 
-  const [customersResult, appointmentsResult] = await Promise.all([
-    supabase
-      .from("customers")
-      .select("id, full_name, company_name, email, phone, status, last_contact_at")
-      .order("created_at", { ascending: false }),
-    supabase.from("appointments").select("customer_id"),
+  const client = supabase();
+
+  const [leadsResult, appointmentsResult] = await Promise.all([
+    client
+      .from("crm_leads")
+      .select(LEAD_CONTACT_COLUMNS)
+      .eq("stage", "customer")
+      .order("last_contact_at", { ascending: false, nullsFirst: false }),
+    client.from("appointments").select("lead_id"),
   ]);
 
-  if (customersResult.error) {
-    return {
-      data: [] as AdminCustomer[],
-      error: customersResult.error.message,
-    };
+  if (leadsResult.error) {
+    return { data: [] as AdminCustomer[], error: leadsResult.error.message };
   }
 
   if (appointmentsResult.error) {
@@ -127,27 +178,25 @@ export async function getAdminCustomers() {
 
   const appointmentCounts = new Map<string, number>();
 
-  (appointmentsResult.data ?? []).forEach((row: { customer_id: string }) => {
+  (appointmentsResult.data ?? []).forEach((row: { lead_id: string }) => {
     appointmentCounts.set(
-      row.customer_id,
-      (appointmentCounts.get(row.customer_id) ?? 0) + 1,
+      row.lead_id,
+      (appointmentCounts.get(row.lead_id) ?? 0) + 1,
     );
   });
 
-  const data = ((customersResult.data ?? []) as CustomerRow[]).map(
-    (customer) => ({
-      id: customer.id,
-      customer: customer.full_name,
-      company: customer.company_name,
-      email: customer.email,
-      phone: customer.phone,
-      appointments: appointmentCounts.get(customer.id) ?? 0,
-      lastContact: customer.last_contact_at
-        ? new Date(customer.last_contact_at).toISOString().slice(0, 10)
-        : "—",
-      status: customer.status,
-    }),
-  );
+  const data = ((leadsResult.data ?? []) as LeadContactRow[]).map((lead) => ({
+    id: lead.id,
+    customer: lead.name,
+    company: lead.company,
+    email: lead.email,
+    phone: lead.phone,
+    appointments: appointmentCounts.get(lead.id) ?? 0,
+    lastContact: lead.last_contact_at
+      ? new Date(lead.last_contact_at).toISOString().slice(0, 10)
+      : "—",
+    status: stageLabel(lead),
+  }));
 
   return { data, error: null };
 }

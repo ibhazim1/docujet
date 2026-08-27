@@ -109,7 +109,7 @@ export function displayStageOrder(lead: Lead): number {
  * expressible as any single stage — hence one extra option rather than a
  * second control that would duplicate `stage=lost`.
  *
- * `q` matches id, name, email, phone and interest.
+ * `q` matches id, name, company, email, phone and interest.
  */
 export function filterLeads(leads: Lead[], filters: LeadFilters): Lead[] {
   const q = filters.q.trim().toLowerCase();
@@ -132,6 +132,7 @@ export function filterLeads(leads: Lead[], filters: LeadFilters): Lead[] {
     const haystack = [
       lead.id,
       lead.name,
+      lead.company,
       lead.email,
       lead.phone,
       lead.interest,

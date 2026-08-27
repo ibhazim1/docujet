@@ -37,6 +37,7 @@ export default async function AdminAppointmentsPage({
                 "Product Demonstration",
                 "Pricing Discussion",
                 "Technical Consultation",
+                "After-Sales Support",
               ]}
             />
             <Field label="Preferred Date" htmlFor="appointments-date">

@@ -92,6 +92,15 @@ export default function LeadDetail({
               {...edit}
             />
           </p>
+          <p className="mt-1 text-sm text-slate-500">
+            <EditableCell
+              leadId={lead.id}
+              field="company"
+              value={lead.company}
+              placeholder="Add a company"
+              {...edit}
+            />
+          </p>
         </div>
         <TrackerLink
           overrides={{ lead: null }}

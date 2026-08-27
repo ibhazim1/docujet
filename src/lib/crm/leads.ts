@@ -30,6 +30,7 @@ type LeadRow = {
   id: string;
   name: string;
   title: string;
+  company: string;
   email: string;
   phone: string;
   source: string;
@@ -37,6 +38,7 @@ type LeadRow = {
   created_at: string;
   interest: string;
   chat_topic: string | null;
+  last_contact_at: string | null;
   cited: string[] | null;
   notes: string;
   lost: boolean;
@@ -54,6 +56,7 @@ type LeadRow = {
 const EDITABLE_COLUMNS: Record<EditableField, string> = {
   name: "name",
   title: "title",
+  company: "company",
   email: "email",
   phone: "phone",
   created_at: "created_at",
@@ -86,6 +89,7 @@ function rowToLead(row: LeadRow): Lead {
     id: row.id,
     name: row.name ?? "",
     title: row.title ?? "",
+    company: row.company ?? "",
     email: row.email ?? "",
     phone: row.phone ?? "",
     source: (isSourceKey(row.source) ? row.source : "form") as SourceKey,
@@ -93,6 +97,7 @@ function rowToLead(row: LeadRow): Lead {
     createdAt: row.created_at ?? "",
     interest: row.interest ?? "",
     chatTopic: row.chat_topic === null || row.chat_topic === "" ? null : row.chat_topic,
+    lastContactAt: row.last_contact_at ?? null,
     cited: row.cited ?? [],
     notes: row.notes ?? "",
     lost: row.lost,
@@ -210,6 +215,7 @@ export function leadToRow(lead: Lead): LeadRow {
     id: lead.id,
     name: lead.name,
     title: lead.title,
+    company: lead.company,
     email: lead.email,
     phone: lead.phone,
     source: lead.source,
@@ -217,6 +223,7 @@ export function leadToRow(lead: Lead): LeadRow {
     created_at: lead.createdAt,
     interest: lead.interest,
     chat_topic: lead.chatTopic,
+    last_contact_at: lead.lastContactAt,
     cited: lead.cited,
     notes: lead.notes,
     lost: lead.lost,
