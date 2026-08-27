@@ -1,8 +1,6 @@
 import EmptyState from "@/components/admin/EmptyState";
 import AdminHeader from "@/components/admin/AdminHeader";
-import AdminTable from "@/components/admin/AdminTable";
-import SearchInput from "@/components/admin/SearchInput";
-import StatusBadge from "@/components/admin/StatusBadge";
+import AppointmentBrowser from "@/components/pages/admin/AppointmentBrowser";
 import { getAdminAppointments } from "@/lib/supabase/admin";
 
 type AdminAppointmentsPageProps = {
@@ -22,30 +20,6 @@ export default async function AdminAppointmentsPage({
       />
 
       <div className="space-y-6 p-5 md:p-8">
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="grid gap-4 lg:grid-cols-4">
-            <SearchInput placeholder="Search customer, company, or appointment ID" />
-            <FilterSelect
-              label="Status"
-              options={["All Statuses", "Pending", "Confirmed", "Completed", "Cancelled"]}
-            />
-            <FilterSelect
-              label="Appointment Type"
-              options={[
-                "All Types",
-                "Product Consultation",
-                "Product Demonstration",
-                "Pricing Discussion",
-                "Technical Consultation",
-                "After-Sales Support",
-              ]}
-            />
-            <Field label="Preferred Date" htmlFor="appointments-date">
-              <input id="appointments-date" type="date" className={inputClassName} />
-            </Field>
-          </div>
-        </section>
-
         {error ? (
           <EmptyState
             title="Could not load appointments"
@@ -57,110 +31,9 @@ export default async function AdminAppointmentsPage({
             description="Once bookings are submitted, they will appear here from Supabase."
           />
         ) : (
-          <AdminTable>
-            <table className="min-w-[1180px] text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
-                <tr>
-                  {[
-                    "Appointment ID",
-                    "Customer",
-                    "Company",
-                    "Email",
-                    "Phone",
-                    "Product",
-                    "Appointment Type",
-                    "Preferred Date",
-                    "Preferred Time",
-                    "Status",
-                    "Actions",
-                  ].map((heading) => (
-                    <th key={heading} className="px-5 py-4 font-medium">
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {appointments.map((appointment) => (
-                  <tr key={appointment.id} className="border-t border-slate-200">
-                    <td className="px-5 py-4 font-medium text-slate-950">{appointment.id}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.customer}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.company}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.email}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.phone}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.product}</td>
-                    <td className="px-5 py-4 text-slate-600">
-                      {appointment.appointmentType}
-                    </td>
-                    <td className="px-5 py-4 text-slate-600">
-                      {appointment.preferredDate}
-                    </td>
-                    <td className="px-5 py-4 text-slate-600">
-                      {appointment.preferredTime}
-                    </td>
-                    <td className="px-5 py-4">
-                      <StatusBadge status={appointment.status} />
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        {["View", "Confirm", "Complete", "Cancel"].map((action) => (
-                          <button
-                            key={action}
-                            type="button"
-                            className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-                          >
-                            {action}
-                          </button>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </AdminTable>
+          <AppointmentBrowser appointments={appointments} />
         )}
       </div>
     </div>
   );
 }
-
-function FilterSelect({
-  label,
-  options,
-}: {
-  label: string;
-  options: string[];
-}) {
-  return (
-    <Field label={label} htmlFor={label}>
-      <select id={label} className={inputClassName} defaultValue={options[0]}>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </Field>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label htmlFor={htmlFor} className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-700">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-const inputClassName =
-  "w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-700 focus:ring-4 focus:ring-sky-100";

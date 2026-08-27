@@ -60,8 +60,12 @@ export const adminNavItems = [
   { label: "Dashboard", href: "/admin" },
   { label: "Appointments", href: "/admin/appointments" },
   { label: "Leads", href: "/admin/leads" },
-  { label: "Customer", href: "/admin/customers" },
   { label: "Settings", href: "/admin/settings" },
+] as const;
+
+export const superadminNavItems = [
+  ...adminNavItems,
+  { label: "Staff Accounts", href: "/superadmin/users" },
 ] as const;
 
 export const dashboardStats = [
