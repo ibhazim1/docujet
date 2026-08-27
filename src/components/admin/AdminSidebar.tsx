@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { adminNavItems } from "@/lib/admin-mock-data";
+import { useEffect, useState } from "react";
+import { superadminNavItems } from "@/lib/admin-mock-data";
+import { createClient } from "@/lib/supabase/client";
 
 export type AdminNavItem = {
   label: string;
@@ -11,8 +13,8 @@ export type AdminNavItem = {
 
 type AdminSidebarProps = {
   className?: string;
-  /** The links. Empty means the five the admin ships with. */
-  navItems?: AdminNavItem[];
+  /** The links. Empty means the combined eight-item staff navigation. */
+  navItems?: readonly AdminNavItem[];
   brand?: string;
   brandHref?: string;
   tagline?: string;
@@ -26,16 +28,49 @@ type AdminSidebarProps = {
 export default function AdminSidebar({
   className,
   navItems,
-  brand = "DocuJet",
+  brand = "DocuJet Staff workspace",
   brandHref = "/admin",
-  tagline = "Admin dashboard UI preview",
-  noteTitle = "Security note",
-  noteBody = "Admin authentication and route protection are not active yet.",
+  tagline = "Admin workspace",
+  noteTitle = "Staff access",
+  noteBody = "Use the superadmin area to manage staff accounts and review sensitive activity.",
   showNote = true,
   onNavigate,
 }: AdminSidebarProps) {
   const pathname = usePathname();
-  const items = navItems?.length ? navItems : adminNavItems;
+  const [isSuperadmin, setIsSuperadmin] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadRole() {
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("role, is_active")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (isMounted && profile?.role === "superadmin" && profile.is_active) {
+        setIsSuperadmin(true);
+      }
+    }
+
+    void loadRole();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const allItems: readonly AdminNavItem[] = navItems?.length ? navItems : superadminNavItems;
+  const items = allItems.filter(
+    (item) => isSuperadmin || !item.href.startsWith("/superadmin"),
+  );
 
   return (
     <div className={`flex h-full flex-col ${className ?? ""}`}>
