@@ -33,12 +33,18 @@ export type BuildPromptOptions = {
   history: ChatTurn[];
   context: RetrievedChunk[];
   business: BusinessInfo;
+  /**
+   * The assistant's instructions, from settings. Falls back to
+   * `DEFAULT_SYSTEM_PROMPT` when an admin has left the field empty — the store
+   * does that substitution, so an empty prompt never reaches here.
+   */
+  brief?: string;
   /** Path the visitor asked from, so "this page" and "this printer" have a referent. */
   page?: string;
 };
 
 /**
- * The brief.
+ * The brief, as it ships.
  *
  * Written against the failure modes this assistant actually has. It sits in
  * front of a public, unauthenticated endpoint on a site that sells enterprise
@@ -47,8 +53,15 @@ export type BuildPromptOptions = {
  * of those gets a line. The instruction to answer only from the reference
  * passages is the load-bearing one: the corpus is small and a model asked about
  * Epson hardware has plenty of half-remembered numbers to offer instead.
+ *
+ * This is the default, not the law. An admin can rewrite it from
+ * /admin/settings, and `buildMessages()` takes whatever is stored — so if the
+ * assistant starts quoting prices, this text is the first place to look, and
+ * clearing the field in the settings form restores exactly what is written
+ * here. The business details and the retrieved passages are appended by code
+ * either way and cannot be edited away.
  */
-const BRIEF = [
+export const DEFAULT_SYSTEM_PROMPT = [
   "You are the DocuJet assistant, embedded in a chat panel on the DocuJet website.",
   "DocuJet sells and supports the Epson WorkForce Enterprise range of business printers",
   "(WF-C20600, WF-C20750, WF-C21000) in Malaysia.",
@@ -139,9 +152,10 @@ export function buildMessages({
   history,
   context,
   business,
+  brief,
   page,
 }: BuildPromptOptions): PromptMessage[] {
-  const sections = [BRIEF, businessBlock(business)];
+  const sections = [brief?.trim() || DEFAULT_SYSTEM_PROMPT, businessBlock(business)];
   if (page) sections.push(`The visitor is on the page ${page}.`);
   sections.push(referenceBlock(context));
 

@@ -5,9 +5,10 @@
  *
  * `business` is sourced from `site-data.ts`'s `footerPlaceholders` rather than
  * re-typed here, so there is exactly one place the real Epson contact details
- * live.
+ * live. `chat.systemPrompt` comes from `chat/prompt.ts` for the same reason.
  */
 
+import { DEFAULT_SYSTEM_PROMPT } from "@/lib/chat/prompt";
 import { footerPlaceholders } from "@/lib/site-data";
 import type { SiteSettings } from "./types";
 
@@ -22,6 +23,11 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   chat: {
     greeting:
       "Hi! I'm the DocuJet assistant. Ask me about the WorkForce Enterprise range, pricing direction, or booking a consultation.",
+    // Sourced from prompt.ts rather than re-typed, for the same reason
+    // `business` comes from site-data.ts: the shipped brief and the text the
+    // settings form restores must be the same string, or "Restore default"
+    // starts quietly meaning something else.
+    systemPrompt: DEFAULT_SYSTEM_PROMPT,
     suggestions: [
       "What resolution and geometry do the Epson MicroTFP print chips have?",
       "What is Heat-Free Technology?",

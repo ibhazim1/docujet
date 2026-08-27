@@ -17,6 +17,16 @@ export type BusinessInfo = {
 
 export type ChatConfig = {
   greeting: string;
+  /**
+   * The assistant's instructions — who it is, what it may say, what it must
+   * refuse to invent. Was a constant in `src/lib/chat/prompt.ts`; editable here
+   * so changing the assistant's behaviour is not a deploy.
+   *
+   * Never empty: `store.ts` substitutes `DEFAULT_SYSTEM_PROMPT` for a blank
+   * stored value, which is how clearing the field in the settings form means
+   * "put the shipped brief back" rather than "give the model no instructions".
+   */
+  systemPrompt: string;
   /** Add/remove list, not a fixed count. */
   suggestions: string[];
   maxMessageChars: number;

@@ -58,6 +58,12 @@ function mergeEntries(rows: [string, string][]): SiteSettings {
     },
     chat: {
       greeting: get("chat.greeting") ?? base.chat.greeting,
+      // `||` on the trimmed value, not `??` like its neighbours: for every
+      // other field an empty string is a legitimate saved value, but an empty
+      // system prompt would hand the model no instructions at all — no
+      // grounding rule, no refusal to invent prices. Clearing the field in the
+      // settings form therefore means "restore the shipped brief".
+      systemPrompt: get("chat.systemPrompt")?.trim() || base.chat.systemPrompt,
       suggestions: get("chat.suggestions")?.split("\n").filter((line) => line.trim() !== "") ??
         base.chat.suggestions,
       maxMessageChars: numberOr(get("chat.maxMessageChars"), base.chat.maxMessageChars),

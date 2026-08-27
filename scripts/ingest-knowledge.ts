@@ -21,28 +21,45 @@
  *                                 The directory need not exist.
  *
  * Re-running is cheap and safe. Documents are keyed by a stable id and matched
- * on a content hash, so an unchanged document is never re-embedded, a changed
- * one is replaced whole, and one whose source has been deleted is pruned. That
- * matters because embedding runs on this machine's CPU (see
- * src/lib/chat/embeddings.ts) — the first run loads a model and takes a minute;
- * a re-run after editing three rows takes seconds.
+ * on a content hash, so an unchanged document is never re-embedded and a changed
+ * one is replaced whole. That matters because embedding runs on this machine's
+ * CPU (see src/lib/chat/embeddings.ts) — the first run loads a model and takes a
+ * minute; a re-run after editing three rows takes seconds.
+ *
+ * ---------------------------------------------------------------------------
+ * This script seeds and refreshes. It does not own the knowledge base.
+ *
+ * The database is the source of truth, and /admin/settings is where entries are
+ * added, corrected and removed. Two consequences worth knowing before running
+ * this:
+ *
+ *   - It never deletes. Removing a row from the sheet leaves the entry in the
+ *     database; deleting it is something a person does in the admin screen.
+ *   - It never overwrites an entry whose stored source is 'admin'. Editing an
+ *     entry there claims it, and this script leaves it alone from then on —
+ *     otherwise the next import would silently undo the correction.
+ * ---------------------------------------------------------------------------
  *
  * Runs outside Next, which is why nothing it imports carries a `server-only`
  * marker, and why it goes through `tsx` rather than Node's own type stripping —
  * the same reasoning as scripts/seed-leads.ts.
  */
 
-import { createHash } from "node:crypto";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
-import { chunkText, qnaDocuments, siteKnowledgeDocuments } from "../src/lib/chat/corpus";
+import {
+  ADMIN_SOURCE,
+  chunkText,
+  qnaDocuments,
+  siteKnowledgeDocuments,
+} from "../src/lib/chat/corpus";
 import { warmEmbeddings } from "../src/lib/chat/embeddings";
 import {
   countChunks,
-  deleteDocuments,
+  hashOf,
   replaceDocument,
-  storedContentHashes,
+  storedDocumentIndex,
   type KnowledgeDocument,
 } from "../src/lib/chat/knowledge";
 import { isSupabaseConfigured } from "../src/lib/supabase/service";
@@ -138,18 +155,6 @@ async function gather(csvPath: string): Promise<KnowledgeDocument[]> {
   return documents;
 }
 
-/**
- * What "changed" means.
- *
- * Everything that ends up either embedded or stored alongside the vectors, so
- * that correcting a title or a link re-writes the row, and nothing else does.
- */
-function hashOf(document: KnowledgeDocument): string {
-  return createHash("sha256")
-    .update([document.title, document.url ?? "", document.content].join("\u0000"))
-    .digest("hex");
-}
-
 // ---------------------------------------------------------------------------
 
 async function main(): Promise<void> {
@@ -168,16 +173,28 @@ async function main(): Promise<void> {
   const documents = await gather(csvPath);
   console.log(`Gathered ${documents.length} documents.`);
 
-  const stored = await storedContentHashes();
+  const stored = await storedDocumentIndex();
 
-  const changed = documents.filter(
-    (document) => force || stored.get(document.id) !== hashOf(document),
-  );
-  const stale = [...stored.keys()].filter(
-    (id) => !documents.some((document) => document.id === id),
-  );
+  // Entries a person has added or corrected in /admin/settings. The sheet has
+  // no claim on them: re-importing over a deliberate correction is exactly the
+  // failure this rule exists to prevent.
+  const owned = documents.filter((document) => stored.get(document.id)?.source === ADMIN_SOURCE);
 
-  if (changed.length === 0 && stale.length === 0) {
+  const changed = documents.filter((document) => {
+    const existing = stored.get(document.id);
+    if (existing?.source === ADMIN_SOURCE) return false;
+    return force || existing?.hash !== hashOf(document);
+  });
+
+  if (owned.length > 0) {
+    console.log(
+      `Leaving ${owned.length} admin-edited document(s) alone: ${owned
+        .map((document) => document.id)
+        .join(", ")}`,
+    );
+  }
+
+  if (changed.length === 0) {
     console.log(`Nothing to do — all ${documents.length} documents are up to date.`);
     return;
   }
@@ -185,7 +202,6 @@ async function main(): Promise<void> {
   if (dryRun) {
     console.log(`Would embed ${changed.length} document(s):`);
     for (const document of changed) console.log(`  ${document.id}  ${document.title}`);
-    if (stale.length > 0) console.log(`Would prune ${stale.length}: ${stale.join(", ")}`);
     return;
   }
 
@@ -212,11 +228,6 @@ async function main(): Promise<void> {
         chunks.length === 1 ? "" : "s"
       }`,
     );
-  }
-
-  if (stale.length > 0) {
-    await deleteDocuments(stale);
-    console.log(`Pruned ${stale.length} document(s) no longer in any source: ${stale.join(", ")}`);
   }
 
   console.log(

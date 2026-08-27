@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import AdminShell from "@/components/admin/AdminShell";
 import AdminHeader from "@/components/admin/AdminHeader";
 import DemoNotice from "@/components/admin/DemoNotice";
+import KnowledgeManager from "@/components/admin/KnowledgeManager";
 import SettingsForm from "@/components/admin/SettingsForm";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { integrationStatuses } from "@/lib/admin-mock-data";
+import { fetchKnowledgeEntries, type KnowledgeEntry } from "@/lib/chat/knowledge";
 import { DEFAULT_SETTINGS } from "@/lib/settings/defaults";
 import { toSafeSettingsView } from "@/lib/settings/mask";
 import { getSettings, isSettingsConfigured } from "@/lib/settings/store";
@@ -39,6 +41,20 @@ export default async function AdminSettingsPage() {
   }
 
   const safeSettings = toSafeSettingsView(settings);
+
+  // The knowledge base is read separately and allowed to fail on its own. It
+  // shares a database with settings but not a fate: an unapplied migration or a
+  // dropped connection should cost the admin that one table, not the page they
+  // came here to edit.
+  let knowledgeEntries: KnowledgeEntry[] = [];
+  let knowledgeNotice: string | null = null;
+
+  try {
+    knowledgeEntries = await fetchKnowledgeEntries();
+  } catch (cause) {
+    knowledgeNotice =
+      cause instanceof Error ? cause.message : "Could not read the knowledge base.";
+  }
 
   // The rest of the sidebar is fixed copy, but the database and the assistant's
   // API key are the two things this page can actually answer for, so it answers.
@@ -87,7 +103,10 @@ export default async function AdminSettingsPage() {
             </DemoNotice>
           ) : null}
 
-          <SettingsForm initialSettings={safeSettings} />
+          <SettingsForm
+            initialSettings={safeSettings}
+            defaultSystemPrompt={DEFAULT_SETTINGS.chat.systemPrompt}
+          />
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -114,6 +133,12 @@ export default async function AdminSettingsPage() {
             ))}
           </div>
         </section>
+
+        {/* Full width, and outside SettingsForm: that component is one <form>,
+            and this section has a form of its own for adding an entry. */}
+        <div className="xl:col-span-2">
+          <KnowledgeManager entries={knowledgeEntries} notice={knowledgeNotice} />
+        </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm xl:col-start-2">
           <h2 className="text-xl font-semibold text-slate-950">Notification Preferences</h2>

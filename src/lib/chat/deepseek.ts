@@ -137,6 +137,7 @@ export async function askAssistant({
     history,
     context,
     business: settings.business,
+    brief: settings.chat.systemPrompt,
     page,
   });
 

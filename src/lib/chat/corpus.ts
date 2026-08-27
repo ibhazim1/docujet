@@ -1,8 +1,11 @@
 /**
  * What the assistant is made to know, and how it is cut up.
  *
- * All of it offline — `npm run kb:ingest` is the only caller — and all of it
- * pure: the script does the reading from disk, this module does the deciding.
+ * All of it pure: callers do the reading and the writing, this module does the
+ * deciding. `npm run kb:ingest` uses the whole file; the admin editor in
+ * /admin/settings uses the Q&A format/parse pair, `knowledgeSlug()` and
+ * `chunkText()`, so that an entry a person types is shaped exactly like an
+ * entry the importer produced.
  *
  *   1. `qnaDocuments()` turns the curated Q&A sheet (data/epson workforce
  *      rag.csv) into documents. This is the assistant's real knowledge: 111
@@ -36,8 +39,22 @@ import {
 } from "../site-data";
 import type { KnowledgeDocument } from "./knowledge";
 
-/** Source label stored on every document this module produces. */
+/** Source label stored on every document `siteKnowledgeDocuments()` produces. */
 export const SITE_DATA_SOURCE = "site-data";
+
+/**
+ * Source label on anything a person has added or edited in /admin/settings.
+ *
+ * The whole protocol between the two writers of `kb_documents`: the importer
+ * refuses to touch a document carrying this, so a correction made by hand is
+ * not quietly reverted by the next `npm run kb:ingest`.
+ *
+ * It lives here, with the other source label, rather than next to the database
+ * code — the admin table is a Client Component and needs to recognise it, and
+ * this module is pure while `knowledge.ts` reaches for the database and the
+ * embedder.
+ */
+export const ADMIN_SOURCE = "admin";
 
 function slug(value: string): string {
   return value
@@ -191,19 +208,72 @@ export function qnaDocuments(csv: string, source: string): KnowledgeDocument[] {
       // page here, and src/lib/chat/prompt.ts only ever shows the model the
       // relative ones — see the note there on what it is allowed to link to.
       url: cell("source_url") || null,
-      content: [
-        `Question: ${question}`,
-        "",
-        `Answer: ${answer}`,
-        keywords.length > 0 ? `\nKeywords: ${keywords.join(", ")}` : "",
-      ]
-        .join("\n")
-        .trim(),
+      content: formatQnaContent({ question, answer, keywords }),
     });
   }
 
   return documents;
 }
+
+export type QnaContent = {
+  question: string;
+  answer: string;
+  keywords: string[];
+};
+
+/**
+ * The layout a Q&A entry is stored in.
+ *
+ * Paired with `parseQnaContent()` below, and the only place this shape is
+ * written. It matters that there is exactly one definition: the sheet importer
+ * produces it, the admin editor in /admin/settings reads it back apart and
+ * writes it again, and a drift between those two would quietly turn an edited
+ * answer into an unparseable blob.
+ */
+export function formatQnaContent({ question, answer, keywords }: QnaContent): string {
+  return [
+    `Question: ${question}`,
+    "",
+    `Answer: ${answer}`,
+    keywords.length > 0 ? `\nKeywords: ${keywords.join(", ")}` : "",
+  ]
+    .join("\n")
+    .trim();
+}
+
+/**
+ * Takes a stored entry back apart.
+ *
+ * Deliberately forgiving, because not every document is Q&A-shaped: the twelve
+ * entries generated from site-data.ts are prose, and a markdown file dropped in
+ * `knowledge/` is whatever its author wrote. Anything without the `Question:`
+ * marker comes back as an answer with no question, which is what lets the admin
+ * table show one row per document rather than one row per document it happens
+ * to recognise.
+ */
+export function parseQnaContent(content: string): QnaContent {
+  const normalized = content.replace(/\r\n/g, "\n").trim();
+
+  const match = normalized.match(
+    /^Question:\s*([\s\S]*?)\n\s*Answer:\s*([\s\S]*?)(?:\n\s*Keywords:\s*([\s\S]*))?$/,
+  );
+
+  if (!match) {
+    return { question: "", answer: normalized, keywords: [] };
+  }
+
+  return {
+    question: match[1].trim(),
+    answer: match[2].trim(),
+    keywords: (match[3] ?? "")
+      .split(",")
+      .map((keyword) => keyword.trim())
+      .filter((keyword) => keyword !== ""),
+  };
+}
+
+/** Shared with the admin editor, which needs the same ids the importer would produce. */
+export { slug as knowledgeSlug };
 
 /**
  * A CSV reader, in the RFC 4180 sense: quoted fields, doubled quotes inside

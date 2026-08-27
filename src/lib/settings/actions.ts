@@ -51,6 +51,9 @@ export async function updateSettingsAction(
     "business.address": str(formData, "address"),
     "business.hours": str(formData, "hours"),
     "chat.greeting": str(formData, "greeting"),
+    // Stored empty when the admin clears it, which the store reads back as the
+    // default brief — see mergeEntries() in store.ts.
+    "chat.systemPrompt": str(formData, "systemPrompt"),
     "chat.suggestions": suggestions.join("\n"),
     "chat.maxMessageChars": num(formData, "maxMessageChars", 1000),
     "chat.maxHistoryTurns": num(formData, "maxHistoryTurns", 8),

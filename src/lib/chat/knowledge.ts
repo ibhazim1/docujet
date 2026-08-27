@@ -7,14 +7,21 @@
  * into the system prompt. Nothing else in the app reads these tables.
  *
  * Read and write live together here for the same reason they do in
- * src/lib/crm/leads.ts: `scripts/ingest-knowledge.ts` is a caller like any
- * other, and splitting "the ingest half" into its own module would only make
- * the row shapes travel further from the query that reads them.
+ * src/lib/crm/leads.ts: `scripts/ingest-knowledge.ts` and the admin editor's
+ * actions in `src/lib/chat/actions.ts` are callers like any other, and
+ * splitting "the write half" into its own module would only make the row shapes
+ * travel further from the query that reads them.
+ *
+ * Two writers, one table. The importer seeds and refreshes from the Q&A sheet;
+ * a person edits in /admin/settings. `ADMIN_SOURCE` below is the whole of the
+ * protocol between them.
  *
  * Both halves go through the secret-key client, so this module is server-side
  * only — and carries no `server-only` marker, because the ingest script imports
  * it under plain Node where that marker throws.
  */
+
+import { createHash } from "node:crypto";
 
 import { isSupabaseConfigured, supabase } from "../supabase/service";
 import { embed, embedOne, EMBEDDING_DIMENSIONS } from "./embeddings";
@@ -156,19 +163,25 @@ export async function retrieveContext(
 }
 
 // ---------------------------------------------------------------------------
-// Ingestion — the offline path
+// Writing — the ingest script and the admin editor
 // ---------------------------------------------------------------------------
 
+/** What the importer needs to know about a document it did not just build. */
+export type StoredDocument = {
+  hash: string;
+  source: string;
+};
+
 /**
- * Every document's stored content hash, keyed by id.
+ * Every stored document's hash and source, keyed by id.
  *
- * Lets the ingest script re-embed only what changed. Embedding is the slow part
- * of a run and the corpus mostly does not move between runs.
+ * Two questions in one round trip, because the importer asks both about every
+ * document: has this changed (hash), and am I allowed to write it (source).
  */
-export async function storedContentHashes(): Promise<Map<string, string>> {
+export async function storedDocumentIndex(): Promise<Map<string, StoredDocument>> {
   const { data, error } = await supabase()
     .from(DOCUMENTS_TABLE)
-    .select("id,content_hash")
+    .select("id,content_hash,source")
     // PostgREST caps an unbounded select at its configured max-rows (1000 by
     // default). Asking for more than the corpus could plausibly hold makes the
     // cap visible as a warning below rather than as an ingest that mysteriously
@@ -179,7 +192,7 @@ export async function storedContentHashes(): Promise<Map<string, string>> {
     throw new Error(`Could not read the knowledge base: ${error.message}`);
   }
 
-  const rows = data as { id: string; content_hash: string }[];
+  const rows = data as { id: string; content_hash: string; source: string }[];
 
   if (rows.length === 1000) {
     console.warn(
@@ -188,7 +201,25 @@ export async function storedContentHashes(): Promise<Map<string, string>> {
     );
   }
 
-  return new Map(rows.map((row) => [row.id, row.content_hash]));
+  return new Map(rows.map((row) => [row.id, { hash: row.content_hash, source: row.source }]));
+}
+
+/**
+ * What "changed" means for a document.
+ *
+ * Everything that ends up either embedded or stored alongside the vectors, so
+ * that correcting a title or a link rewrites the row and nothing else does.
+ *
+ * It lives here rather than in the ingest script because the admin editor
+ * writes documents too, and two definitions of "changed" would mean an entry
+ * saved from /admin/settings looked stale to the importer the moment it landed.
+ * The separator is a NUL because it cannot occur in any of the three fields,
+ * so no combination of them can collide with another.
+ */
+export function hashOf(document: KnowledgeDocument): string {
+  return createHash("sha256")
+    .update([document.title, document.url ?? "", document.content].join("\u0000"))
+    .digest("hex");
 }
 
 /**
@@ -226,6 +257,10 @@ export async function replaceDocument(
     title: document.title,
     source: document.source,
     url: document.url,
+    // The text the chunks were cut from. Stored whole as well as in pieces so
+    // the admin editor has something to show and to edit — reassembling it from
+    // overlapping chunks would give back something subtly not what was written.
+    content: document.content,
     content_hash: contentHash,
   });
   if (documentError) {
@@ -248,19 +283,104 @@ export async function replaceDocument(
 }
 
 /**
- * Removes documents that are no longer produced by any source.
+ * Removes documents outright.
  *
- * Without this, deleting a paragraph from a markdown file or an FAQ entry from
- * site-data.ts would leave the assistant still quoting it — the most confusing
- * possible failure, because the site and the assistant would disagree.
+ * The only way anything leaves the knowledge base now that the importer no
+ * longer prunes: a delete is something a person does in /admin/settings, on
+ * purpose, to an entry they have read. The chunks go with the document — the
+ * foreign key cascades — so the assistant cannot be left quoting a passage
+ * whose entry is gone.
  */
 export async function deleteDocuments(ids: string[]): Promise<void> {
   if (ids.length === 0) return;
 
   const { error } = await supabase().from(DOCUMENTS_TABLE).delete().in("id", ids);
   if (error) {
-    throw new Error(`Could not prune the knowledge base: ${error.message}`);
+    throw new Error(`Could not delete from the knowledge base: ${error.message}`);
   }
+}
+
+// ---------------------------------------------------------------------------
+// The admin editor's view
+// ---------------------------------------------------------------------------
+
+/** One row of the table in /admin/settings. */
+export type KnowledgeEntry = KnowledgeDocument & {
+  updatedAt: string;
+};
+
+/**
+ * Every entry, for the admin table.
+ *
+ * Documents only — the chunks and their vectors are machinery, and an admin
+ * editing an answer should never have to think about how it was cut up. Newest
+ * first, so an entry someone just added or corrected is at the top of the list
+ * they are looking at.
+ *
+ * Degrades to `[]` when Supabase is unconfigured, matching `retrieveContext()`:
+ * the settings page must render on a laptop with no database rather than fail.
+ */
+export async function fetchKnowledgeEntry(id: string): Promise<KnowledgeEntry | null> {
+  const { data, error } = await supabase()
+    .from(DOCUMENTS_TABLE)
+    .select("id,title,source,url,content,updated_at")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Could not read ${id}: ${error.message}`);
+  }
+  if (!data) return null;
+
+  const row = data as {
+    id: string;
+    title: string;
+    source: string;
+    url: string | null;
+    content: string;
+    updated_at: string;
+  };
+
+  return {
+    id: row.id,
+    title: row.title,
+    source: row.source,
+    url: row.url,
+    content: row.content,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function fetchKnowledgeEntries(): Promise<KnowledgeEntry[]> {
+  if (!isSupabaseConfigured()) return [];
+
+  const { data, error } = await supabase()
+    .from(DOCUMENTS_TABLE)
+    .select("id,title,source,url,content,updated_at")
+    .order("updated_at", { ascending: false })
+    .range(0, 9999);
+
+  if (error) {
+    throw new Error(`Could not read the knowledge base: ${error.message}`);
+  }
+
+  return (
+    data as {
+      id: string;
+      title: string;
+      source: string;
+      url: string | null;
+      content: string;
+      updated_at: string;
+    }[]
+  ).map((row) => ({
+    id: row.id,
+    title: row.title,
+    source: row.source,
+    url: row.url,
+    content: row.content,
+    updatedAt: row.updated_at,
+  }));
 }
 
 /** Chunk count, for the ingest script's summary line and for a quick health check. */

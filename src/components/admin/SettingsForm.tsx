@@ -16,14 +16,25 @@ import type { SafeSiteSettings } from "@/lib/settings/mask";
 
 type SettingsFormProps = {
   initialSettings: SafeSiteSettings;
+  /**
+   * The brief as it ships, for the Restore default button. Passed down rather
+   * than imported so this client bundle does not pull in chat/prompt.ts.
+   */
+  defaultSystemPrompt: string;
 };
 
-export default function SettingsForm({ initialSettings }: SettingsFormProps) {
+export default function SettingsForm({
+  initialSettings,
+  defaultSystemPrompt,
+}: SettingsFormProps) {
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<SettingsActionResult | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>(
     initialSettings.chat.suggestions.length > 0 ? initialSettings.chat.suggestions : [""],
   );
+  // Controlled, unlike its neighbours, only so that Restore default can put the
+  // shipped text back without the admin having to reload the page.
+  const [systemPrompt, setSystemPrompt] = useState(initialSettings.chat.systemPrompt);
 
   function onSubmit(formData: FormData) {
     // Controlled separately from the rest of the form, since it's a variable-
@@ -99,6 +110,35 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
               className={inputClassName}
             />
           </Field>
+
+          <div>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              <span className="block text-sm font-medium text-slate-700">
+                System prompt
+              </span>
+              <button
+                type="button"
+                onClick={() => setSystemPrompt(defaultSystemPrompt)}
+                disabled={systemPrompt === defaultSystemPrompt}
+                className={pillButtonClassName}
+              >
+                Restore default
+              </button>
+            </div>
+            <textarea
+              name="systemPrompt"
+              rows={16}
+              value={systemPrompt}
+              onChange={(event) => setSystemPrompt(event.target.value)}
+              spellCheck={false}
+              className={`${inputClassName} font-mono text-xs leading-6`}
+            />
+            <p className="mt-2 text-xs leading-6 text-slate-500">
+              The assistant&apos;s instructions. The business details above and the matching
+              knowledge base entries are appended automatically on every question — write rules
+              here, not facts. Clearing this box restores the default.
+            </p>
+          </div>
 
           <div>
             <span className="mb-2 block text-sm font-medium text-slate-700">
