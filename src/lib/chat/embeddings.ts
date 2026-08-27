@@ -22,11 +22,9 @@
  * throws (the same reasoning as src/lib/supabase/service.ts).
  */
 
-import {
-  env,
-  pipeline,
-  type FeatureExtractionPipeline,
-} from "@huggingface/transformers";
+// Type-only, so this import disappears at runtime. The library itself is loaded
+// lazily in `getExtractor()` below — see the note there on why that matters.
+import type { FeatureExtractionPipeline } from "@huggingface/transformers";
 
 /**
  * Small, English, and built for exactly this: Supabase publish it as the model
@@ -50,24 +48,6 @@ export const EMBEDDING_DIMENSIONS = 384;
 const DTYPE = "q8";
 
 /**
- * Where the weights land after the one-off download.
- *
- * Inside the project rather than in a home directory so a deployment's build
- * step can prime it and ship it, and so deleting `.cache/` is all it takes to
- * start clean. Gitignored.
- */
-env.cacheDir = process.env.TRANSFORMERS_CACHE?.trim() || ".cache/transformers";
-
-/**
- * Never look for a hand-placed copy under ./models/.
- *
- * Left on (the Node default), every load first probes a directory this project
- * does not have, and a stale or partial copy there would silently outrank the
- * cache. The FS cache above is the only place weights come from.
- */
-env.allowLocalModels = false;
-
-/**
  * The loaded model, shared by every caller in this process.
  *
  * Held as the promise rather than the resolved pipeline so that two requests
@@ -77,10 +57,48 @@ env.allowLocalModels = false;
  */
 let extractorPromise: Promise<FeatureExtractionPipeline> | null = null;
 
+/**
+ * Loads the library, then the model.
+ *
+ * The `import()` is deliberately inside the function rather than at the top of
+ * the file. Transformers.js reaches a native ONNX runtime, and a native binding
+ * can be absent for reasons that have nothing to do with this code — a
+ * serverless bundle that did not trace the `.node` file, an unsupported
+ * platform. A static import would make that failure happen while the module
+ * graph is being loaded, which takes the whole `/api/chat` route down with it:
+ * every question answered with a bare 500, before a line of our own code runs.
+ *
+ * Loaded here instead, the same failure surfaces as a rejected promise inside
+ * `retrieveContext()`, which already treats "no retrieval" as a degraded mode
+ * rather than an error. The assistant then answers from the business details
+ * and says it does not know the rest — which is the behaviour this whole
+ * subsystem was designed to fall back to.
+ */
 function getExtractor(): Promise<FeatureExtractionPipeline> {
-  extractorPromise ??= pipeline("feature-extraction", EMBEDDING_MODEL, {
-    dtype: DTYPE,
-  }).catch((cause: unknown) => {
+  extractorPromise ??= (async () => {
+    const { env, pipeline } = await import("@huggingface/transformers");
+
+    /**
+     * Where the weights land after the one-off download.
+     *
+     * Inside the project rather than in a home directory so a deployment's
+     * build step can prime it and ship it, and so deleting `.cache/` is all it
+     * takes to start clean. Gitignored. A read-only filesystem (most serverless
+     * hosts) needs TRANSFORMERS_CACHE pointed somewhere writable.
+     */
+    env.cacheDir = process.env.TRANSFORMERS_CACHE?.trim() || ".cache/transformers";
+
+    /**
+     * Never look for a hand-placed copy under ./models/.
+     *
+     * Left on (the Node default), every load first probes a directory this
+     * project does not have, and a stale or partial copy there would silently
+     * outrank the cache. The FS cache above is the only place weights come from.
+     */
+    env.allowLocalModels = false;
+
+    return pipeline("feature-extraction", EMBEDDING_MODEL, { dtype: DTYPE });
+  })().catch((cause: unknown) => {
     extractorPromise = null;
     throw cause;
   });
