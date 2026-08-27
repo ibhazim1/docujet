@@ -30,20 +30,27 @@ export default function LoginPage({
     setIsSigningIn(true);
     setErrorMessage(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const supabase = createClient();
+      const signIn = supabase.auth.signInWithPassword({ email, password });
+      const timeout = new Promise<never>((_, reject) => {
+        window.setTimeout(() => reject(new Error("Supabase sign-in timed out. Check your connection and Supabase API settings.")), 15000);
+      });
+      const { error } = await Promise.race([signIn, timeout]);
 
-    if (error) {
-      setErrorMessage(error.message);
+      if (error) {
+        setErrorMessage(error.message);
+        setIsSigningIn(false);
+        return;
+      }
+
+      // The proxy reads the new auth cookie during this navigation. A second
+      // refresh here creates an unnecessary duplicate request.
+      router.replace("/admin");
+    } catch (cause) {
+      setErrorMessage(cause instanceof Error ? cause.message : "Could not sign in.");
       setIsSigningIn(false);
-      return;
     }
-
-    router.replace("/admin");
-    router.refresh();
   }
 
   return (

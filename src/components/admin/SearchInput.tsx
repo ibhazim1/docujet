@@ -1,11 +1,12 @@
 type SearchInputProps = {
   placeholder: string;
+  label?: string;
 };
 
-export default function SearchInput({ placeholder }: SearchInputProps) {
+export default function SearchInput({ placeholder, label = "Search" }: SearchInputProps) {
   return (
     <label className="block">
-      <span className="sr-only">Search</span>
+      <span className="mb-2 block text-sm font-medium text-slate-700">{label}</span>
       <input
         type="search"
         placeholder={placeholder}

@@ -28,6 +28,8 @@ type AppointmentRow = {
   preferred_date: string;
   preferred_time: string;
   status: string;
+  additional_notes: string | null;
+  created_at: string;
 };
 
 /** Only the columns these views need — not the whole `Lead`. */
@@ -46,7 +48,7 @@ const LEAD_CONTACT_COLUMNS =
   "id, name, company, email, phone, stage, lost, last_contact_at";
 
 const APPOINTMENT_COLUMNS =
-  "id, lead_id, product_interest, appointment_type, preferred_date, preferred_time, status";
+  "id, lead_id, product_interest, appointment_type, preferred_date, preferred_time, status, additional_notes, created_at";
 
 export type AdminAppointment = {
   id: string;
@@ -59,6 +61,8 @@ export type AdminAppointment = {
   preferredDate: string;
   preferredTime: string;
   status: string;
+  additionalNotes: string;
+  createdAt: string;
 };
 
 export type AdminCustomer = {
@@ -69,7 +73,6 @@ export type AdminCustomer = {
   phone: string;
   appointments: number;
   lastContact: string;
-  /** A stage *label* ("Customer", "Lost") — what `StatusBadge` colours. */
   status: string;
 };
 
@@ -80,12 +83,17 @@ export type AdminCustomer = {
  * while its `stage` keeps recording how far it actually got — but takes a row
  * rather than a full `Lead`, since that is all these queries select.
  */
-function stageLabel(row: { stage: string; lost: boolean }): string {
+export function formatAppointmentId(id: string): string {
+  if (!id) return "APT-UNKNOWN";
+  if (id.length <= 12) return id;
+  return `APT-${id.replaceAll("-", "").slice(0, 8).toUpperCase()}`;
+}
+
+function stageLabel(row: Pick<LeadContactRow, "stage" | "lost">): string {
   const key = (row.lost ? LOST_STAGE : row.stage) as StageKey;
   return STAGES[key]?.label ?? row.stage;
 }
 
-/** The same "we cannot reach the database" answer both callers return. */
 const NOT_CONFIGURED =
   "Supabase is not configured. Set SUPABASE_URL and SUPABASE_SECRET_KEY in .env.";
 
@@ -110,7 +118,13 @@ function toAdminAppointment(
     appointmentType: appointment.appointment_type,
     preferredDate: appointment.preferred_date,
     preferredTime: appointment.preferred_time,
-    status: appointment.status,
+    status:
+      appointment.status === "Confirmed" &&
+      appointment.preferred_date < new Date().toISOString().slice(0, 10)
+        ? "Completed"
+        : appointment.status,
+    additionalNotes: appointment.additional_notes ?? "",
+    createdAt: appointment.created_at,
   };
 }
 
@@ -127,6 +141,9 @@ export async function getAdminAppointments(leadId?: string) {
   }
 
   const client = supabase();
+  // Keep the stored status current without requiring a separate scheduler.
+  // The SQL function is idempotent and only changes confirmed past bookings.
+  await client.rpc("sync_past_appointment_statuses");
 
   const appointments = client
     .from("appointments")
@@ -140,12 +157,8 @@ export async function getAdminAppointments(leadId?: string) {
   ]);
 
   if (appointmentsResult.error) {
-    return {
-      data: [] as AdminAppointment[],
-      error: appointmentsResult.error.message,
-    };
+    return { data: [] as AdminAppointment[], error: appointmentsResult.error.message };
   }
-
   if (leadsResult.error) {
     return { data: [] as AdminAppointment[], error: leadsResult.error.message };
   }
@@ -153,7 +166,6 @@ export async function getAdminAppointments(leadId?: string) {
   const leadMap = new Map(
     ((leadsResult.data ?? []) as LeadContactRow[]).map((lead) => [lead.id, lead]),
   );
-
   const data = ((appointmentsResult.data ?? []) as AppointmentRow[]).map(
     (appointment) =>
       toAdminAppointment(appointment, leadMap.get(appointment.lead_id)),
@@ -162,22 +174,21 @@ export async function getAdminAppointments(leadId?: string) {
   return { data, error: null };
 }
 
-/**
- * The customer directory — leads that reached the Customer stage.
- *
- * Lost ones are kept rather than filtered out. `stage` records how far a lead
- * got and never moves backwards, so a churned customer still has
- * `stage = 'customer'`; hiding them would make the directory quietly disagree
- * with the funnel, and their appointment history is exactly what someone
- * looking at this page wants. `stageLabel` shows them as Lost.
- */
+export async function getAdminAppointment(id: string) {
+  const result = await getAdminAppointments();
+  if (result.error) return { data: null, error: result.error };
+  return {
+    data: result.data.find((appointment) => appointment.id === id) ?? null,
+    error: null,
+  };
+}
+
 export async function getCustomerLeads() {
   if (!isSupabaseConfigured()) {
     return { data: [] as AdminCustomer[], error: NOT_CONFIGURED };
   }
 
   const client = supabase();
-
   const [leadsResult, appointmentsResult] = await Promise.all([
     client
       .from("crm_leads")
@@ -191,20 +202,9 @@ export async function getCustomerLeads() {
     return { data: [] as AdminCustomer[], error: leadsResult.error.message };
   }
 
-  if (appointmentsResult.error) {
-    return {
-      data: [] as AdminCustomer[],
-      error: appointmentsResult.error.message,
-    };
-  }
-
   const appointmentCounts = new Map<string, number>();
-
   (appointmentsResult.data ?? []).forEach((row: { lead_id: string }) => {
-    appointmentCounts.set(
-      row.lead_id,
-      (appointmentCounts.get(row.lead_id) ?? 0) + 1,
-    );
+    appointmentCounts.set(row.lead_id, (appointmentCounts.get(row.lead_id) ?? 0) + 1);
   });
 
   const data = ((leadsResult.data ?? []) as LeadContactRow[]).map((lead) => ({
@@ -446,4 +446,8 @@ export async function getLeadAppointments() {
     })),
     error: null,
   };
+}
+
+export async function getAdminCustomers() {
+  return getCustomerLeads();
 }

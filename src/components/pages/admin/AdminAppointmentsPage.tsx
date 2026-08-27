@@ -1,8 +1,6 @@
 import EmptyState from "@/components/admin/EmptyState";
 import AdminHeader from "@/components/admin/AdminHeader";
-import AdminTable from "@/components/admin/AdminTable";
-import SearchInput from "@/components/admin/SearchInput";
-import StatusBadge from "@/components/admin/StatusBadge";
+import AppointmentBrowser from "@/components/pages/admin/AppointmentBrowser";
 import { getAdminAppointments } from "@/lib/supabase/admin";
 
 type AdminAppointmentsPageProps = {
@@ -58,30 +56,6 @@ export default async function AdminAppointmentsPage({
             </div>
           </div>
         ) : null}
-
-        <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="grid gap-4 lg:grid-cols-4">
-            <SearchInput placeholder="Search customer, company, or appointment ID" />
-            <FilterSelect
-              label="Status"
-              options={["All Statuses", "Pending", "Confirmed", "Completed", "Cancelled"]}
-            />
-            <FilterSelect
-              label="Appointment Type"
-              options={[
-                "All Types",
-                "Product Consultation",
-                "Product Demonstration",
-                "Pricing Discussion",
-                "Technical Consultation",
-                "After-Sales Support",
-              ]}
-            />
-            <Field label="Preferred Date" htmlFor="appointments-date">
-              <input id="appointments-date" type="date" className={inputClassName} />
-            </Field>
-          </div>
-        </section>
 
         {error ? (
           <EmptyState
@@ -174,43 +148,3 @@ export default async function AdminAppointmentsPage({
     </div>
   );
 }
-
-function FilterSelect({
-  label,
-  options,
-}: {
-  label: string;
-  options: string[];
-}) {
-  return (
-    <Field label={label} htmlFor={label}>
-      <select id={label} className={inputClassName} defaultValue={options[0]}>
-        {options.map((option) => (
-          <option key={option} value={option}>
-            {option}
-          </option>
-        ))}
-      </select>
-    </Field>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <label htmlFor={htmlFor} className="block">
-      <span className="mb-2 block text-sm font-medium text-slate-700">{label}</span>
-      {children}
-    </label>
-  );
-}
-
-const inputClassName =
-  "w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-700 focus:ring-4 focus:ring-sky-100";
