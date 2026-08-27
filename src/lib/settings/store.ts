@@ -66,7 +66,6 @@ function mergeEntries(rows: [string, string][]): SiteSettings {
       rateLimitMaxRequests: numberOr(get("chat.rateLimitMaxRequests"), base.chat.rateLimitMaxRequests),
     },
     integrations: {
-      n8nWebhookUrl: get("integrations.n8nWebhookUrl") ?? base.integrations.n8nWebhookUrl,
       plasmicProjectId: get("integrations.plasmicProjectId") ?? base.integrations.plasmicProjectId,
       plasmicApiToken: get("integrations.plasmicApiToken") ?? base.integrations.plasmicApiToken,
     },

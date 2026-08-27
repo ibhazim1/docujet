@@ -4,7 +4,8 @@ import DemoNotice from "@/components/admin/DemoNotice";
 import LeadTracker from "@/components/crm/LeadTracker";
 import { resolveToday } from "@/lib/crm/analytics";
 import { fetchLeads, isSupabaseConfigured } from "@/lib/crm/leads";
-import type { Lead } from "@/lib/crm/types";
+import type { Lead, LeadAppointment } from "@/lib/crm/types";
+import { getLeadAppointments } from "@/lib/supabase/admin";
 
 type AdminLeadsPageProps = {
   className?: string;
@@ -23,6 +24,7 @@ export default async function AdminLeadsPage({ className }: AdminLeadsPageProps)
   const today = resolveToday(process.env.CRM_TODAY);
 
   let leads: Lead[] | null = null;
+  let appointments: LeadAppointment[] = [];
   let notice: string | null = null;
 
   if (!isSupabaseConfigured()) {
@@ -31,7 +33,12 @@ export default async function AdminLeadsPage({ className }: AdminLeadsPageProps)
       "in .env.";
   } else {
     try {
-      leads = await fetchLeads();
+      const [book, booked] = await Promise.all([fetchLeads(), getLeadAppointments()]);
+      leads = book;
+      // `getLeadAppointments` reports its failure in the result rather than
+      // throwing, and it is not worth losing the book over: the card says "No
+      // appointments booked" and every other view is untouched.
+      appointments = booked.data;
     } catch (cause) {
       notice = cause instanceof Error ? cause.message : "Could not read the leads table.";
     }
@@ -77,7 +84,12 @@ export default async function AdminLeadsPage({ className }: AdminLeadsPageProps)
             `autoLoad` is off because this page has already done the reading. */}
         <Suspense fallback={<p className="text-sm text-slate-500">Loading leads…</p>}>
           {leads ? (
-            <LeadTracker leads={leads} today={today} autoLoad={false} />
+            <LeadTracker
+              leads={leads}
+              appointments={appointments}
+              today={today}
+              autoLoad={false}
+            />
           ) : (
             <LeadTracker today={today} autoLoad={false} />
           )}

@@ -41,3 +41,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+data
+
+# The chat assistant's embedding model, downloaded on first use.
+# See src/lib/chat/embeddings.ts.
+/.cache/

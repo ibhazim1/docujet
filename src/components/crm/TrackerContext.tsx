@@ -24,8 +24,8 @@ import {
   type Summary,
 } from "@/lib/crm/analytics";
 import { buildHref, isFiltered, parseQuery, type TrackerQuery } from "@/lib/crm/query";
-import { SAMPLE_LEADS, SAMPLE_TODAY } from "@/lib/crm/sample-leads";
-import type { Lead, ViewKey } from "@/lib/crm/types";
+import { SAMPLE_APPOINTMENTS, SAMPLE_LEADS, SAMPLE_TODAY } from "@/lib/crm/sample-leads";
+import type { Lead, LeadAppointment, ViewKey } from "@/lib/crm/types";
 
 /**
  * The tracker's shared state.
@@ -48,6 +48,10 @@ export type TrackerValue = {
   visible: Lead[];
   /** The lead the detail panel is open on, if any. */
   selected: Lead | null;
+  /** Every appointment the tracker was given, across all leads. */
+  appointments: LeadAppointment[];
+  /** One lead's appointments, newest first. Never null — an empty list is the answer. */
+  appointmentsFor: (leadId: string) => LeadAppointment[];
   stats: Summary;
   sources: SourceStat[];
   query: TrackerQuery;
@@ -79,6 +83,14 @@ const TrackerContext = createContext<TrackerValue | null>(null);
 
 export type TrackerOptions = {
   leads?: Lead[];
+  /**
+   * The bookings behind those leads.
+   *
+   * Handed over with the book rather than fetched when a card opens: the
+   * tracker already does every filter and aggregate in the browser, so one
+   * more small array costs a great deal less than a round-trip per click.
+   */
+  appointments?: LeadAppointment[];
   today?: string;
   defaultView?: ViewKey;
   readOnly?: boolean;
@@ -96,8 +108,17 @@ export type TrackerOptions = {
 /** Nothing to compute for a dormant instance; every aggregate handles it. */
 const NO_LEADS: Lead[] = [];
 
+/** Shared so "this lead has no appointments" is one stable reference, not a new []. */
+const NO_APPOINTMENTS: LeadAppointment[] = [];
+
 function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue {
-  const { leads, defaultView = "table", readOnly = false, autoLoad = false } = options;
+  const {
+    leads,
+    appointments,
+    defaultView = "table",
+    readOnly = false,
+    autoLoad = false,
+  } = options;
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -106,7 +127,11 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
   const [localQuery, setLocalQuery] = useState(() => searchParams?.toString() ?? "");
   const [flash, setFlash] = useState<StageActionResult | null>(null);
   const [searchDraft, setSearchDraft] = useState<string | null>(null);
-  const [loaded, setLoaded] = useState<{ leads: Lead[]; today: string } | null>(null);
+  const [loaded, setLoaded] = useState<{
+    leads: Lead[];
+    appointments: LeadAppointment[];
+    today: string;
+  } | null>(null);
 
   const shouldLoad = autoLoad && leads === undefined && !inCanvas && !dormant;
   useEffect(() => {
@@ -117,7 +142,16 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
       .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
         if (cancelled || !data || !Array.isArray(data.leads)) return;
-        setLoaded({ leads: data.leads as Lead[], today: data.today ?? SAMPLE_TODAY });
+        setLoaded({
+          leads: data.leads as Lead[],
+          // Absent or failed reads both arrive as null; either way the cards
+          // show no bookings rather than the samples, which would be a lie
+          // sitting next to real leads.
+          appointments: Array.isArray(data.appointments)
+            ? (data.appointments as LeadAppointment[])
+            : [],
+          today: data.today ?? SAMPLE_TODAY,
+        });
       })
       // A failed read leaves the seed rows in place, which is what the page
       // already shows when the database is not connected.
@@ -138,6 +172,12 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
   const isSample = book === undefined;
   const allLeads = dormant ? NO_LEADS : book ?? SAMPLE_LEADS;
 
+  // The samples only stand in when the *book* is sampled too. A real lead with
+  // a fabricated appointment against it would be worse than showing none.
+  const booked = dormant
+    ? NO_APPOINTMENTS
+    : appointments ?? loaded?.appointments ?? (isSample ? SAMPLE_APPOINTMENTS : NO_APPOINTMENTS);
+
   // In the canvas there is no route to own the state, so the component owns it.
   // Everywhere else the URL stays the single source of truth.
   const search = inCanvas ? localQuery : searchParams?.toString() ?? "";
@@ -152,6 +192,23 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
   const stats = useMemo(() => summarise(visible, today), [visible, today]);
   const sources = useMemo(() => sourceStats(visible), [visible]);
   const selected = findLead(allLeads, query.leadId);
+
+  // Grouped once rather than filtered per card: the detail panel re-renders on
+  // every keystroke in an editable cell, and this keeps that free.
+  const appointmentsByLead = useMemo(() => {
+    const map = new Map<string, LeadAppointment[]>();
+    for (const appointment of booked) {
+      const list = map.get(appointment.leadId);
+      if (list) list.push(appointment);
+      else map.set(appointment.leadId, [appointment]);
+    }
+    return map;
+  }, [booked]);
+
+  const appointmentsFor = useCallback(
+    (leadId: string) => appointmentsByLead.get(leadId) ?? NO_APPOINTMENTS,
+    [appointmentsByLead],
+  );
 
   const hrefFor = useCallback(
     (overrides: Record<string, string | null>) => buildHref(params, overrides),
@@ -189,6 +246,8 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
     allLeads,
     visible,
     selected,
+    appointments: booked,
+    appointmentsFor,
     stats,
     sources,
     query,

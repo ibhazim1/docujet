@@ -1,18 +1,22 @@
 /**
  * The chat panel's endpoint.
  *
- * A thin proxy in front of the n8n workflow. It exists so the webhook URL stays
- * on the server (see `src/lib/chat/webhook.ts`), and so the one public,
- * unauthenticated, money-costing path in this app has a place to validate input
- * and throttle abuse before anything reaches n8n.
+ * The doorway, not the assistant. Everything about answering — retrieval, the
+ * brief, the model call — lives under `src/lib/chat/`; this route exists so the
+ * one public, unauthenticated, money-costing path in this app has a place to
+ * validate input and throttle abuse before any of that runs.
+ *
+ * It used to proxy to an n8n workflow. The contract it presents to the browser
+ * is unchanged by that move: post `{ message, sessionId, page, history }`, get
+ * back `{ reply, sessionId }` or `{ error }`.
  */
 
 import {
-  askChatWebhook,
-  ChatWebhookError,
+  askAssistant,
+  ChatError,
   MAX_MESSAGE_CHARS as FALLBACK_MAX_MESSAGE_CHARS,
   type ChatTurn,
-} from "@/lib/chat/webhook";
+} from "@/lib/chat/deepseek";
 import { getSettingsSafe } from "@/lib/settings/store";
 
 /** Never prerender or cache: every request is a distinct conversation turn. */
@@ -126,7 +130,7 @@ export async function POST(request: Request) {
       : crypto.randomUUID();
 
   try {
-    const reply = await askChatWebhook({
+    const reply = await askAssistant({
       message,
       sessionId,
       page: typeof body.page === "string" ? body.page.slice(0, 200) : undefined,
@@ -135,7 +139,7 @@ export async function POST(request: Request) {
 
     return Response.json({ reply, sessionId });
   } catch (error) {
-    if (error instanceof ChatWebhookError) {
+    if (error instanceof ChatError) {
       return fail(error.message, error.status);
     }
 

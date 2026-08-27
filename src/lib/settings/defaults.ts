@@ -35,7 +35,6 @@ export const DEFAULT_SETTINGS: SiteSettings = {
   integrations: {
     // Empty means "not overridden" — consumers fall back to process.env exactly
     // as they do today. See store.ts's getSettings() merge behavior.
-    n8nWebhookUrl: "",
     plasmicProjectId: "",
     plasmicApiToken: "",
   },

@@ -139,7 +139,7 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Field label="Max message length" caption="webhook.ts / route.ts / ChatWidget.tsx">
+            <Field label="Max message length" caption="route.ts / ChatWidget.tsx">
               <input
                 name="maxMessageChars"
                 type="number"
@@ -188,12 +188,6 @@ export default function SettingsForm({ initialSettings }: SettingsFormProps) {
         </p>
 
         <div className="mt-5 space-y-4">
-          <SecretField
-            label="n8n webhook URL"
-            name="n8nWebhookUrl"
-            masked={initialSettings.integrations.n8nWebhookUrl}
-            caption="Overrides N8N_CHAT_WEBHOOK_URL when set. webhook.ts"
-          />
           <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs leading-6 text-amber-900">
             Editing the Plasmic fields below updates the stored record, but the Plasmic loader
             initializes once at server start (plasmic-init.ts) — the{" "}

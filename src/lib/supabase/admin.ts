@@ -17,7 +17,7 @@
  */
 
 import { LOST_STAGE, SOURCES, STAGES } from "../crm/taxonomy";
-import type { SourceKey, StageKey } from "../crm/types";
+import type { LeadAppointment, SourceKey, StageKey } from "../crm/types";
 import { isSupabaseConfigured, supabase } from "./service";
 
 type AppointmentRow = {
@@ -114,19 +114,29 @@ function toAdminAppointment(
   };
 }
 
-export async function getAdminAppointments() {
+/**
+ * Every appointment, or one lead's.
+ *
+ * `leadId` narrows both halves, not just the appointments — scoped to one
+ * person there is no reason to read the other fifty-one leads to name them.
+ * It is what the Appointments link on a lead's card arrives with.
+ */
+export async function getAdminAppointments(leadId?: string) {
   if (!isSupabaseConfigured()) {
     return { data: [] as AdminAppointment[], error: NOT_CONFIGURED };
   }
 
   const client = supabase();
 
+  const appointments = client
+    .from("appointments")
+    .select(APPOINTMENT_COLUMNS)
+    .order("created_at", { ascending: false });
+  const leads = client.from("crm_leads").select(LEAD_CONTACT_COLUMNS);
+
   const [appointmentsResult, leadsResult] = await Promise.all([
-    client
-      .from("appointments")
-      .select(APPOINTMENT_COLUMNS)
-      .order("created_at", { ascending: false }),
-    client.from("crm_leads").select(LEAD_CONTACT_COLUMNS),
+    leadId ? appointments.eq("lead_id", leadId) : appointments,
+    leadId ? leads.eq("id", leadId) : leads,
   ]);
 
   if (appointmentsResult.error) {
@@ -389,4 +399,51 @@ export async function getAdminDashboard(today: string) {
   };
 
   return { data, error: null };
+}
+
+// ---------------------------------------------------------------------------
+// The lead tracker's appointments
+// ---------------------------------------------------------------------------
+
+/**
+ * Every appointment, keyed to the lead that booked it.
+ *
+ * Unfiltered on purpose, and shaped for the client: the tracker hands the whole
+ * lead book to the browser and does all its filtering there (see
+ * `analytics.ts`), so the card that shows a lead's appointments has to have
+ * them already. There are fewer appointments than leads, and both together are
+ * a fraction of what the charts already compute over.
+ *
+ * Ordered newest first so nothing downstream has to sort. `preferred_time` is a
+ * `time` column, which arrives as 'HH:MM:SS'; the seconds are always zero
+ * because every slot is booked on the half hour, so they are dropped here
+ * rather than in six different bits of JSX.
+ */
+export async function getLeadAppointments() {
+  if (!isSupabaseConfigured()) {
+    return { data: [] as LeadAppointment[], error: NOT_CONFIGURED };
+  }
+
+  const { data, error } = await supabase()
+    .from("appointments")
+    .select(APPOINTMENT_COLUMNS)
+    .order("preferred_date", { ascending: false })
+    .order("preferred_time", { ascending: false });
+
+  if (error) {
+    return { data: [] as LeadAppointment[], error: error.message };
+  }
+
+  return {
+    data: ((data ?? []) as AppointmentRow[]).map((row) => ({
+      id: row.id,
+      leadId: row.lead_id,
+      product: row.product_interest,
+      type: row.appointment_type,
+      date: row.preferred_date,
+      time: (row.preferred_time ?? "").slice(0, 5),
+      status: row.status,
+    })),
+    error: null,
+  };
 }

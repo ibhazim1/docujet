@@ -31,10 +31,14 @@ export type ChatConfig = {
  * `store.ts`), so a value telling the app where settings live would itself
  * live inside settings. `SUPABASE_URL` / `SUPABASE_SECRET_KEY` are environment
  * variables and nothing else.
+ *
+ * `DEEPSEEK_API_KEY` is absent for a related reason: the chat assistant is not
+ * an integration the site can be pointed at any more, it is part of the app
+ * (src/lib/chat/), and its key is a deployment credential like the database's.
+ * The n8n webhook URL that used to live here went away with the workflow —
+ * migration 0004 deletes the stored row.
  */
 export type IntegrationSettings = {
-  /** Secret-ish: a live workflow URL. Wins over N8N_CHAT_WEBHOOK_URL when set. */
-  n8nWebhookUrl: string;
   /** Not secret, but changing it here requires an env var update + restart — see plasmic-init.ts. */
   plasmicProjectId: string;
   /** Secret. */
@@ -48,6 +52,6 @@ export type SiteSettings = {
 };
 
 /** Fields in `IntegrationSettings` that must never round-trip to a client render in plaintext. */
-export const SECRET_KEYS = ["n8nWebhookUrl", "plasmicApiToken"] as const;
+export const SECRET_KEYS = ["plasmicApiToken"] as const;
 
 export type SecretKey = (typeof SECRET_KEYS)[number];
