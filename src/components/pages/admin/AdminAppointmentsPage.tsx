@@ -1,3 +1,4 @@
+import Link from "next/link";
 import EmptyState from "@/components/admin/EmptyState";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AppointmentBrowser from "@/components/pages/admin/AppointmentBrowser";
@@ -6,14 +7,18 @@ import { getAdminAppointments } from "@/lib/supabase/admin";
 type AdminAppointmentsPageProps = {
   /** Narrows the table to one lead's bookings. From `?lead=` on the URL. */
   leadId?: string;
-  /** The row that was clicked on the lead's card. From `?appointment=`. */
+  /**
+   * Legacy. `?appointment=` used to highlight one row in a table rendered here;
+   * rows now open `/admin/appointments/[id]` instead, and nothing in the app
+   * links with this parameter any more. Still accepted so the route that passes
+   * it does not have to change.
+   */
   appointmentId?: string;
   className?: string;
 };
 
 export default async function AdminAppointmentsPage({
   leadId,
-  appointmentId,
   className,
 }: AdminAppointmentsPageProps) {
   const { data: appointments, error } = await getAdminAppointments(leadId);
@@ -41,18 +46,18 @@ export default async function AdminAppointmentsPage({
               <strong className="font-semibold">{scopedTo}</strong>.
             </p>
             <div className="flex flex-wrap gap-2">
-              <a
+              <Link
                 href={`/admin/leads?lead=${encodeURIComponent(leadId ?? "")}`}
                 className="rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-semibold text-sky-900 transition hover:border-sky-400"
               >
                 Back to the lead
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/admin/appointments"
                 className="rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-semibold text-sky-900 transition hover:border-sky-400"
               >
                 Show all appointments
-              </a>
+              </Link>
             </div>
           </div>
         ) : null}
@@ -72,77 +77,7 @@ export default async function AdminAppointmentsPage({
             }
           />
         ) : (
-          <AdminTable>
-            <table className="min-w-[1180px] text-left text-sm">
-              <thead className="bg-slate-50 text-slate-500">
-                <tr>
-                  {[
-                    "Appointment ID",
-                    "Customer",
-                    "Company",
-                    "Email",
-                    "Phone",
-                    "Product",
-                    "Appointment Type",
-                    "Preferred Date",
-                    "Preferred Time",
-                    "Status",
-                    "Actions",
-                  ].map((heading) => (
-                    <th key={heading} className="px-5 py-4 font-medium">
-                      {heading}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {appointments.map((appointment) => (
-                  <tr
-                    key={appointment.id}
-                    // The one that was clicked on the lead's card. Scrolled to
-                    // by the anchor and marked so it is findable among siblings
-                    // that differ only by time.
-                    id={`appointment-${appointment.id}`}
-                    className={`scroll-mt-6 border-t border-slate-200 ${
-                      appointment.id === appointmentId ? "bg-sky-50" : ""
-                    }`}
-                  >
-                    <td className="px-5 py-4 font-medium text-slate-950">{appointment.id}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.customer}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.company}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.email}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.phone}</td>
-                    <td className="px-5 py-4 text-slate-600">{appointment.product}</td>
-                    <td className="px-5 py-4 text-slate-600">
-                      {appointment.appointmentType}
-                    </td>
-                    <td className="px-5 py-4 text-slate-600">
-                      {appointment.preferredDate}
-                    </td>
-                    <td className="px-5 py-4 text-slate-600">
-                      {appointment.preferredTime}
-                    </td>
-                    <td className="px-5 py-4">
-                      <StatusBadge status={appointment.status} />
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-2">
-                        {["View", "Confirm", "Complete", "Cancel"].map((action) => (
-                          <button
-                            key={action}
-                            type="button"
-                            className="rounded-full border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-                          >
-                            {action}
-                          </button>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </AdminTable>
+          <AppointmentBrowser appointments={appointments} />
         )}
       </div>
     </div>
