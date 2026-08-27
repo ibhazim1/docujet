@@ -23,9 +23,13 @@ export async function updateSession(request: NextRequest) {
 
   const cookiesToSet: CookieToSet[] = [];
 
+  // Read at request time, not inlined at build time: Next 16's Proxy runs on
+  // the Node.js runtime, so these are ordinary server-side variables and do not
+  // need a NEXT_PUBLIC_ prefix. See src/lib/supabase/client.ts for how the
+  // browser gets the same pair.
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_PUBLISHABLE_KEY!,
     {
       cookies: {
         getAll() {

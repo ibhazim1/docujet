@@ -38,12 +38,14 @@ let client: SupabaseClient | null = null;
 /**
  * The project URL.
  *
- * Falls back to the browser-facing name so one entry in .env serves both
- * clients — the URL is not a secret, and `server.ts` already reads it under
- * that name. The key deliberately has no such fallback.
+ * One entry in .env now serves every client: `server.ts` and `proxy.ts` read
+ * this same name, and the browser is handed it by the root layout. The
+ * `NEXT_PUBLIC_SUPABASE_URL` fallback that used to live here went away with
+ * those variables. The key deliberately has no such sharing — the secret one
+ * and the publishable one are different values and must stay so.
  */
 function projectUrl(): string | undefined {
-  return process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  return process.env.SUPABASE_URL;
 }
 
 /**
