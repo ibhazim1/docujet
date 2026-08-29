@@ -6,6 +6,7 @@ import { ExplainOn } from "./Explain";
 import LostReasonDialog from "./LostReasonDialog";
 import { useLeadTracker } from "./TrackerContext";
 import { reopenAction, setStageAction } from "@/lib/crm/actions";
+import type { StageActionKey } from "@/lib/crm/playbook";
 import { nextOpenStage, STAGES } from "@/lib/crm/taxonomy";
 import type { Lead } from "@/lib/crm/types";
 
@@ -13,6 +14,16 @@ export type LeadActionsProps = {
   lead: Lead;
   /** `row` is the compact set for the queue; `full` adds Reopen and labels. */
   variant?: "row" | "full";
+  /**
+   * Which buttons to offer.
+   *
+   * Omitted means every action that applies to the lead — what the lead card
+   * wants, since somebody who opened one specific record has already made the
+   * judgement the board is trying to steer. The action board passes the stage's
+   * own set instead, which is how a raw Lead ends up with no way to start a
+   * call from its row. See `STAGE_PLAYBOOK`.
+   */
+  actions?: StageActionKey[];
   className?: string;
 };
 
@@ -46,7 +57,12 @@ const BUTTON =
  * the tooltip appears is long enough that reaching for the button never
  * summons one.
  */
-export default function LeadActions({ lead, variant = "row", className = "" }: LeadActionsProps) {
+export default function LeadActions({
+  lead,
+  variant = "row",
+  actions,
+  className = "",
+}: LeadActionsProps) {
   const { isSample, setFlash, readOnly } = useLeadTracker();
   const [isPending, startTransition] = useTransition();
   const [closing, setClosing] = useState(false);
@@ -55,6 +71,12 @@ export default function LeadActions({ lead, variant = "row", className = "" }: L
   if (readOnly) return null;
 
   const advance = nextOpenStage(lead.stage);
+
+  // Unrestricted unless a caller narrowed it. `lead.lost` still decides between
+  // Reopen and the advance/close pair below — the allow-list says what MAY be
+  // shown, never what the lead's own state makes sensible.
+  const allowed = actions ?? (["contact", "advance", "markLost", "reopen"] as StageActionKey[]);
+  const can = (key: StageActionKey) => allowed.includes(key);
 
   function guard(run: () => Promise<void>) {
     if (isSample) {
@@ -67,6 +89,7 @@ export default function LeadActions({ lead, variant = "row", className = "" }: L
   return (
     <>
       <div className={`flex flex-wrap items-center gap-2 ${className}`}>
+        {can("contact") ? (
         <ExplainOn term="action.contactNow">
           <button
             type="button"
@@ -80,8 +103,10 @@ export default function LeadActions({ lead, variant = "row", className = "" }: L
             Contact now
           </button>
         </ExplainOn>
+        ) : null}
 
         {lead.lost ? (
+          can("reopen") ? (
           <ExplainOn term="action.reopen">
             <button
               type="button"
@@ -96,9 +121,10 @@ export default function LeadActions({ lead, variant = "row", className = "" }: L
               Reopen
             </button>
           </ExplainOn>
+          ) : null
         ) : (
           <>
-            {advance ? (
+            {advance && can("advance") ? (
               <ExplainOn
                 term="action.advance"
                 detail={`This lead is at ${STAGES[lead.stage].label}; the button moves it to ${STAGES[advance].label}.`}
@@ -118,6 +144,7 @@ export default function LeadActions({ lead, variant = "row", className = "" }: L
               </ExplainOn>
             ) : null}
 
+            {can("markLost") ? (
             <ExplainOn term="action.markLost">
               <button
                 type="button"
@@ -128,6 +155,7 @@ export default function LeadActions({ lead, variant = "row", className = "" }: L
                 Mark lost
               </button>
             </ExplainOn>
+            ) : null}
           </>
         )}
       </div>

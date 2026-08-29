@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { SkeletonBody } from "@/components/admin/AdminSkeleton";
 import DemoNotice from "@/components/admin/DemoNotice";
 import LeadTracker from "@/components/crm/LeadTracker";
 import { resolveToday } from "@/lib/crm/analytics";
@@ -116,7 +117,7 @@ export default async function AdminLeadsPage({ className }: AdminLeadsPageProps)
             a Suspense boundary above it. Omitting `leads` puts it in sample
             mode, which is exactly what the notice above describes — and
             `autoLoad` is off because this page has already done the reading. */}
-        <Suspense fallback={<p className="text-sm text-slate-500">Loading leads…</p>}>
+        <Suspense fallback={<SkeletonBody title="Lead Tracker" tiles={6} rows={6} />}>
           {leads ? (
             <LeadTracker
               leads={leads}

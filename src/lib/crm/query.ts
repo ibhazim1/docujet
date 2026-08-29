@@ -8,12 +8,14 @@
  */
 
 import { isSortKey } from "./analytics";
+import { isBoardOrder, type BoardOrder } from "./playbook";
 import { isPlayKey, type PlayKey } from "./queue";
 import { isSourceKey, isStageKey } from "./taxonomy";
 import type {
   LeadFilters,
   SortDirection,
   SortKey,
+  StageKey,
   ViewKey,
 } from "./types";
 
@@ -28,10 +30,32 @@ export type TrackerQuery = {
    *
    * Carried in the URL like every other piece of view state, which is what lets
    * an insight on the dashboard link straight to the leads behind it — "38% of
-   * losses cite price" is a claim, and `?view=today&play=going-cold` is the
+   * losses cite price" is a claim, and `?view=action&play=going-cold` is the
    * evidence, one click away and shareable.
    */
   play: PlayKey | "";
+  /**
+   * Which stage section the action board is showing.
+   *
+   * The board displays one stage at a time, so this is the single most
+   * important thing about what is on screen and it belongs in the URL with
+   * everything else — "the MQL pile" is a link somebody can send.
+   *
+   * Empty means "not chosen", which the board resolves to the earliest stage
+   * that has anything in it. That is deliberately not the same as defaulting to
+   * `lead` in here: the right answer depends on the leads, which this module
+   * cannot see.
+   */
+  at: StageKey | "";
+  /**
+   * How the visible section is ordered: longest silent first, or most recently
+   * contacted first.
+   *
+   * Separate from `sort`/`dir`, which belong to the table. The board sorts on
+   * one axis only and in a different unit, and overloading the table's keys
+   * would mean a column choice made in one view silently reordering the other.
+   */
+  order: BoardOrder;
   /**
    * How many table rows to show at once, and which page of them.
    *
@@ -74,15 +98,18 @@ export function parseQuery(params: URLSearchParams): TrackerQuery {
   const rawSort = params.get("sort") ?? "";
 
   const rawPlay = params.get("play") ?? "";
+  const rawAt = params.get("at") ?? "";
+  const rawOrder = params.get("order") ?? "";
 
   return {
-    // `today` is the default and needs no parameter; the other three are
-    // explicit. Anything unrecognised falls back to the queue rather than to a
-    // blank screen.
+    // `action` is the default and needs no parameter; the other three are
+    // explicit. Anything unrecognised falls back to the board rather than to a
+    // blank screen — including `view=today`, the name this view used to have,
+    // which keeps links shared before the rename pointing somewhere sensible.
     view:
       rawView === "board" || rawView === "charts" || rawView === "table"
         ? rawView
-        : "today",
+        : "action",
     filters: {
       q: (params.get("q") ?? "").trim(),
       // `open` is a pseudo-stage meaning "anything still in play".
@@ -94,6 +121,8 @@ export function parseQuery(params: URLSearchParams): TrackerQuery {
     dir: params.get("dir") === "asc" ? "asc" : "desc",
     leadId: params.get("lead") ?? "",
     play: isPlayKey(rawPlay) ? rawPlay : "",
+    at: isStageKey(rawAt) ? rawAt : "",
+    order: isBoardOrder(rawOrder) ? rawOrder : "late",
     perPage: parsePerPage(params.get("per")),
     page: parsePage(params.get("page")),
   };

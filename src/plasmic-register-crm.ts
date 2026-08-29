@@ -45,7 +45,7 @@ import ActiveLostDonut from "./components/crm/charts/ActiveLostDonut";
 import StageShareDonut from "./components/crm/charts/StageShareDonut";
 import LossReasonChart from "./components/crm/charts/LossReasonChart";
 import StageVelocityChart from "./components/crm/charts/StageVelocityChart";
-import TodayQueue from "./components/crm/TodayQueue";
+import ActionBoard from "./components/crm/ActionBoard";
 import InsightPanel from "./components/crm/InsightPanel";
 import ScoreChip from "./components/crm/ScoreChip";
 import ScoreBreakdown from "./components/crm/ScoreBreakdown";
@@ -97,14 +97,14 @@ PLASMIC.registerComponent(LeadTracker, {
       type: "choice",
       displayName: "Opening view",
       description:
-        "Which view is shown before anyone touches the Today / Table / Board / Charts control.",
+        "Which view is shown before anyone touches the Action / Table / Board / Charts control.",
       options: [
-        { value: "today", label: "Today (work queue)" },
+        { value: "action", label: "Action (work board)" },
         { value: "table", label: "Table" },
         { value: "board", label: "Board" },
         { value: "charts", label: "Charts" },
       ],
-      defaultValue: "today",
+      defaultValue: "action",
     },
     readOnly: {
       type: "boolean",
@@ -210,7 +210,7 @@ PLASMIC.registerComponent(ViewToggle, {
   parentComponentName: GROUP,
   props: {
     className: { type: "class" },
-    todayLabel: { type: "string", defaultValue: "Today" },
+    actionLabel: { type: "string", defaultValue: "Action" },
     tableLabel: { type: "string", defaultValue: "Table" },
     boardLabel: { type: "string", defaultValue: "Board" },
     chartsLabel: { type: "string", defaultValue: "Charts" },
@@ -219,12 +219,12 @@ PLASMIC.registerComponent(ViewToggle, {
       displayName: "Views offered",
       multiSelect: true,
       options: [
-        { value: "today", label: "Today (work queue)" },
+        { value: "action", label: "Action (work board)" },
         { value: "table", label: "Table" },
         { value: "board", label: "Board" },
         { value: "charts", label: "Charts" },
       ],
-      defaultValue: ["today", "table", "board", "charts"],
+      defaultValue: ["action", "table", "board", "charts"],
     },
   },
 });
@@ -539,17 +539,17 @@ PLASMIC.registerComponent(ViewSwitch, {
         "Pins the switch to one branch so you can work on it without changing the view first. Leave on Follow the toggle when done.",
       options: [
         { value: "", label: "Follow the toggle" },
-        { value: "today", label: "Today (work queue)" },
+        { value: "action", label: "Action (work board)" },
         { value: "table", label: "Table" },
         { value: "board", label: "Board" },
         { value: "charts", label: "Charts" },
       ],
       defaultValue: "",
     },
-    todayView: {
+    actionView: {
       type: "slot",
-      displayName: "Today view",
-      defaultValue: [{ type: "component", name: "LeadTodayQueue" }],
+      displayName: "Action view",
+      defaultValue: [{ type: "component", name: "LeadActionBoard" }],
     },
     tableView: {
       type: "slot",
@@ -998,27 +998,28 @@ PLASMIC.registerComponent(StageShareDonut, {
 // designer can rebuild the page around the queue rather than around the table.
 // ---------------------------------------------------------------------------
 
-PLASMIC.registerComponent(TodayQueue, {
-  name: "LeadTodayQueue",
-  displayName: "Today · Work queue",
+PLASMIC.registerComponent(ActionBoard, {
+  name: "LeadActionBoard",
+  displayName: "Action · Work board",
   description:
-    "Every open lead grouped by what is wrong with it, nearest a decision first. The view the dashboard opens on.",
-  importPath: "@/components/crm/TodayQueue",
+    "Every lead filed under the stage it is sitting at, one stage on screen at a time, each with the standing instruction for that stage. The view the tracker opens on.",
+  importPath: "@/components/crm/ActionBoard",
   isDefaultExport: true,
   parentComponentName: GROUP,
   props: {
     className: { type: "class" },
-    limitPerPlay: {
+    limit: {
       type: "number",
       displayName: "Rows per section",
-      description: "Beyond this a section collapses to a link that opens the whole play.",
-      defaultValue: 8,
+      description:
+        "Beyond this the section says how many it is holding back. On Lost the budget is shared between the causes, so a large one cannot bury the small reopenable ones.",
+      defaultValue: 25,
     },
     showActions: {
       type: "boolean",
       displayName: "Inline action buttons",
       description:
-        "Log contact, advance and mark lost, on every row. Turning them off makes the queue a report rather than a worklist.",
+        "The stage's own buttons on every row — a Lead offers only qualify and close, a Customer only contact. Turning them off makes the board a report rather than a worklist.",
       defaultValue: true,
     },
   },

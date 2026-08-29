@@ -2,6 +2,7 @@
 
 import { DataProvider } from "@plasmicapp/loader-nextjs";
 import type { ReactNode } from "react";
+import ActionBoard from "./ActionBoard";
 import ContactLog from "./ContactLog";
 import FilterBar from "./FilterBar";
 import FlashMessage from "./FlashMessage";
@@ -16,7 +17,6 @@ import LeadEmptyState from "./LeadEmptyState";
 import LeadTable from "./LeadTable";
 import PipelineBar from "./PipelineBar";
 import StageTile from "./StageTile";
-import TodayQueue from "./TodayQueue";
 import ViewSwitch from "./ViewSwitch";
 import ViewToggle from "./ViewToggle";
 import ActiveLostDonut from "./charts/ActiveLostDonut";
@@ -93,7 +93,7 @@ export type LeadTrackerProps = {
 function KpiRowForView() {
   const { view } = useLeadTracker();
 
-  if (view === "today") {
+  if (view === "action") {
     return (
       <KpiRow>
         <KpiCard metric="needsAction" />
@@ -162,7 +162,7 @@ function StandardLayout({
 
       <ViewSwitch
         emptyView={<LeadEmptyState />}
-        todayView={<TodayQueue />}
+        actionView={<ActionBoard />}
         tableView={<LeadTable />}
         boardView={<LeadBoard />}
         chartsView={
@@ -291,7 +291,7 @@ export default function LeadTracker({
   viewer,
   today,
   autoLoad = true,
-  defaultView = "today",
+  defaultView = "action",
   readOnly = false,
   showKpis = true,
   showPipeline = true,

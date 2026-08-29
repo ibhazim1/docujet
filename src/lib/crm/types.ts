@@ -282,10 +282,16 @@ export type SortKey =
 export type SortDirection = "asc" | "desc";
 
 /**
- * `today` is the working view and the default: the queue a rep acts on. The
+ * `action` is the working view and the default: the board a rep acts on. The
  * other three answer questions about the book; this one hands out the work.
+ *
+ * It was called `today` until the board stopped being organised by urgency and
+ * started being organised by stage. "Today" promised a list that expired at
+ * five o'clock; what the view actually holds is the whole open book, sorted
+ * into the six things a rep can be doing about it. `parseQuery` still accepts
+ * the old value so links shared before the rename keep working.
  */
-export type ViewKey = "today" | "table" | "board" | "charts";
+export type ViewKey = "action" | "table" | "board" | "charts";
 
 /**
  * Fields a user may edit inline.

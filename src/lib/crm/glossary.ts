@@ -660,14 +660,46 @@ export const GLOSSARY = {
 
   // ---- Views ---------------------------------------------------------------
 
-  "view.today": {
-    term: "Today",
+  "view.action": {
+    term: "Action",
     what:
-      "The work queue: every open lead sorted into the situation it is actually in, with what to " +
-      "do about it written next to it.",
+      "The work board: every lead filed under the stage it is sitting at, one stage on screen at " +
+      "a time, with the standing instruction for that stage above it.",
     why:
       "The other three views answer questions about the book. This one hands out the work, which " +
-      "is why the page opens on it.",
+      "is why the page opens on it. Sections are stages rather than problems because stage is " +
+      "what decides what you actually say — twenty MQLs all need the same message, where twenty " +
+      "leads that have all gone quiet need twenty different ones.",
+    how:
+      "Pick a stage and work down it. What has gone wrong with each lead is still there, as the " +
+      "chip on its row, and the most neglected sort to the top.",
+  },
+
+  "concept.boardOrder": {
+    term: "Sort",
+    what:
+      "Orders the section by silence: longest since anyone made contact, or most recently " +
+      "contacted first.",
+    why:
+      "Inside one stage every lead already needs the same thing, so the useful question is not " +
+      "which is most valuable — it is who you have left longest.",
+    how:
+      "Longest silent is the default and the one to work from. Recently contacted is for picking " +
+      "up where you stopped yesterday, or for checking what a colleague has already been through.",
+  },
+
+  "concept.lostCauses": {
+    term: "Lost, by cause",
+    what:
+      "Closed deals grouped by what killed them, each group carrying the change that would stop " +
+      "it happening again and who owns that change.",
+    why:
+      "A flat list of dead deals is a graveyard nobody opens. The same list split by cause is a " +
+      "set of re-approach campaigns waiting on one thing to change — the moment the business " +
+      "fixes how it quotes, everything under Price is the warmest list it owns.",
+    how:
+      "Only write to a group once the thing named in its heading has actually changed. A " +
+      "re-approach that cannot say what is different is the conversation that already failed.",
   },
 
   "view.table": {

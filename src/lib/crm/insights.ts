@@ -102,7 +102,7 @@ function stallFinding(stats: Summary): Insight | null {
         : "."),
     action: "Work the Going cold play today, or close them so they stop counting as pipeline.",
     scale: stats.stalledQualified,
-    href: "?view=today&play=going-cold",
+    href: "?view=action&play=going-cold",
   };
 }
 
@@ -120,7 +120,7 @@ function untouchedFinding(stats: Summary): Insight | null {
       `The acquisition cost on these is already spent.`,
     action: "Clear the Hot and never contacted play first — it is the cheapest revenue available.",
     scale: null,
-    href: "?view=today&play=hot-untouched",
+    href: "?view=action&play=hot-untouched",
   };
 }
 
@@ -136,7 +136,7 @@ function overdueFinding(stats: Summary): Insight | null {
       "A missed follow-up costs credibility as well as the deal.",
     action: "Clear them, or move the dates and record why.",
     scale: null,
-    href: "?view=today&play=overdue",
+    href: "?view=action&play=overdue",
   };
 }
 

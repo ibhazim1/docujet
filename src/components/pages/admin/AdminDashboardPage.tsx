@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import AdminHeader from "@/components/admin/AdminHeader";
+import { SkeletonBody } from "@/components/admin/AdminSkeleton";
 import AdminTable from "@/components/admin/AdminTable";
 import DemoNotice from "@/components/admin/DemoNotice";
 import EmptyState from "@/components/admin/EmptyState";
@@ -171,9 +172,7 @@ export default async function AdminDashboardPage({
             a Suspense boundary. `readOnly` because this is a reporting surface:
             leads are edited on /admin/leads, and a stage control here would be
             a second place to change the same thing. */}
-        <Suspense
-          fallback={<p className="text-sm text-slate-500">Loading pipeline…</p>}
-        >
+        <Suspense fallback={<SkeletonBody title="Dashboard" tiles={6} rows={4} />}>
           {book.leads ? (
             <LeadTracker
               leads={book.leads}

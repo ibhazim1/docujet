@@ -147,7 +147,7 @@ export default function AdminOverview({
               {attention.map((row) => (
                 <li key={row.key}>
                   <a
-                    href={`${leadsPath}?view=today&play=${row.key}`}
+                    href={`${leadsPath}?view=action&play=${row.key}`}
                     className="flex items-center justify-between gap-4 rounded-2xl border border-slate-200 px-4 py-3 transition hover:border-slate-400"
                   >
                     <span className="min-w-0">

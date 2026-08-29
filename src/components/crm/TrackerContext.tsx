@@ -1,7 +1,7 @@
 "use client";
 
 import { usePlasmicCanvasContext } from "@plasmicapp/loader-nextjs";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -40,6 +40,11 @@ import {
   type PlayGroup,
   type QueueItem,
 } from "@/lib/crm/queue";
+import {
+  buildBoard,
+  firstPopulatedStage,
+  type BoardSection,
+} from "@/lib/crm/playbook";
 import { SAMPLE_APPOINTMENTS, SAMPLE_LEADS, SAMPLE_TODAY } from "@/lib/crm/sample-leads";
 import { scoreLead, sourceQualityIndex, type LeadScore } from "@/lib/crm/scoring";
 import type {
@@ -47,6 +52,7 @@ import type {
   Lead,
   LeadAppointment,
   LeadEvent,
+  StageKey,
   ViewKey,
 } from "@/lib/crm/types";
 
@@ -103,6 +109,16 @@ export type TrackerValue = {
   queue: QueueItem[];
   /** The same, grouped for rendering and narrowed by the `play` filter. */
   queueGroups: PlayGroup[];
+  /**
+   * The action board: every visible lead in exactly one stage section.
+   *
+   * All six sections are always present, empty ones included, because the tab
+   * strip has to be able to say "MQL 0" — a tab that vanished when its pile
+   * cleared would make the board's shape change under the reader.
+   */
+  board: BoardSection[];
+  /** The section actually on screen, after resolving an unset or empty `at`. */
+  boardStage: StageKey;
   /** How much work is outstanding, and how much of it is qualified. */
   outstanding: { count: number; qualified: number };
   /** Ranked findings about the book, most severe first. */
@@ -209,7 +225,6 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
     autoLoad = false,
   } = options;
 
-  const router = useRouter();
   const searchParams = useSearchParams();
   const inCanvas = Boolean(usePlasmicCanvasContext());
 
@@ -369,6 +384,18 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
 
   const outstanding = useMemo(() => actionSummary(queue), [queue]);
 
+  // Built from `visible`, so the board obeys the filter bar exactly as the
+  // table does — narrowing to a source narrows every section at once.
+  const board = useMemo(
+    () => buildBoard(visible, scoreContext, query.order, query.play),
+    [visible, scoreContext, query.order, query.play],
+  );
+
+  // An `at` naming a section that is currently empty is honoured rather than
+  // corrected: the reader asked for that pile, and silently redirecting them to
+  // a different stage would be a worse answer than an empty one that says so.
+  const boardStage = query.at === "" ? firstPopulatedStage(board) : query.at;
+
   const kbGaps = options.kbGaps;
   const insights = useMemo(
     () => buildInsights(matching, { today, stats, kbGaps }),
@@ -410,9 +437,31 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
 
       const href = buildHref(params, next);
       setLocalQuery(href === "?" ? "" : href.slice(1));
-      if (!inCanvas) router.replace(href, { scroll: false });
+
+      // ---------------------------------------------------------------------
+      // The native History API, not `router.replace`.
+      //
+      // Every control on this page — the view toggle, the six stage tabs, the
+      // filters, the sort, opening a lead card — goes through here. Routing
+      // each one meant a server round-trip per click, and on /admin/leads that
+      // round-trip re-ran four Supabase reads to hand back a byte-identical
+      // book: the tracker already holds every lead and does all its filtering,
+      // sorting and grouping in the browser. The request could not change what
+      // was rendered. It could only delay it.
+      //
+      // `pushState`/`replaceState` are integrated with the App Router, so
+      // `useSearchParams` still updates and the back button still behaves —
+      // the URL stays the single source of truth, it just stops being a
+      // question we ask the server. `replaceState` rather than `pushState`
+      // preserves the old behaviour exactly: these controls never stacked
+      // history entries, so Back has always left the page rather than walking
+      // back through filter changes.
+      // ---------------------------------------------------------------------
+      if (!inCanvas && typeof window !== "undefined") {
+        window.history.replaceState(null, "", href);
+      }
     },
-    [params, inCanvas, router],
+    [params, inCanvas],
   );
 
   const toggleHrefFor = useCallback(
@@ -446,6 +495,8 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
     sources,
     queue,
     queueGroups,
+    board,
+    boardStage,
     outstanding,
     insights,
     insightFor,
