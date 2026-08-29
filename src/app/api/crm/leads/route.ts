@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { resolveToday } from "@/lib/crm/analytics";
-import { fetchLeads, isSupabaseConfigured } from "@/lib/crm/leads";
+import { fetchLeadEvents, fetchLeads, isSupabaseConfigured } from "@/lib/crm/leads";
 import { getLeadAppointments } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -42,6 +42,7 @@ export async function GET() {
     return NextResponse.json({
       leads: null,
       appointments: null,
+      events: null,
       today,
       notice:
         "No Supabase project is configured — SUPABASE_URL and SUPABASE_SECRET_KEY are not set in .env.",
@@ -49,16 +50,28 @@ export async function GET() {
   }
 
   try {
-    const [leads, booked] = await Promise.all([fetchLeads(), getLeadAppointments()]);
+    const [leads, booked, events] = await Promise.all([
+      fetchLeads(),
+      getLeadAppointments(),
+      fetchLeadEvents(),
+    ]);
 
-    // A failed appointment read is not worth losing the book over: the card
-    // shows "No appointments booked", every other view is unaffected, and the
-    // notice is reserved for the failure that empties the page.
-    return NextResponse.json({ leads, appointments: booked.data, today, notice: null });
+    // A failed appointment or history read is not worth losing the book over:
+    // the card shows "No appointments booked" and no timeline, every other view
+    // is unaffected, and the notice is reserved for the failure that empties
+    // the page. Both readers report their own failure and return empty.
+    return NextResponse.json({
+      leads,
+      appointments: booked.data,
+      events,
+      today,
+      notice: null,
+    });
   } catch (cause) {
     return NextResponse.json({
       leads: null,
       appointments: null,
+      events: null,
       today,
       notice: cause instanceof Error ? cause.message : "Could not read the leads table.",
     });

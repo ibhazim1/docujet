@@ -1,5 +1,6 @@
 "use client";
 
+import Explain from "./Explain";
 import { TrackerLink, useLeadTracker } from "./TrackerContext";
 import { STAGES } from "@/lib/crm/taxonomy";
 import type { StageKey } from "@/lib/crm/types";
@@ -43,7 +44,10 @@ export default function StageTile({
   const body = (
     <>
       <span className="flex items-baseline justify-between gap-2">
-        <span className="text-sm font-medium text-slate-500">{label || def.label}</span>
+        <span className="flex items-center gap-1.5 text-sm font-medium text-slate-500">
+          {label || def.label}
+          <Explain term={`stage.${stage}`} label={def.label} />
+        </span>
         <span className="text-2xl font-semibold tracking-tight text-slate-950">{count}</span>
       </span>
       {showBar ? (

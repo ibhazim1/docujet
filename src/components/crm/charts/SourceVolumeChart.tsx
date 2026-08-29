@@ -30,14 +30,16 @@ export default function SourceVolumeChart({
   showTable = true,
   className = "",
 }: SourceVolumeChartProps) {
-  const { sources: rows, query } = useLeadTracker();
+  const { sources: rows, query, insightFor } = useLeadTracker();
   const activeSource = query.filters.source;
   const max = Math.max(1, ...rows.map((row) => row.total));
 
   return (
     <ChartCard
       title={title}
+      explain="chart.sourceVolume"
       subtitle={subtitle}
+      insight={insightFor("sourceVolume")}
       footnote={clickToFilter ? footnote : undefined}
       showTable={showTable}
       className={className}

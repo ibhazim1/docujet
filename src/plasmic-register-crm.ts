@@ -43,6 +43,16 @@ import SocialSplitMeter from "./components/crm/charts/SocialSplitMeter";
 import SourceShareDonut from "./components/crm/charts/SourceShareDonut";
 import ActiveLostDonut from "./components/crm/charts/ActiveLostDonut";
 import StageShareDonut from "./components/crm/charts/StageShareDonut";
+import LossReasonChart from "./components/crm/charts/LossReasonChart";
+import StageVelocityChart from "./components/crm/charts/StageVelocityChart";
+import TodayQueue from "./components/crm/TodayQueue";
+import InsightPanel from "./components/crm/InsightPanel";
+import ScoreChip from "./components/crm/ScoreChip";
+import ScoreBreakdown from "./components/crm/ScoreBreakdown";
+import LeadTimeline from "./components/crm/LeadTimeline";
+import AdminOverview from "./components/crm/AdminOverview";
+import ContactLog from "./components/crm/ContactLog";
+import TablePagination from "./components/crm/TablePagination";
 
 /** Everything in this file sits under the tracker in the insert menu. */
 const GROUP = "LeadTracker";
@@ -86,13 +96,15 @@ PLASMIC.registerComponent(LeadTracker, {
     defaultView: {
       type: "choice",
       displayName: "Opening view",
-      description: "Which view is shown before anyone touches the Table / Board / Charts control.",
+      description:
+        "Which view is shown before anyone touches the Today / Table / Board / Charts control.",
       options: [
+        { value: "today", label: "Today (work queue)" },
         { value: "table", label: "Table" },
         { value: "board", label: "Board" },
         { value: "charts", label: "Charts" },
       ],
-      defaultValue: "table",
+      defaultValue: "today",
     },
     readOnly: {
       type: "boolean",
@@ -112,7 +124,7 @@ PLASMIC.registerComponent(LeadTracker, {
       type: "boolean",
       displayName: "Load real leads",
       description:
-        "On the published page, read the live lead book instead of the 46 seed rows. The canvas always shows the seed rows.",
+        "On the published page, read the live lead book instead of the seed rows. The canvas always shows the seed rows.",
       defaultValue: true,
     },
     children: {
@@ -198,6 +210,7 @@ PLASMIC.registerComponent(ViewToggle, {
   parentComponentName: GROUP,
   props: {
     className: { type: "class" },
+    todayLabel: { type: "string", defaultValue: "Today" },
     tableLabel: { type: "string", defaultValue: "Table" },
     boardLabel: { type: "string", defaultValue: "Board" },
     chartsLabel: { type: "string", defaultValue: "Charts" },
@@ -206,11 +219,12 @@ PLASMIC.registerComponent(ViewToggle, {
       displayName: "Views offered",
       multiSelect: true,
       options: [
+        { value: "today", label: "Today (work queue)" },
         { value: "table", label: "Table" },
         { value: "board", label: "Board" },
         { value: "charts", label: "Charts" },
       ],
-      defaultValue: ["table", "board", "charts"],
+      defaultValue: ["today", "table", "board", "charts"],
     },
   },
 });
@@ -293,14 +307,20 @@ PLASMIC.registerComponent(KpiCard, {
       type: "choice",
       displayName: "Reading",
       options: [
-        { value: "total", label: "Total leads" },
-        { value: "topSource", label: "Top source" },
-        { value: "social", label: "From social" },
-        { value: "qualified", label: "Reached SQL+" },
-        { value: "customers", label: "Customers" },
-        { value: "lost", label: "Lost" },
-        { value: "open", label: "Still open" },
-        { value: "newThisWeek", label: "New this week" },
+        { value: "needsAction", label: "Work · Needs action" },
+        { value: "hot", label: "Work · Hot leads" },
+        { value: "overdue", label: "Work · Overdue" },
+        { value: "stalled", label: "Work · Going cold" },
+        { value: "untouched", label: "Work · Never contacted" },
+        { value: "unowned", label: "Work · Unowned" },
+        { value: "total", label: "Count · Total leads" },
+        { value: "topSource", label: "Count · Top source" },
+        { value: "social", label: "Count · From social" },
+        { value: "qualified", label: "Count · Reached SQL+" },
+        { value: "customers", label: "Count · Customers" },
+        { value: "lost", label: "Count · Lost" },
+        { value: "open", label: "Count · Still open" },
+        { value: "newThisWeek", label: "Count · New this week" },
       ],
       defaultValue: "total",
     },
@@ -519,11 +539,17 @@ PLASMIC.registerComponent(ViewSwitch, {
         "Pins the switch to one branch so you can work on it without changing the view first. Leave on Follow the toggle when done.",
       options: [
         { value: "", label: "Follow the toggle" },
+        { value: "today", label: "Today (work queue)" },
         { value: "table", label: "Table" },
         { value: "board", label: "Board" },
         { value: "charts", label: "Charts" },
       ],
       defaultValue: "",
+    },
+    todayView: {
+      type: "slot",
+      displayName: "Today view",
+      defaultValue: [{ type: "component", name: "LeadTodayQueue" }],
     },
     tableView: {
       type: "slot",
@@ -544,6 +570,8 @@ PLASMIC.registerComponent(ViewSwitch, {
           name: "LeadCharts",
           props: {
             children: [
+              { type: "component", name: "LeadLossReasonChart" },
+              { type: "component", name: "LeadStageVelocityChart" },
               { type: "component", name: "LeadSourceVolumeChart" },
               { type: "component", name: "LeadSourceQualityChart" },
               { type: "component", name: "LeadFunnelChart" },
@@ -592,12 +620,19 @@ PLASMIC.registerComponent(LeadTable, {
   name: "LeadTable",
   displayName: "Lead Table",
   description:
-    "The working list. Every cell is edited in place. Choose the columns, their order and their headings below.",
+    "The working list, ten rows at a time. Every cell is edited in place. Choose the columns, their order and their headings below.",
   importPath: "@/components/crm/LeadTable",
   isDefaultExport: true,
   parentComponentName: GROUP,
   props: {
     className: { type: "class" },
+    showPagination: {
+      type: "boolean",
+      displayName: "Rows picker & pager",
+      description:
+        "The footer that chooses how many rows to show and moves between pages. Turning it off caps the table at the current size with no way past it.",
+      defaultValue: true,
+    },
     columns: {
       type: "array",
       displayName: "Columns",
@@ -951,5 +986,222 @@ PLASMIC.registerComponent(StageShareDonut, {
       footnote: "Lost leads are excluded — see Active vs lost for that split.",
     }),
     centerCaption: { type: "string", displayName: "Centre caption", defaultValue: "active" },
+  },
+});
+
+// ---------------------------------------------------------------------------
+// The decision layer
+//
+// The pieces added when the tracker stopped only describing the book and
+// started handing out work. Registered on the same terms as everything above:
+// each reads the tracker itself, so any of them can be dropped anywhere, and a
+// designer can rebuild the page around the queue rather than around the table.
+// ---------------------------------------------------------------------------
+
+PLASMIC.registerComponent(TodayQueue, {
+  name: "LeadTodayQueue",
+  displayName: "Today · Work queue",
+  description:
+    "Every open lead grouped by what is wrong with it, nearest a decision first. The view the dashboard opens on.",
+  importPath: "@/components/crm/TodayQueue",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: {
+    className: { type: "class" },
+    limitPerPlay: {
+      type: "number",
+      displayName: "Rows per section",
+      description: "Beyond this a section collapses to a link that opens the whole play.",
+      defaultValue: 8,
+    },
+    showActions: {
+      type: "boolean",
+      displayName: "Inline action buttons",
+      description:
+        "Log contact, advance and mark lost, on every row. Turning them off makes the queue a report rather than a worklist.",
+      defaultValue: true,
+    },
+  },
+});
+
+PLASMIC.registerComponent(InsightPanel, {
+  name: "LeadInsightPanel",
+  displayName: "Insights · What to do about it",
+  description:
+    "Ranked findings about the book, each carrying its evidence and linking to the leads behind it.",
+  importPath: "@/components/crm/InsightPanel",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: {
+    className: { type: "class" },
+    title: { type: "string", displayName: "Title", defaultValue: "What to do about it" },
+    limit: { type: "number", displayName: "How many findings", defaultValue: 5 },
+    basePath: {
+      type: "string",
+      displayName: "Link prefix",
+      description:
+        "Where the drill-downs point. Leave empty on the lead tracker itself; set /admin/leads when this sits on another page.",
+      defaultValue: "",
+    },
+  },
+});
+
+PLASMIC.registerComponent(AdminOverview, {
+  name: "LeadAdminOverview",
+  displayName: "Overview · Owner dashboard",
+  description:
+    "Pipeline health, the funnel, ranked findings and the work outstanding. The whole /admin summary in one element.",
+  importPath: "@/components/crm/AdminOverview",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: {
+    className: { type: "class" },
+    leadsPath: {
+      type: "string",
+      displayName: "Lead tracker path",
+      defaultValue: "/admin/leads",
+    },
+  },
+});
+
+PLASMIC.registerComponent(ScoreChip, {
+  name: "LeadScoreChip",
+  displayName: "Lead Score Chip",
+  description:
+    "A lead's priority score as a coloured badge. Hovering explains the number.",
+  importPath: "@/components/crm/ScoreChip",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: {
+    className: { type: "class" },
+    leadId: {
+      type: "string",
+      displayName: "Lead id",
+      description: "Leave empty to follow the selected lead, then the first one shown.",
+    },
+    size: {
+      type: "choice",
+      displayName: "Size",
+      options: [
+        { value: "sm", label: "Small" },
+        { value: "md", label: "Medium" },
+      ],
+      defaultValue: "sm",
+    },
+    showLabel: {
+      type: "boolean",
+      displayName: "Show band name",
+      defaultValue: false,
+    },
+  },
+});
+
+PLASMIC.registerComponent(ScoreBreakdown, {
+  name: "LeadScoreBreakdown",
+  displayName: "Lead Score Breakdown",
+  description:
+    "Every factor behind a lead's score, itemised. What makes the number arguable rather than magic.",
+  importPath: "@/components/crm/ScoreBreakdown",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: {
+    className: { type: "class" },
+    leadId: { type: "string", displayName: "Lead id" },
+  },
+});
+
+PLASMIC.registerComponent(LeadTimeline, {
+  name: "LeadTimeline",
+  displayName: "Lead Timeline",
+  description:
+    "What has actually happened to a lead. Renders nothing when there is no recorded history.",
+  importPath: "@/components/crm/LeadTimeline",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: {
+    className: { type: "class" },
+    leadId: { type: "string", displayName: "Lead id" },
+    limit: { type: "number", displayName: "Entries shown", defaultValue: 12 },
+  },
+});
+
+PLASMIC.registerComponent(LossReasonChart, {
+  name: "LeadLossReasonChart",
+  displayName: "Chart · Why deals are lost",
+  description:
+    "Losses ranked by the money they cost, coloured by which part of the business owns the fix.",
+  importPath: "@/components/crm/charts/LossReasonChart",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: chartProps({
+    title: "Why deals are lost",
+    subtitle: "Ranked by value lost, with the part of the business that owns each fix",
+    footnote:
+      "Recorded when a lead is closed, which is why it is required at that moment — a reason that can be skipped is one nobody supplies.",
+  }),
+});
+
+PLASMIC.registerComponent(StageVelocityChart, {
+  name: "LeadStageVelocityChart",
+  displayName: "Chart · Where deals are ageing",
+  description:
+    "How long open leads have sat at their current stage, against what that stage tolerates.",
+  importPath: "@/components/crm/charts/StageVelocityChart",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: {
+    ...chartProps({
+      title: "Where deals are ageing",
+      subtitle: "Average days open leads have sat at their current stage",
+      footnote:
+        "Measured from the last stage change, not from when the lead arrived. The marker on each bar is what that stage tolerates before a lead counts as stalled.",
+    }),
+    clickToFilter: {
+      type: "boolean",
+      displayName: "Click a row to filter",
+      defaultValue: true,
+    },
+  },
+});
+
+PLASMIC.registerComponent(ContactLog, {
+  name: "LeadContactLog",
+  displayName: "Contact log",
+  description:
+    "Every recorded interaction with a lead: who was contacted, how to reach them, who did it and when.",
+  importPath: "@/components/crm/ContactLog",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: {
+    className: { type: "class" },
+    title: { type: "string", displayName: "Title", defaultValue: "Contact log" },
+    limit: {
+      type: "number",
+      displayName: "Rows shown",
+      description: "The read itself is capped at 200; this trims the table further.",
+      defaultValue: 25,
+    },
+    leadsPath: {
+      type: "string",
+      displayName: "Lead tracker path",
+      defaultValue: "/admin/leads",
+    },
+    // `entries` is deliberately not a prop a designer fills in: the rows come
+    // from a server read that holds the service key, so the page hands them
+    // down. Dropped on a bare artboard this renders its empty state, which is
+    // the honest thing for it to do.
+  },
+});
+
+PLASMIC.registerComponent(TablePagination, {
+  name: "LeadTablePagination",
+  displayName: "Table rows & pager",
+  description:
+    "How many table rows to show (10 / 20 / 50 / 100 / custom) and which page of them. Ships inside the lead table by default.",
+  importPath: "@/components/crm/TablePagination",
+  isDefaultExport: true,
+  parentComponentName: GROUP,
+  props: {
+    className: { type: "class" },
   },
 });

@@ -16,6 +16,7 @@
 
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import ChatCapture from "./ChatCapture";
 
 /**
  * The markdown parser is a good deal larger than the panel it serves, and most
@@ -63,6 +64,27 @@ const DEFAULT_MAX_HISTORY_TURNS = 8;
 
 const STORAGE_KEY = "docujet.chat.transcript";
 const SESSION_KEY = "docujet.chat.session";
+/** Set once the visitor has captured or declined, so the card is offered once. */
+const CAPTURE_KEY = "docujet.chat.captured";
+
+/**
+ * Questions only a person can answer.
+ *
+ * The system prompt already refuses to quote prices, lead times or stock —
+ * pricing is quoted by a human after a consultation. That was a correct policy
+ * with a dead end at the end of it: the most valuable question a visitor can
+ * ask got the least useful reply and no route onward. This pattern is what
+ * turns the refusal into a handover.
+ *
+ * Deliberately narrow. Matching loosely would put a contact form in front of
+ * someone asking about paper trays, which trains visitors to dismiss it before
+ * reading it, and the one time it matters they will not see it.
+ */
+const BUYING_INTENT =
+  /\b(price|pricing|cost|costs|quote|quotation|how much|discount|lease|leasing|rent|rental|financ|instal(?:ment|ments)|payment plan|budget|buy|purchase|order|trade[- ]?in|demo|demonstration|trial|site visit|consultation)\b/i;
+
+/** Assistant replies before the card is offered on depth alone. */
+const DEPTH_TURNS = 4;
 
 function newId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -90,6 +112,25 @@ export default function ChatWidget({
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isPending, setIsPending] = useState(false);
+
+  // The handover. `capture` holds why the card is showing and what it should
+  // carry; `captured` records that this visitor is done being asked, either
+  // because they left details or because they said no.
+  // Snapshotted at the moment the offer is made, not read during render: the
+  // card must carry the conversation as it stood when the visitor was asked,
+  // and a ref read while rendering would neither update nor mean that.
+  const [capture, setCapture] = useState<{
+    trigger: "intent" | "unanswered" | "depth";
+    topic: string;
+    cited: string[];
+    sessionId: string;
+  } | null>(null);
+  const [captured, setCaptured] = useState(false);
+
+  // Every knowledge-base id the assistant has used in this conversation. A
+  // captured lead carries the lot, because what a rep wants is the shape of
+  // what the visitor was researching, not just the last thing they asked.
+  const citedRef = useRef<string[]>([]);
 
   const sessionIdRef = useRef<string>("");
   const restoredRef = useRef(false);
@@ -142,6 +183,10 @@ export default function ChatWidget({
         const stored = sessionStorage.getItem(STORAGE_KEY);
         const parsed = stored ? (JSON.parse(stored) as Message[]) : null;
         if (Array.isArray(parsed) && parsed.length > 0) setMessages(parsed);
+        // A visitor who already left their details, or already said no, must
+        // not be asked again by a reload. The transcript survives one; without
+        // this the decision would not.
+        if (sessionStorage.getItem(CAPTURE_KEY)) setCaptured(true);
       } catch {
         // A corrupt or unreadable transcript is not worth a visible error.
       }
@@ -202,9 +247,16 @@ export default function ChatWidget({
     try {
       sessionStorage.setItem(SESSION_KEY, sessionIdRef.current);
       sessionStorage.removeItem(STORAGE_KEY);
+      // A new conversation is a new chance to offer the handover. The flag is
+      // about not badgering someone mid-conversation, not about remembering a
+      // refusal forever.
+      sessionStorage.removeItem(CAPTURE_KEY);
     } catch {
       // Private browsing, or storage disabled — the in-memory id still resets.
     }
+    citedRef.current = [];
+    setCapture(null);
+    setCaptured(false);
     setMessages([]);
     setInput("");
     inputRef.current?.focus();
@@ -254,6 +306,8 @@ export default function ChatWidget({
       const data = (await response.json().catch(() => ({}))) as {
         reply?: string;
         error?: string;
+        cited?: string[];
+        answered?: boolean;
       };
 
       setMessages((current) => [
@@ -268,6 +322,13 @@ export default function ChatWidget({
                 "The assistant is unavailable right now. Please try again shortly.",
             },
       ]);
+
+      if (response.ok && data.reply) {
+        if (Array.isArray(data.cited)) {
+          citedRef.current = [...new Set([...citedRef.current, ...data.cited])];
+        }
+        offerCapture(question, data.answered !== false);
+      }
     } catch {
       setMessages((current) => [
         ...current,
@@ -281,6 +342,53 @@ export default function ChatWidget({
     } finally {
       setIsPending(false);
       inputRef.current?.focus();
+    }
+  }
+
+  /**
+   * Decides whether to offer the handover, and why.
+   *
+   * Called after a successful reply, so the card lands under an answer rather
+   * than in place of one — the visitor is never blocked, and the assistant
+   * never withholds something it could have told them in order to extract
+   * contact details. That ordering is the whole ethic of this feature: it is a
+   * route onward from the end of what the corpus knows, not a toll gate in
+   * front of it.
+   *
+   * Offered once per conversation. A card that reappears after a decline is an
+   * advertisement, and visitors treat the panel accordingly.
+   */
+  function offerCapture(question: string, answered: boolean) {
+    if (captured || capture !== null) return;
+
+    // Counting the reply that just landed, which is not yet in `messages`.
+    const replies = messages.filter((message) => message.role === "assistant").length + 1;
+
+    const trigger = BUYING_INTENT.test(question)
+      ? "intent"
+      : !answered
+        ? "unanswered"
+        : replies >= DEPTH_TURNS
+          ? "depth"
+          : null;
+
+    if (trigger === null) return;
+    setCapture({
+      trigger,
+      topic: question,
+      cited: [...citedRef.current],
+      sessionId: sessionId(),
+    });
+  }
+
+  /** Remembers that this visitor has been asked, however they answered. */
+  function closeCapture() {
+    setCapture(null);
+    setCaptured(true);
+    try {
+      sessionStorage.setItem(CAPTURE_KEY, "1");
+    } catch {
+      // Storage disabled. The in-memory flag still holds for this page.
     }
   }
 
@@ -365,6 +473,30 @@ export default function ChatWidget({
                 </Bubble>
               ),
             )}
+
+            {capture ? (
+              <ChatCapture
+                topic={capture.topic}
+                cited={capture.cited}
+                sessionId={capture.sessionId}
+                trigger={capture.trigger}
+                onDone={(reference) => {
+                  closeCapture();
+                  setMessages((current) => [
+                    ...current,
+                    {
+                      id: newId(),
+                      role: "assistant",
+                      content:
+                        "Thank you — that is with the team" +
+                        (reference ? ` under reference **${reference}**` : "") +
+                        ". Someone will be in touch. Carry on asking in the meantime.",
+                    },
+                  ]);
+                }}
+                onDismiss={closeCapture}
+              />
+            ) : null}
 
             {isPending && <TypingIndicator />}
 

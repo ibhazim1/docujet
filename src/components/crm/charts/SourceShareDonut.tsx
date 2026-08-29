@@ -34,7 +34,7 @@ export default function SourceShareDonut({
   showTable = true,
   className = "",
 }: SourceShareDonutProps) {
-  const { sources: rows } = useLeadTracker();
+  const { sources: rows, insightFor } = useLeadTracker();
   const shares = topSourceShares(rows, RANKED_SLOTS);
   const total = rows.reduce((sum, row) => sum + row.total, 0);
 
@@ -48,7 +48,9 @@ export default function SourceShareDonut({
   return (
     <ChartCard
       title={title}
+      explain="chart.sourceShare"
       subtitle={subtitle}
+      insight={insightFor("sourceShare")}
       footnote={footnote}
       showTable={showTable}
       className={className}

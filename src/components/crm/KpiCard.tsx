@@ -1,10 +1,19 @@
 "use client";
 
+import Explain from "./Explain";
 import { TrackerLink, useLeadTracker } from "./TrackerContext";
 import { pct } from "@/lib/crm/analytics";
 import { LOST_STAGE, SOURCES } from "@/lib/crm/taxonomy";
 
-/** The readings a tile can show. Each is a fact the summary already computes. */
+/**
+ * The readings a tile can show.
+ *
+ * The first eight describe the book; the rest describe the work outstanding in
+ * it. Both sets are kept because they answer different people's questions — a
+ * rep wants to know what is going cold, an owner wants to know whether the
+ * shape of the book is healthy — and a KPI row can be built for either audience
+ * out of the same component.
+ */
 export type KpiMetric =
   | "total"
   | "topSource"
@@ -13,7 +22,13 @@ export type KpiMetric =
   | "customers"
   | "lost"
   | "open"
-  | "newThisWeek";
+  | "newThisWeek"
+  | "needsAction"
+  | "hot"
+  | "stalled"
+  | "overdue"
+  | "untouched"
+  | "unowned";
 
 export type KpiCardProps = {
   metric?: KpiMetric;
@@ -47,11 +62,12 @@ export default function KpiCard({
   clickToFilter = true,
   className = "",
 }: KpiCardProps) {
-  const { stats, query, filtered } = useLeadTracker();
+  const { stats, query, filtered, queue, outstanding } = useLeadTracker();
   const filters = query.filters;
 
   const topSourceLabel = stats.topSource ? SOURCES[stats.topSource].label : "—";
   const topSourceCount = stats.bySource[0]?.count ?? 0;
+  const hot = queue.filter((item) => item.score.band === "hot").length;
 
   const readings: Record<
     KpiMetric,
@@ -108,6 +124,49 @@ export default function KpiCard({
       value: String(stats.newThisWeek),
       helper: `of ${stats.count} leads shown`,
     },
+
+    // ---- Work outstanding --------------------------------------------------
+    //
+    // Every helper here says how many of the count are *qualified* wherever it
+    // can. Twelve raw leads going quiet and twelve SQL-and-beyond leads going
+    // quiet are the same number and not the same morning, and with no deal
+    // values recorded this is the honest way to tell them apart.
+    needsAction: {
+      label: "Needs action",
+      value: String(outstanding.count),
+      helper:
+        outstanding.qualified > 0
+          ? `${outstanding.qualified} of them already qualified`
+          : "none of them qualified yet",
+    },
+    hot: {
+      label: "Hot leads",
+      value: String(hot),
+      helper: "scoring 70 or above, still open",
+    },
+    stalled: {
+      label: "Going cold",
+      value: String(stats.stalled),
+      helper:
+        stats.stalledQualified > 0
+          ? `${stats.stalledQualified} of them reached SQL or beyond`
+          : "all still at the early stages",
+    },
+    overdue: {
+      label: "Overdue",
+      value: String(stats.overdue),
+      helper: "follow-ups committed to and missed",
+    },
+    untouched: {
+      label: "Never contacted",
+      value: String(stats.untouched),
+      helper: `of ${stats.open} open leads`,
+    },
+    unowned: {
+      label: "Unowned",
+      value: String(stats.unowned),
+      helper: "nobody is accountable for these",
+    },
   };
 
   const reading = readings[metric] ?? readings.total;
@@ -117,7 +176,14 @@ export default function KpiCard({
 
   const body = (
     <>
-      <p className="text-sm font-medium text-slate-500">{label || reading.label}</p>
+      {/* The dot sits with the caption rather than in a corner, because it
+          explains the words — "Reached SQL+", "Going cold" — and not the tile.
+          A relabelled tile keeps the explanation of the metric underneath it,
+          which is the reading a designer's chosen wording most needs. */}
+      <p className="flex items-center gap-1.5 text-sm font-medium text-slate-500">
+        {label || reading.label}
+        <Explain term={`kpi.${metric}`} label={reading.label} />
+      </p>
       <p
         className={`mt-3 font-semibold tracking-tight text-slate-950 ${
           size === "sm" ? "text-xl" : "text-3xl"

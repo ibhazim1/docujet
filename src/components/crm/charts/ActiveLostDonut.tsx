@@ -30,7 +30,7 @@ export default function ActiveLostDonut({
   showTable = true,
   className = "",
 }: ActiveLostDonutProps) {
-  const { visible } = useLeadTracker();
+  const { visible, insightFor } = useLeadTracker();
   const rows = activeVsLost(visible);
   const total = visible.length;
 
@@ -44,7 +44,9 @@ export default function ActiveLostDonut({
   return (
     <ChartCard
       title={title}
+      explain="chart.activeLost"
       subtitle={subtitle}
+      insight={insightFor("activeLost")}
       showTable={showTable}
       className={className}
       columns={["Status", "Leads", "Share"]}

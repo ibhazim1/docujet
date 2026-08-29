@@ -15,17 +15,40 @@ import {
 } from "react";
 import type { StageActionResult } from "@/lib/crm/actions";
 import {
+  buildContactLog,
   filterLeads,
   findLead,
+  paginate,
   sortLeads,
   sourceStats,
   summarise,
+  type Page,
   type SourceStat,
   type Summary,
 } from "@/lib/crm/analytics";
+import {
+  buildInsights,
+  chartInsight,
+  type ChartKey,
+  type Insight,
+} from "@/lib/crm/insights";
 import { buildHref, isFiltered, parseQuery, type TrackerQuery } from "@/lib/crm/query";
+import {
+  buildQueue,
+  groupQueue,
+  actionSummary,
+  type PlayGroup,
+  type QueueItem,
+} from "@/lib/crm/queue";
 import { SAMPLE_APPOINTMENTS, SAMPLE_LEADS, SAMPLE_TODAY } from "@/lib/crm/sample-leads";
-import type { Lead, LeadAppointment, ViewKey } from "@/lib/crm/types";
+import { scoreLead, sourceQualityIndex, type LeadScore } from "@/lib/crm/scoring";
+import type {
+  ContactLogEntry,
+  Lead,
+  LeadAppointment,
+  LeadEvent,
+  ViewKey,
+} from "@/lib/crm/types";
 
 /**
  * The tracker's shared state.
@@ -46,14 +69,51 @@ export type TrackerValue = {
   allLeads: Lead[];
   /** The filtered, sorted list every view renders. */
   visible: Lead[];
+  /**
+   * One page of `visible`, for the table.
+   *
+   * Deliberately separate rather than replacing `visible`: the charts, the
+   * queue and the KPI tiles all aggregate over the whole filtered set, and a
+   * dashboard whose numbers changed when somebody turned a page would be
+   * lying. Only the table reads this.
+   */
+  paged: Page<Lead>;
   /** The lead the detail panel is open on, if any. */
   selected: Lead | null;
   /** Every appointment the tracker was given, across all leads. */
   appointments: LeadAppointment[];
   /** One lead's appointments, newest first. Never null — an empty list is the answer. */
   appointmentsFor: (leadId: string) => LeadAppointment[];
+  /** One lead's history, newest first. Empty when 0006 has not been applied. */
+  eventsFor: (leadId: string) => LeadEvent[];
+  /**
+   * Every recorded interaction with a lead the current filters let through,
+   * newest first. Derived from the same events the timeline uses.
+   */
+  contactLog: ContactLogEntry[];
   stats: Summary;
   sources: SourceStat[];
+
+  // -------------------------------------------------------------------------
+  // The decision layer. Everything above says what the book contains; these
+  // say what to do about it.
+  // -------------------------------------------------------------------------
+
+  /** Every visible open lead, classified into a play and ranked by money. */
+  queue: QueueItem[];
+  /** The same, grouped for rendering and narrowed by the `play` filter. */
+  queueGroups: PlayGroup[];
+  /** How much work is outstanding, and how much of it is qualified. */
+  outstanding: { count: number; qualified: number };
+  /** Ranked findings about the book, most severe first. */
+  insights: Insight[];
+  /** The one-line verdict for a chart, over the same filtered set it renders. */
+  insightFor: (chart: ChartKey) => string | null;
+  /** One lead's score, with the factors behind it. Null for a lead not shown. */
+  scoreFor: (leadId: string) => LeadScore | null;
+  /** Who is looking, for signing outreach off. Falls back to the business name. */
+  viewer: { name: string | null; companyName: string };
+
   query: TrackerQuery;
   view: ViewKey;
   today: string;
@@ -94,6 +154,26 @@ export type TrackerOptions = {
   today?: string;
   defaultView?: ViewKey;
   readOnly?: boolean;
+  /** The lead histories behind the timeline. Optional — the card degrades to none. */
+  events?: LeadEvent[];
+  /**
+   * Unanswered chat questions, for the knowledge-gap finding.
+   *
+   * Passed in rather than read here because `chat_questions` is a server-side
+   * table and this is a client component. Absent means the finding is simply
+   * not produced — which is right, since "we did not look" and "there are none"
+   * must not render as the same conclusion.
+   */
+  kbGaps?: { total: number; topTheme: string | null };
+  /**
+   * Who is looking at this, and what the business is called.
+   *
+   * Only the outreach drafts use these, to sign a follow-up off with a real
+   * name rather than with the company alone. Both are read on the server and
+   * passed down; the company name is admin-editable, so hardcoding it would put
+   * a stale name in a message going out to a customer.
+   */
+  viewer?: { name: string | null; companyName: string };
   /**
    * With no `leads` prop, read the book from `/api/crm/leads` in the browser.
    *
@@ -110,6 +190,15 @@ const NO_LEADS: Lead[] = [];
 
 /** Shared so "this lead has no appointments" is one stable reference, not a new []. */
 const NO_APPOINTMENTS: LeadAppointment[] = [];
+
+/** Used when no page supplied a viewer — the Studio canvas, a bare render. */
+const ANONYMOUS_VIEWER = { name: null, companyName: "DocuJet" };
+
+/** Query keys that change which leads the list holds, and so reset the page. */
+const FILTER_KEYS = ["q", "stage", "source", "group", "sort", "dir"];
+
+/** Same, for a lead with no recorded history. */
+const NO_EVENTS: LeadEvent[] = [];
 
 function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue {
   const {
@@ -130,6 +219,7 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
   const [loaded, setLoaded] = useState<{
     leads: Lead[];
     appointments: LeadAppointment[];
+    events: LeadEvent[];
     today: string;
   } | null>(null);
 
@@ -150,6 +240,7 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
           appointments: Array.isArray(data.appointments)
             ? (data.appointments as LeadAppointment[])
             : [],
+          events: Array.isArray(data.events) ? (data.events as LeadEvent[]) : [],
           today: data.today ?? SAMPLE_TODAY,
         });
       })
@@ -178,20 +269,16 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
     ? NO_APPOINTMENTS
     : appointments ?? loaded?.appointments ?? (isSample ? SAMPLE_APPOINTMENTS : NO_APPOINTMENTS);
 
+  // No sample fallback: the seed book carries no invented history, so a lead
+  // card in the canvas shows an empty timeline rather than a fictional one.
+  const history = dormant ? NO_EVENTS : options.events ?? loaded?.events ?? NO_EVENTS;
+
   // In the canvas there is no route to own the state, so the component owns it.
   // Everywhere else the URL stays the single source of truth.
   const search = inCanvas ? localQuery : searchParams?.toString() ?? "";
   const params = useMemo(() => new URLSearchParams(search), [search]);
   const query = useMemo(() => parseQuery(params), [params]);
   const view = params.get("view") ? query.view : defaultView;
-
-  const visible = useMemo(
-    () => sortLeads(filterLeads(allLeads, query.filters), query.sort, query.dir),
-    [allLeads, query.filters, query.sort, query.dir],
-  );
-  const stats = useMemo(() => summarise(visible, today), [visible, today]);
-  const sources = useMemo(() => sourceStats(visible), [visible]);
-  const selected = findLead(allLeads, query.leadId);
 
   // Grouped once rather than filtered per card: the detail panel re-renders on
   // every keystroke in an editable cell, and this keeps that free.
@@ -210,6 +297,102 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
     [appointmentsByLead],
   );
 
+  const eventsByLead = useMemo(() => {
+    const map = new Map<string, LeadEvent[]>();
+    for (const event of history) {
+      const list = map.get(event.leadId);
+      if (list) list.push(event);
+      else map.set(event.leadId, [event]);
+    }
+    return map;
+  }, [history]);
+
+  const eventsFor = useCallback(
+    (leadId: string) => eventsByLead.get(leadId) ?? NO_EVENTS,
+    [eventsByLead],
+  );
+
+  // -------------------------------------------------------------------------
+  // The derivation chain, in the one order that works
+  //
+  // Scores depend on how each source has historically performed, which depends
+  // on the filtered set, which is why filtering is separated from sorting here:
+  // the score column cannot be sorted on until the scores exist, and they
+  // cannot exist until the set they are measured against is known.
+  // -------------------------------------------------------------------------
+
+  const matching = useMemo(
+    () => filterLeads(allLeads, query.filters),
+    [allLeads, query.filters],
+  );
+
+  const stats = useMemo(() => summarise(matching, today), [matching, today]);
+  const sources = useMemo(() => sourceStats(matching), [matching]);
+
+  const scoreContext = useMemo(
+    () => ({
+      today,
+      appointmentsFor,
+      sourceQuality: sourceQualityIndex(sources, stats.qualifiedRate),
+    }),
+    [today, appointmentsFor, sources, stats.qualifiedRate],
+  );
+
+  const scores = useMemo(() => {
+    const map = new Map<string, LeadScore>();
+    for (const lead of matching) map.set(lead.id, scoreLead(lead, scoreContext));
+    return map;
+  }, [matching, scoreContext]);
+
+  const scoreFor = useCallback((leadId: string) => scores.get(leadId) ?? null, [scores]);
+
+  const visible = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const [id, score] of scores) totals.set(id, score.total);
+    return sortLeads(matching, query.sort, query.dir, { scores: totals });
+  }, [matching, query.sort, query.dir, scores]);
+
+  const paged = useMemo(
+    () => paginate(visible, query.page, query.perPage),
+    [visible, query.page, query.perPage],
+  );
+
+  const queue = useMemo(
+    () => buildQueue(visible, scoreContext),
+    [visible, scoreContext],
+  );
+
+  const queueGroups = useMemo(() => {
+    const groups = groupQueue(queue);
+    return query.play === "" ? groups : groups.filter((group) => group.key === query.play);
+  }, [queue, query.play]);
+
+  const outstanding = useMemo(() => actionSummary(queue), [queue]);
+
+  const kbGaps = options.kbGaps;
+  const insights = useMemo(
+    () => buildInsights(matching, { today, stats, kbGaps }),
+    [matching, today, stats, kbGaps],
+  );
+
+  // Over `matching` rather than `visible`: the log has its own newest-first
+  // order, and inheriting the table's sort would scramble a chronology.
+  const contactLog = useMemo(
+    () => buildContactLog(matching, history),
+    [matching, history],
+  );
+
+  // Computed per call rather than for all thirteen charts up front: only the
+  // charts view mounts them, and a filter change would otherwise recompute
+  // twelve verdicts nobody is looking at.
+  const insightFor = useCallback(
+    (chart: ChartKey) =>
+      chartInsight(chart, { leads: matching, stats, sources, today }),
+    [matching, stats, sources, today],
+  );
+
+  const selected = findLead(allLeads, query.leadId);
+
   const hrefFor = useCallback(
     (overrides: Record<string, string | null>) => buildHref(params, overrides),
     [params],
@@ -217,7 +400,15 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
 
   const apply = useCallback(
     (overrides: Record<string, string | null>) => {
-      const href = buildHref(params, overrides);
+      // Any change to what the list contains sends the table back to page one.
+      // Page 3 of one filtered set is a different ten leads from page 3 of
+      // another, so keeping the number would land the reader somewhere they did
+      // not ask to be — and `paginate` only rescues the case where the page no
+      // longer exists at all, not this one.
+      const narrows = FILTER_KEYS.some((key) => key in overrides);
+      const next = narrows ? { ...overrides, page: null } : overrides;
+
+      const href = buildHref(params, next);
       setLocalQuery(href === "?" ? "" : href.slice(1));
       if (!inCanvas) router.replace(href, { scroll: false });
     },
@@ -245,11 +436,21 @@ function useTrackerState(options: TrackerOptions, dormant = false): TrackerValue
   return {
     allLeads,
     visible,
+    paged,
     selected,
     appointments: booked,
     appointmentsFor,
+    eventsFor,
+    contactLog,
     stats,
     sources,
+    queue,
+    queueGroups,
+    outstanding,
+    insights,
+    insightFor,
+    scoreFor,
+    viewer: options.viewer ?? ANONYMOUS_VIEWER,
     query,
     view,
     today,

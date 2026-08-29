@@ -29,7 +29,7 @@ export default function SocialSplitMeter({
   showTable = true,
   className = "",
 }: SocialSplitMeterProps) {
-  const { sources: rows, visible } = useLeadTracker();
+  const { sources: rows, visible, insightFor } = useLeadTracker();
   const total = visible.length;
 
   const social = rows
@@ -40,7 +40,9 @@ export default function SocialSplitMeter({
   return (
     <ChartCard
       title={title}
+      explain="chart.socialSplit"
       subtitle={subtitle}
+      insight={insightFor("socialSplit")}
       showTable={showTable}
       className={className}
       columns={["Channel group", "Leads", "Share"]}

@@ -31,7 +31,7 @@ export default function SourceStageMatrix({
   showTable = true,
   className = "",
 }: SourceStageMatrixProps) {
-  const { sources: rows } = useLeadTracker();
+  const { sources: rows, insightFor } = useLeadTracker();
 
   let max = 1;
   for (const row of rows) {
@@ -41,7 +41,9 @@ export default function SourceStageMatrix({
   return (
     <ChartCard
       title={title}
+      explain="chart.sourceStageMatrix"
       subtitle={subtitle}
+      insight={insightFor("sourceStage")}
       showTable={showTable}
       className={className}
       columns={["Source", ...STAGE_KEYS.map((key) => STAGES[key].label)]}

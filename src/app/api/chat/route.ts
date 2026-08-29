@@ -7,10 +7,17 @@
  * validate input and throttle abuse before any of that runs.
  *
  * It used to proxy to an n8n workflow. The contract it presents to the browser
- * is unchanged by that move: post `{ message, sessionId, page, history }`, get
- * back `{ reply, sessionId }` or `{ error }`.
+ * is post `{ message, sessionId, page, history }`, get back
+ * `{ reply, sessionId, cited, answered }` or `{ error }`.
+ *
+ * `cited` and `answered` were added when the assistant became a sales channel
+ * rather than a help desk: the panel accumulates the ids so that a visitor who
+ * later leaves their details arrives in the lead book carrying the
+ * knowledge-base entries that served them, and `answered` is what lets the
+ * panel offer the handover exactly when the corpus has run out of road.
  */
 
+import { logChatQuestion } from "@/lib/chat/capture";
 import {
   askAssistant,
   ChatError,
@@ -130,14 +137,33 @@ export async function POST(request: Request) {
       : crypto.randomUUID();
 
   try {
-    const reply = await askAssistant({
+    const answer = await askAssistant({
       message,
       sessionId,
       page: typeof body.page === "string" ? body.page.slice(0, 200) : undefined,
       history: parseHistory(body.history, chat.maxHistoryTurns, maxMessageChars),
     });
 
-    return Response.json({ reply, sessionId });
+    // Fire-and-forget, and deliberately not awaited: the visitor has an answer
+    // and must not wait on an insert, nor ever see one fail. `logChatQuestion`
+    // swallows and logs its own errors; the catch here is the last resort for a
+    // rejected promise, which would otherwise be unhandled.
+    void logChatQuestion({
+      sessionId,
+      question: message,
+      cited: answer.cited,
+      topSimilarity: answer.topSimilarity,
+    }).catch(() => undefined);
+
+    return Response.json({
+      reply: answer.reply,
+      sessionId,
+      cited: answer.cited,
+      // Whether the knowledge base had anything, not whether text came back —
+      // the model always produces text, including when it is honestly saying it
+      // does not know.
+      answered: answer.cited.length > 0,
+    });
   } catch (error) {
     if (error instanceof ChatError) {
       return fail(error.message, error.status);

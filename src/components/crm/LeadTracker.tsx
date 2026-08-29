@@ -2,8 +2,10 @@
 
 import { DataProvider } from "@plasmicapp/loader-nextjs";
 import type { ReactNode } from "react";
+import ContactLog from "./ContactLog";
 import FilterBar from "./FilterBar";
 import FlashMessage from "./FlashMessage";
+import InsightPanel from "./InsightPanel";
 import KpiCard from "./KpiCard";
 import KpiRow from "./KpiRow";
 import LeadBoard from "./LeadBoard";
@@ -14,10 +16,12 @@ import LeadEmptyState from "./LeadEmptyState";
 import LeadTable from "./LeadTable";
 import PipelineBar from "./PipelineBar";
 import StageTile from "./StageTile";
+import TodayQueue from "./TodayQueue";
 import ViewSwitch from "./ViewSwitch";
 import ViewToggle from "./ViewToggle";
 import ActiveLostDonut from "./charts/ActiveLostDonut";
 import FunnelChart from "./charts/FunnelChart";
+import LossReasonChart from "./charts/LossReasonChart";
 import MonthlyChart from "./charts/MonthlyChart";
 import SocialSplitMeter from "./charts/SocialSplitMeter";
 import SourceQualityChart from "./charts/SourceQualityChart";
@@ -25,13 +29,14 @@ import SourceShareDonut from "./charts/SourceShareDonut";
 import SourceStageMatrix from "./charts/SourceStageMatrix";
 import SourceVolumeChart from "./charts/SourceVolumeChart";
 import StageShareDonut from "./charts/StageShareDonut";
+import StageVelocityChart from "./charts/StageVelocityChart";
 import ApplyButton from "./filters/ApplyButton";
 import ClearFilters from "./filters/ClearFilters";
 import FilterSelect from "./filters/FilterSelect";
 import SearchInput from "./filters/SearchInput";
 import { LeadTrackerProvider, useLeadTracker } from "./TrackerContext";
 import { STAGE_KEYS } from "@/lib/crm/taxonomy";
-import type { Lead, LeadAppointment, ViewKey } from "@/lib/crm/types";
+import type { Lead, LeadAppointment, LeadEvent, ViewKey } from "@/lib/crm/types";
 
 export type LeadTrackerProps = {
   className?: string;
@@ -42,6 +47,12 @@ export type LeadTrackerProps = {
    * seed appointments only when the book itself is sampled.
    */
   appointments?: LeadAppointment[];
+  /** The lead histories behind the timeline. No sample fallback — see the provider. */
+  events?: LeadEvent[];
+  /** Who is looking, and what the business is called. Signs outreach drafts off. */
+  viewer?: { name: string | null; companyName: string };
+  /** Unanswered chat questions, for the knowledge-gap finding. */
+  kbGaps?: { total: number; topTheme: string | null };
   /**
    * Y-m-d, resolved on the server so client and server agree on "this week".
    * Empty means whatever the loaded book came with.
@@ -52,13 +63,15 @@ export type LeadTrackerProps = {
    * how a Plasmic-authored page gets real rows instead of the seed ones.
    */
   autoLoad?: boolean;
-  /** Used when the URL carries no `view`. */
+  /** Used when the URL carries no `view`. The work queue, unless overridden. */
   defaultView?: ViewKey;
   /** Renders stage and source as badges instead of editors. Presentational only. */
   readOnly?: boolean;
   showKpis?: boolean;
   showPipeline?: boolean;
   showFilters?: boolean;
+  /** The contact log beneath the views. */
+  showContactLog?: boolean;
   /**
    * The tracker's contents.
    *
@@ -69,15 +82,53 @@ export type LeadTrackerProps = {
   children?: ReactNode;
 };
 
+/**
+ * The KPI row, chosen to match the view.
+ *
+ * A rep on the queue needs to know what is outstanding; someone reading the
+ * charts needs to know the shape of the book. The same six tiles cannot serve
+ * both, and showing all twelve would serve neither — so the row follows the
+ * view, which is the only signal available about why the page is open.
+ */
+function KpiRowForView() {
+  const { view } = useLeadTracker();
+
+  if (view === "today") {
+    return (
+      <KpiRow>
+        <KpiCard metric="needsAction" />
+        <KpiCard metric="overdue" />
+        <KpiCard metric="hot" />
+        <KpiCard metric="stalled" />
+        <KpiCard metric="untouched" />
+        <KpiCard metric="unowned" />
+      </KpiRow>
+    );
+  }
+
+  return (
+    <KpiRow>
+      <KpiCard metric="total" />
+      <KpiCard metric="open" />
+      <KpiCard metric="qualified" />
+      <KpiCard metric="customers" />
+      <KpiCard metric="lost" />
+      <KpiCard metric="topSource" />
+    </KpiRow>
+  );
+}
+
 /** The dashboard as shipped — the layout the app renders when nothing overrides it. */
 function StandardLayout({
   showKpis,
   showPipeline,
   showFilters,
+  showContactLog,
 }: {
   showKpis: boolean;
   showPipeline: boolean;
   showFilters: boolean;
+  showContactLog: boolean;
 }) {
   return (
     <>
@@ -88,16 +139,7 @@ function StandardLayout({
 
       <FlashMessage />
 
-      {showKpis ? (
-        <KpiRow>
-          <KpiCard metric="total" />
-          <KpiCard metric="topSource" />
-          <KpiCard metric="social" />
-          <KpiCard metric="qualified" />
-          <KpiCard metric="customers" />
-          <KpiCard metric="lost" />
-        </KpiRow>
-      ) : null}
+      {showKpis ? <KpiRowForView /> : null}
 
       {showPipeline ? (
         <PipelineBar>
@@ -120,22 +162,39 @@ function StandardLayout({
 
       <ViewSwitch
         emptyView={<LeadEmptyState />}
+        todayView={<TodayQueue />}
         tableView={<LeadTable />}
         boardView={<LeadBoard />}
         chartsView={
-          <LeadCharts>
-            <SourceVolumeChart />
-            <SourceQualityChart />
-            <FunnelChart />
-            <MonthlyChart />
-            <SourceStageMatrix />
-            <SocialSplitMeter />
-            <SourceShareDonut />
-            <ActiveLostDonut />
-            <StageShareDonut />
-          </LeadCharts>
+          <>
+            {/* The verdict first. Thirteen charts with nobody to read them is
+                how the old dashboard came to be ignored; this says what they
+                add up to before asking anyone to look at them. */}
+            <InsightPanel limit={6} className="mb-5" />
+            <LeadCharts>
+              <LossReasonChart />
+              <StageVelocityChart />
+              <SourceVolumeChart />
+              <SourceQualityChart />
+              <FunnelChart />
+              <MonthlyChart />
+              <SourceStageMatrix />
+              <SocialSplitMeter />
+              <SourceShareDonut />
+              <ActiveLostDonut />
+              <StageShareDonut />
+            </LeadCharts>
+          </>
         }
       />
+
+      {/* Below the views rather than inside one, because it answers a question
+          about the team rather than about a lead — "who has been talking to
+          whom" is the same question whichever view is open above it. It reads
+          the same filters, so narrowing to a source narrows the log with it. */}
+      {showContactLog ? (
+        <ContactLog className="border-t border-slate-200 pt-8" />
+      ) : null}
 
       <LeadDetail />
     </>
@@ -159,6 +218,13 @@ function PublishTrackerData({ children }: { children: ReactNode }) {
     filtered,
     appointments,
     appointmentsFor,
+    eventsFor,
+    contactLog,
+    queue,
+    queueGroups,
+    outstanding,
+    insights,
+    scoreFor,
   } = useLeadTracker();
 
   return (
@@ -180,6 +246,17 @@ function PublishTrackerData({ children }: { children: ReactNode }) {
         selected,
         appointments,
         selectedAppointments: selected ? appointmentsFor(selected.id) : [],
+        // The decision layer, bindable in Studio like everything else — so a
+        // designer can put "12 leads need action, 4 of them qualified" in a
+        // hero band without writing any code.
+        queue,
+        queueGroups,
+        outstanding,
+        insights,
+        contactLog,
+        play: query.play,
+        selectedScore: selected ? scoreFor(selected.id) : null,
+        selectedEvents: selected ? eventsFor(selected.id) : [],
       }}
     >
       {children}
@@ -209,19 +286,26 @@ export default function LeadTracker({
   className = "",
   leads,
   appointments,
+  events,
+  kbGaps,
+  viewer,
   today,
   autoLoad = true,
-  defaultView = "table",
+  defaultView = "today",
   readOnly = false,
   showKpis = true,
   showPipeline = true,
   showFilters = true,
+  showContactLog = true,
   children,
 }: LeadTrackerProps) {
   return (
     <LeadTrackerProvider
       leads={leads}
       appointments={appointments}
+      events={events}
+      kbGaps={kbGaps}
+      viewer={viewer}
       // An empty string is Studio's "not set", not a date.
       today={today || undefined}
       autoLoad={autoLoad}
@@ -235,6 +319,7 @@ export default function LeadTracker({
               showKpis={showKpis}
               showPipeline={showPipeline}
               showFilters={showFilters}
+              showContactLog={showContactLog}
             />
           )}
         </div>

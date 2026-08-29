@@ -8,6 +8,7 @@
  */
 
 import { isSortKey } from "./analytics";
+import { isPlayKey, type PlayKey } from "./queue";
 import { isSourceKey, isStageKey } from "./taxonomy";
 import type {
   LeadFilters,
@@ -22,7 +23,47 @@ export type TrackerQuery = {
   sort: SortKey;
   dir: SortDirection;
   leadId: string;
+  /**
+   * Narrows the queue to one play.
+   *
+   * Carried in the URL like every other piece of view state, which is what lets
+   * an insight on the dashboard link straight to the leads behind it — "38% of
+   * losses cite price" is a claim, and `?view=today&play=going-cold` is the
+   * evidence, one click away and shareable.
+   */
+  play: PlayKey | "";
+  /**
+   * How many table rows to show at once, and which page of them.
+   *
+   * In the URL with everything else, so "page 3 of the LinkedIn leads" is a
+   * link somebody can send. `page` is 1-based because it is user-facing; the
+   * slice arithmetic converts once, in `paginate()`.
+   */
+  perPage: number;
+  page: number;
 };
+
+/** The sizes the picker offers. Anything else is reached through Custom. */
+export const PAGE_SIZES = [10, 20, 50, 100] as const;
+
+/**
+ * The default, and it is deliberately the smallest one.
+ *
+ * The table used to render every matching lead, so the page grew a screen
+ * taller with each one and reaching the filter bar again meant scrolling back
+ * past all of them. Ten is about a screen: enough to work with, short enough
+ * that the controls above and below are both reachable without travelling.
+ */
+export const DEFAULT_PAGE_SIZE = 10;
+
+/**
+ * The largest custom size accepted.
+ *
+ * Not a performance limit — the tracker holds the whole book in memory anyway.
+ * It stops a hand-edited URL asking for a hundred thousand rows and hanging the
+ * tab on a render nobody wanted.
+ */
+export const MAX_PAGE_SIZE = 500;
 
 /** Reads the whitelisted parameters. Anything unrecognised falls back to a default. */
 export function parseQuery(params: URLSearchParams): TrackerQuery {
@@ -32,8 +73,16 @@ export function parseQuery(params: URLSearchParams): TrackerQuery {
   const rawView = params.get("view") ?? "";
   const rawSort = params.get("sort") ?? "";
 
+  const rawPlay = params.get("play") ?? "";
+
   return {
-    view: rawView === "board" || rawView === "charts" ? rawView : "table",
+    // `today` is the default and needs no parameter; the other three are
+    // explicit. Anything unrecognised falls back to the queue rather than to a
+    // blank screen.
+    view:
+      rawView === "board" || rawView === "charts" || rawView === "table"
+        ? rawView
+        : "today",
     filters: {
       q: (params.get("q") ?? "").trim(),
       // `open` is a pseudo-stage meaning "anything still in play".
@@ -44,7 +93,24 @@ export function parseQuery(params: URLSearchParams): TrackerQuery {
     sort: isSortKey(rawSort) ? rawSort : "created_at",
     dir: params.get("dir") === "asc" ? "asc" : "desc",
     leadId: params.get("lead") ?? "",
+    play: isPlayKey(rawPlay) ? rawPlay : "",
+    perPage: parsePerPage(params.get("per")),
+    page: parsePage(params.get("page")),
   };
+}
+
+/** Reads `per`, falling back to the default for anything unusable. */
+function parsePerPage(raw: string | null): number {
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1) return DEFAULT_PAGE_SIZE;
+  return Math.min(value, MAX_PAGE_SIZE);
+}
+
+/** Reads `page`. Out-of-range values are clamped later, against the real total. */
+function parsePage(raw: string | null): number {
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 1) return 1;
+  return value;
 }
 
 /** True when at least one filter is narrowing the list. */

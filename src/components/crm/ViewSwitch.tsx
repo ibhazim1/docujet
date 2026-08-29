@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { useLeadTracker } from "./TrackerContext";
 
 type ViewSwitchProps = {
+  todayView?: ReactNode;
   tableView?: ReactNode;
   boardView?: ReactNode;
   chartsView?: ReactNode;
@@ -13,7 +14,7 @@ type ViewSwitchProps = {
    * Ignores the active view and always renders this one. Lets a designer work
    * on the board or the charts without switching the canvas first.
    */
-  forceView?: "" | "table" | "board" | "charts";
+  forceView?: "" | "today" | "table" | "board" | "charts";
   className?: string;
 };
 
@@ -25,6 +26,7 @@ type ViewSwitchProps = {
  * anything at all without touching the switch.
  */
 export default function ViewSwitch({
+  todayView,
   tableView,
   boardView,
   chartsView,
@@ -42,7 +44,9 @@ export default function ViewSwitch({
         ? boardView
         : active === "charts"
           ? chartsView
-          : tableView;
+          : active === "table"
+            ? tableView
+            : todayView;
 
   return <div className={className}>{body}</div>;
 }

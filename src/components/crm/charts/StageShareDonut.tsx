@@ -31,7 +31,7 @@ export default function StageShareDonut({
   showTable = true,
   className = "",
 }: StageShareDonutProps) {
-  const { visible } = useLeadTracker();
+  const { visible, insightFor } = useLeadTracker();
   const rows = activeStageBreakdown(visible);
   const total = rows.reduce((sum, row) => sum + row.count, 0);
 
@@ -45,7 +45,9 @@ export default function StageShareDonut({
   return (
     <ChartCard
       title={title}
+      explain="chart.stageShare"
       subtitle={subtitle}
+      insight={insightFor("stageShare")}
       footnote={footnote}
       showTable={showTable}
       className={className}

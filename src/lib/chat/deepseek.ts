@@ -109,6 +109,26 @@ type CompletionResponse = {
 };
 
 /**
+ * What answering a question produced, beyond the answer.
+ *
+ * The retrieval result used to be discarded the moment the reply came back,
+ * which threw away the two facts that make the assistant a sales channel rather
+ * than a cost centre: which knowledge-base entries served the visitor (so a
+ * captured lead can carry them, in the `cited` column that has existed since
+ * 0001 and been written by nothing), and whether anything cleared the
+ * similarity floor at all — because a question the corpus could not answer is a
+ * buyer who left unserved, and a theme of them is a content gap that is costing
+ * sales.
+ */
+export type AssistantAnswer = {
+  reply: string;
+  /** Knowledge-base document ids that fed the answer. Empty means none did. */
+  cited: string[];
+  /** The best match found, or null when retrieval returned nothing. */
+  topSimilarity: number | null;
+};
+
+/**
  * Answers one question.
  *
  * Retrieval first, then the model. Retrieval is deliberately not allowed to
@@ -122,7 +142,7 @@ export async function askAssistant({
   sessionId,
   page,
   history = [],
-}: AskOptions): Promise<string> {
+}: AskOptions): Promise<AssistantAnswer> {
   const key = apiKey();
 
   // Both are needed before the call and neither depends on the other: the
@@ -205,7 +225,11 @@ export async function askAssistant({
     );
   }
 
-  return reply;
+  return {
+    reply,
+    cited: context.map((chunk) => chunk.documentId),
+    topSimilarity: context.length > 0 ? Math.max(...context.map((c) => c.similarity)) : null,
+  };
 }
 
 /**

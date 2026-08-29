@@ -22,17 +22,24 @@
  */
 
 import {
+  CONTACT_KINDS,
+  LOST_REASONS,
+  LOST_REASON_KEYS,
   LOST_STAGE,
   OPEN_STAGE_KEYS,
   SOURCES,
   SOURCE_KEYS,
   STAGES,
   STAGE_KEYS,
+  STALL_DAYS,
   stageIndex,
 } from "./taxonomy";
 import type {
+  ContactLogEntry,
   Lead,
+  LeadEvent,
   LeadFilters,
+  LostReason,
   OpenStageKey,
   SortDirection,
   SortKey,
@@ -143,7 +150,15 @@ export function filterLeads(leads: Lead[], filters: LeadFilters): Lead[] {
   });
 }
 
-const SORT_KEYS: SortKey[] = ["name", "stage", "source", "created_at", "email"];
+const SORT_KEYS: SortKey[] = [
+  "name",
+  "stage",
+  "source",
+  "created_at",
+  "email",
+  "score",
+  "next_action_at",
+];
 
 export function isSortKey(value: string): value is SortKey {
   return (SORT_KEYS as string[]).includes(value);
@@ -159,10 +174,29 @@ function sortValue(lead: Lead, key: SortKey): string {
       return lead.source;
     case "email":
       return lead.email;
+    case "next_action_at":
+      // Y-m-d sorts lexicographically. Leads with nothing scheduled sort last
+      // ascending rather than first: "no next action" is not the earliest date,
+      // it is the absence of one, and burying the actual diary under it would
+      // make the column useless.
+      return lead.nextActionAt ?? "9999-99-99";
     default:
       return "";
   }
 }
+
+/**
+ * The extra reading the score sort needs.
+ *
+ * Score cannot be computed here — it depends on appointments and on the book's
+ * own source statistics, which would make this module import `scoring.ts` while
+ * `scoring.ts` imports this one. The caller that already holds both hands the
+ * scores in; without them the column falls back to created date rather than
+ * silently sorting everything equal.
+ */
+export type SortContext = {
+  scores?: Map<string, number>;
+};
 
 /**
  * Sorts leads by a whitelisted column. Unknown columns fall back to created date.
@@ -170,8 +204,17 @@ function sortValue(lead: Lead, key: SortKey): string {
  * `desc` reverses the ascending result rather than flipping the comparator,
  * which is what the PHP does — it also reverses the order of equal elements.
  */
-export function sortLeads(leads: Lead[], key: string, direction: SortDirection): Lead[] {
-  const sortKey: SortKey = isSortKey(key) ? key : "created_at";
+export function sortLeads(
+  leads: Lead[],
+  key: string,
+  direction: SortDirection,
+  ctx: SortContext = {},
+): Lead[] {
+  let sortKey: SortKey = isSortKey(key) ? key : "created_at";
+  // Asking for the score column without supplying scores would sort every row
+  // equal, which reads as "the sort is broken" rather than "the sort is
+  // unavailable". Falling back to the default column is the honest failure.
+  if (sortKey === "score" && ctx.scores === undefined) sortKey = "created_at";
 
   const sorted = [...leads].sort((a, b) => {
     // Stage sorts by lifecycle position, not alphabetically, and sorts on the
@@ -180,12 +223,71 @@ export function sortLeads(leads: Lead[], key: string, direction: SortDirection):
     if (sortKey === "stage") {
       return displayStageOrder(a) - displayStageOrder(b);
     }
+    if (sortKey === "score") {
+      return (ctx.scores?.get(a.id) ?? 0) - (ctx.scores?.get(b.id) ?? 0);
+    }
     const left = sortValue(a, sortKey);
     const right = sortValue(b, sortKey);
     return left < right ? -1 : left > right ? 1 : 0;
   });
 
   return direction === "desc" ? sorted.reverse() : sorted;
+}
+
+export type Page<T> = {
+  /** The rows on this page. */
+  rows: T[];
+  /** The page actually shown, after clamping. 1-based. */
+  page: number;
+  perPage: number;
+  /** Rows across every page — the filtered total, not the whole book. */
+  total: number;
+  totalPages: number;
+  /** 1-based inclusive range of `total` on show, for "showing 11-20 of 55". */
+  from: number;
+  to: number;
+  hasPrevious: boolean;
+  hasNext: boolean;
+};
+
+/**
+ * Cuts a list into one page.
+ *
+ * ---------------------------------------------------------------------------
+ * Clamping rather than resetting
+ *
+ * The page number lives in the URL, so it survives a filter change that makes
+ * it impossible — sitting on page 4 and then filtering down to six results
+ * would otherwise render an empty table with no hint that the rows are behind
+ * you. Rather than trying to spot every such change and reset, this clamps to
+ * the last real page whenever the requested one is past the end.
+ *
+ * That means the page shown is not always the page asked for, which is why the
+ * clamped value comes back in the result: the controls bind to `page` here, not
+ * to the query string, so the URL and the buttons cannot disagree.
+ * ---------------------------------------------------------------------------
+ *
+ * An empty list is one page, not zero, so the footer can say "0 of 0" without
+ * special-casing.
+ */
+export function paginate<T>(rows: T[], page: number, perPage: number): Page<T> {
+  const size = Math.max(1, Math.floor(perPage));
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / size));
+  const current = Math.min(Math.max(1, Math.floor(page)), totalPages);
+  const start = (current - 1) * size;
+
+  return {
+    rows: rows.slice(start, start + size),
+    page: current,
+    perPage: size,
+    total,
+    totalPages,
+    from: total === 0 ? 0 : start + 1,
+    to: Math.min(start + size, total),
+    hasPrevious: current > 1,
+    hasNext: current < totalPages,
+  };
 }
 
 /** Finds one lead by id, for the detail panel. */
@@ -212,6 +314,24 @@ export type Summary = {
   open: number;
   lossRate: number;
   topSource: SourceKey | null;
+
+  // -------------------------------------------------------------------------
+  // Pipeline health (0006). The counts above say how big the book is; these
+  // say whether anybody is working it.
+  // -------------------------------------------------------------------------
+
+  /** Open leads past the silence limit for their stage. */
+  stalled: number;
+  /** Of those, the ones that had reached SQL or beyond — the expensive stalls. */
+  stalledQualified: number;
+  /** Open leads nobody has ever contacted. */
+  untouched: number;
+  /** Open leads whose committed next action is past due. */
+  overdue: number;
+  /** Open leads with no owner. Nobody is accountable for these. */
+  unowned: number;
+  /** Open leads with a loss reason recorded, over all losses. Data-quality check. */
+  lossReasonCoverage: number;
 };
 
 /**
@@ -240,6 +360,12 @@ export function summarise(leads: Lead[], today: string): Summary {
   let customers = 0;
   let qualified = 0;
   let lost = 0;
+  let stalled = 0;
+  let stalledQualified = 0;
+  let untouched = 0;
+  let overdue = 0;
+  let unowned = 0;
+  let lossReasonsRecorded = 0;
   const sqlIndex = stageIndex("sql");
 
   for (const lead of leads) {
@@ -251,6 +377,30 @@ export function summarise(leads: Lead[], today: string): Summary {
     if (lead.stage === "customer" && !lead.lost) customers += 1;
     // Ever reached SQL — deliberately counts lost leads at the stage they got to.
     if (stageIndex(lead.stage) >= sqlIndex) qualified += 1;
+
+    if (lead.lost) {
+      if (lead.lostReason !== null) lossReasonsRecorded += 1;
+      continue;
+    }
+
+    // A signed customer is not work in progress: the health counts below are
+    // about deals somebody still has to move, and an account that has already
+    // bought would make every one of them read worse than it is.
+    if (lead.stage === "customer") continue;
+
+    if (lead.ownerId === null) unowned += 1;
+    if (lead.lastContactAt === null) untouched += 1;
+    if (lead.nextActionAt !== null && daysBetween(lead.nextActionAt, today) >= 0) overdue += 1;
+
+    const touchedAt = lead.lastContactAt ? lead.lastContactAt.slice(0, 10) : lead.createdAt;
+    const silent = touchedAt ? Math.max(0, daysBetween(touchedAt, today)) : 0;
+    if (silent > (STALL_DAYS[lead.stage as OpenStageKey] ?? 14)) {
+      stalled += 1;
+      // A qualified lead going quiet is a different problem from a raw one
+      // going quiet, and the count that matters is the qualified half: those
+      // are the deals somebody has already spent time earning.
+      if (stageIndex(lead.stage) >= sqlIndex) stalledQualified += 1;
+    }
   }
 
   const total = leads.length;
@@ -274,6 +424,12 @@ export function summarise(leads: Lead[], today: string): Summary {
     open: total - lost,
     lossRate: total > 0 ? lost / total : 0,
     topSource: total > 0 ? bySource[0].key : null,
+    stalled,
+    stalledQualified,
+    untouched,
+    overdue,
+    unowned,
+    lossReasonCoverage: lost > 0 ? lossReasonsRecorded / lost : 0,
   };
 }
 
@@ -496,6 +652,174 @@ export function monthlyStats(leads: Lead[]): MonthlyRow[] {
     }
   }
   return rows;
+}
+
+// ---------------------------------------------------------------------------
+// Cause and pace — the aggregates that turn the book into a decision
+// ---------------------------------------------------------------------------
+
+export type LossReasonRow = {
+  key: LostReason | "unrecorded";
+  label: string;
+  owner: "commercial" | "targeting" | "process" | "unknown";
+  count: number;
+  share: number;
+  /**
+   * How many of these had reached SQL or beyond before they died.
+   *
+   * The severity measure, in the absence of deal values. Losing five raw leads
+   * because they were never a fit costs an hour; losing two that had been
+   * qualified, demoed and quoted costs weeks — and a chart ranked on the raw
+   * count alone would put the cheap problem first.
+   */
+  qualified: number;
+};
+
+/**
+ * Why deals died, and what that cost.
+ *
+ * The single most valuable report a small sales team can have, and the one this
+ * app could not produce until `lost_reason` existed: it converts losses from
+ * something that merely happened into a ranked list of things to fix.
+ *
+ * `unrecorded` is carried as a row rather than dropped. Losses closed before
+ * the column existed — or by a rep who skipped the prompt — are not a cause,
+ * they are a hole in the data, and hiding them would make the percentages of
+ * the real causes wrong in a way nobody could see. When that row is large, the
+ * finding is about the process, not the market.
+ *
+ * Sorted by how many qualified deals each cause killed, then by raw count:
+ * losing leads that had already reached SQL is a more expensive failure than
+ * losing ones that never got off the ground, and the ranking should say so.
+ */
+export function lossReasonStats(leads: Lead[]): LossReasonRow[] {
+  const sqlIndex = stageIndex("sql");
+  const counts = new Map<LostReason | "unrecorded", { count: number; qualified: number }>();
+  let total = 0;
+
+  for (const lead of leads) {
+    if (!lead.lost) continue;
+    total += 1;
+    const key = lead.lostReason ?? "unrecorded";
+    const row = counts.get(key) ?? { count: 0, qualified: 0 };
+    row.count += 1;
+    if (stageIndex(lead.stage) >= sqlIndex) row.qualified += 1;
+    counts.set(key, row);
+  }
+
+  const rows: LossReasonRow[] = [];
+  for (const key of [...LOST_REASON_KEYS, "unrecorded" as const]) {
+    const row = counts.get(key);
+    if (row === undefined) continue;
+    rows.push({
+      key,
+      label: key === "unrecorded" ? "Not recorded" : LOST_REASONS[key].label,
+      owner: key === "unrecorded" ? "unknown" : LOST_REASONS[key].owner,
+      count: row.count,
+      share: total > 0 ? row.count / total : 0,
+      qualified: row.qualified,
+    });
+  }
+
+  return rows.sort((a, b) => b.qualified - a.qualified || b.count - a.count);
+}
+
+
+export type VelocityRow = {
+  key: OpenStageKey;
+  label: string;
+  /** Open leads currently parked here. */
+  count: number;
+  /** Mean days they have been sitting, since the stage last moved. */
+  avgDays: number;
+  /** The longest-parked one. Averages hide the deal that has been stuck a year. */
+  maxDays: number;
+  /** What this stage tolerates, from `STALL_DAYS`. */
+  threshold: number;
+};
+
+/**
+ * How long open deals have been sitting where they are.
+ *
+ * Measured from `stage_changed_at`, not `created_at`. A lead that arrived in
+ * January and was promoted to Opportunity yesterday has been at Opportunity for
+ * one day, and a report that called it eight months old would send a rep to
+ * rescue a deal that is moving perfectly well.
+ *
+ * This is dwell time, not cycle time: it says how long the deals still here
+ * have been here, which is the actionable question. Cycle time — how long won
+ * deals took end to end — needs `lead_events` history to accumulate first, and
+ * is the right measure once it has.
+ */
+export function stageVelocity(leads: Lead[], today: string): VelocityRow[] {
+  const buckets = new Map<OpenStageKey, number[]>(OPEN_STAGE_KEYS.map((key) => [key, []]));
+
+  for (const lead of leads) {
+    if (lead.lost) continue;
+    const bucket = buckets.get(lead.stage as OpenStageKey);
+    if (!bucket) continue;
+    // No stamp means the row predates 0006 and was never backfilled; the arrival
+    // date is the only honest fallback, and it over-states rather than invents.
+    const since = lead.stageChangedAt ? lead.stageChangedAt.slice(0, 10) : lead.createdAt;
+    if (!since) continue;
+    bucket.push(Math.max(0, daysBetween(since, today)));
+  }
+
+  return OPEN_STAGE_KEYS.map((key) => {
+    const days = buckets.get(key) ?? [];
+    return {
+      key,
+      label: STAGES[key].label,
+      count: days.length,
+      avgDays: days.length > 0 ? days.reduce((a, b) => a + b, 0) / days.length : 0,
+      maxDays: days.length > 0 ? Math.max(...days) : 0,
+      threshold: STALL_DAYS[key],
+    };
+  });
+}
+
+
+/**
+ * The contact log: every recorded interaction, newest first.
+ *
+ * ---------------------------------------------------------------------------
+ * Derived, not fetched
+ *
+ * This joins the events the tracker already holds to the leads it already
+ * holds, in the browser, rather than asking the database for a third view of
+ * the same rows. That is not only cheaper — it is what makes the log obey the
+ * filter bar. On a page where the KPI tiles, the charts and the table all
+ * narrow to the current filters, a section that silently ignored them would
+ * look broken, and "who has been calling our LinkedIn leads" is a real
+ * question the filters can now answer.
+ *
+ * Only the kinds that are actually a conversation are included — see
+ * `CONTACT_KINDS`. A lead whose event references a row not in `leads` is
+ * dropped rather than rendered against a blank name: with the filters applied
+ * that is the normal case, not an error.
+ * ---------------------------------------------------------------------------
+ */
+export function buildContactLog(leads: Lead[], events: LeadEvent[]): ContactLogEntry[] {
+  const byId = new Map(leads.map((lead) => [lead.id, lead]));
+
+  return events
+    .filter((event) => CONTACT_KINDS.includes(event.kind) && byId.has(event.leadId))
+    .map((event) => {
+      const lead = byId.get(event.leadId)!;
+      return {
+        id: event.id,
+        at: event.at,
+        leadId: lead.id,
+        leadName: lead.name || lead.id,
+        company: lead.company,
+        email: lead.email,
+        phone: lead.phone,
+        kind: event.kind,
+        actorName: event.actorName,
+        detail: event.detail,
+      };
+    })
+    .sort((a, b) => (a.at < b.at ? 1 : a.at > b.at ? -1 : 0));
 }
 
 // ---------------------------------------------------------------------------

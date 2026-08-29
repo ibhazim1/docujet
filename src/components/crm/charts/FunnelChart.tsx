@@ -35,14 +35,16 @@ export default function FunnelChart({
   showTable = true,
   className = "",
 }: FunnelChartProps) {
-  const { visible } = useLeadTracker();
+  const { visible, insightFor } = useLeadTracker();
   const rows = funnelStats(visible);
   const max = Math.max(1, rows[0]?.reached ?? 1);
 
   return (
     <ChartCard
       title={title}
+      explain="chart.funnel"
       subtitle={subtitle}
+      insight={insightFor("funnel")}
       footnote={footnote}
       showTable={showTable}
       className={className}

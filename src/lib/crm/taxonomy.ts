@@ -9,6 +9,9 @@
  */
 
 import type {
+  LeadEventKind,
+  LostReason,
+  LostReasonDef,
   OpenStageKey,
   SourceDef,
   SourceKey,
@@ -60,6 +63,107 @@ export const SOURCES: Record<SourceKey, SourceDef> = {
   chatbot: { label: "Website chatbot", group: "web" },
   form: { label: "Website form", group: "web" },
 };
+
+/**
+ * Why deals die, and who owns the fix.
+ *
+ * Ordered by how early in the cycle the problem originates, so the chart reads
+ * left to right as a journey: bad targeting produces a lead that was never a
+ * fit; good targeting badly worked produces silence; a well-worked lead still
+ * dies on price or to a competitor at the end.
+ *
+ * `fix` is the point of the whole column. "38% of losses cite price" is a
+ * statistic; "38% cite price — qualify budget before the demo, not after" is an
+ * instruction, and only one of the two changes what anybody does on Monday.
+ */
+export const LOST_REASONS: Record<LostReason, LostReasonDef> = {
+  not_a_fit: {
+    label: "Not a fit",
+    owner: "targeting",
+    fix: "Tighten who the campaigns reach — these leads were never buyers.",
+  },
+  wrong_contact: {
+    label: "Wrong contact",
+    owner: "targeting",
+    fix: "Capture job title at collection and route to the actual decision maker.",
+  },
+  no_response: {
+    label: "Went silent",
+    owner: "process",
+    fix: "Shorten first-response time — these were reachable once and are not now.",
+  },
+  timing: {
+    label: "Wrong timing",
+    owner: "process",
+    fix: "Set a next action rather than closing — timing losses are re-openable.",
+  },
+  budget_cut: {
+    label: "Budget cut",
+    owner: "process",
+    fix: "Requalify budget at SQL, and diary these for the next fiscal year.",
+  },
+  price: {
+    label: "Price",
+    owner: "commercial",
+    fix: "Qualify budget before the demo, and lead with running cost, not sticker price.",
+  },
+  competitor: {
+    label: "Lost to competitor",
+    owner: "commercial",
+    fix: "Find out who, and get the Heat-Free comparison in front of them earlier.",
+  },
+};
+
+export const LOST_REASON_KEYS = Object.keys(LOST_REASONS) as LostReason[];
+
+export function isLostReason(value: string): value is LostReason {
+  return Object.prototype.hasOwnProperty.call(LOST_REASONS, value);
+}
+
+/**
+ * How long a lead may sit untouched at each stage before it counts as stalled.
+ *
+ * Tighter further down the funnel, because the cost of silence rises with it: a
+ * new lead nobody has called in a week is a queue that got busy, while an
+ * Opportunity nobody has called in three weeks is a deal being lost to a
+ * competitor who did call. Customer is longest — it is an account-management
+ * cadence, not a sales one.
+ *
+ * These are starting figures. The right values are whatever this business's own
+ * won deals turn out to have had, which is a question `stageVelocity()` can
+ * answer once there is enough history to answer it with.
+ */
+export const STALL_DAYS: Record<OpenStageKey, number> = {
+  lead: 7,
+  mql: 10,
+  sql: 14,
+  opportunity: 21,
+  customer: 45,
+};
+
+/**
+ * The kinds of event that are actually a conversation with a person.
+ *
+ * `stage`, `note`, `lost` and `reopened` are record-keeping: they say what the
+ * business decided, not that anybody spoke to anyone. Putting them in a contact
+ * log would pad it with rows that answer none of the questions it exists to
+ * answer, and would make "when did we last actually talk to them" unreadable.
+ */
+export const CONTACT_KINDS: LeadEventKind[] = ["contacted", "appointment", "chat_capture"];
+
+/** The ones the lead initiated rather than the team. */
+const INBOUND_KINDS: LeadEventKind[] = ["chat_capture", "appointment"];
+
+/**
+ * True when the lead came to us rather than the other way round.
+ *
+ * The contact log needs this to decide what goes in its "By" column: an
+ * inbound row has no staff member behind it, and leaving that cell blank would
+ * read as missing data rather than as "they contacted us".
+ */
+export function isInboundContact(kind: LeadEventKind): boolean {
+  return INBOUND_KINDS.includes(kind);
+}
 
 /** Every stage key, in lifecycle order, terminal states last. */
 export const STAGE_KEYS = Object.keys(STAGES) as StageKey[];

@@ -3,8 +3,11 @@ import AdminHeader from "@/components/admin/AdminHeader";
 import DemoNotice from "@/components/admin/DemoNotice";
 import LeadTracker from "@/components/crm/LeadTracker";
 import { resolveToday } from "@/lib/crm/analytics";
-import { fetchLeads, isSupabaseConfigured } from "@/lib/crm/leads";
-import type { Lead, LeadAppointment } from "@/lib/crm/types";
+import { getKnowledgeGaps } from "@/lib/chat/capture";
+import { getCurrentStaffProfile } from "@/lib/supabase/authorization";
+import { getSettingsSafe } from "@/lib/settings/store";
+import { fetchLeadEvents, fetchLeads, isSupabaseConfigured } from "@/lib/crm/leads";
+import type { Lead, LeadAppointment, LeadEvent } from "@/lib/crm/types";
 import { getLeadAppointments } from "@/lib/supabase/admin";
 
 type AdminLeadsPageProps = {
@@ -23,8 +26,23 @@ type AdminLeadsPageProps = {
 export default async function AdminLeadsPage({ className }: AdminLeadsPageProps) {
   const today = resolveToday(process.env.CRM_TODAY);
 
+  // Who is reading, and what the business calls itself. Only the outreach
+  // drafts use these — a follow-up signed off with the company alone reads as
+  // a mailshot, and the company name is admin-editable so it cannot be a
+  // literal in the drafter. Both degrade to a sensible default.
+  const [profile, settings] = await Promise.all([
+    getCurrentStaffProfile().catch(() => null),
+    getSettingsSafe(),
+  ]);
+  const viewer = {
+    name: profile?.full_name ?? null,
+    companyName: settings.business.companyName,
+  };
+
   let leads: Lead[] | null = null;
   let appointments: LeadAppointment[] = [];
+  let events: LeadEvent[] = [];
+  let kbGaps: { total: number; topTheme: string | null } | undefined;
   let notice: string | null = null;
 
   if (!isSupabaseConfigured()) {
@@ -33,12 +51,28 @@ export default async function AdminLeadsPage({ className }: AdminLeadsPageProps)
       "in .env.";
   } else {
     try {
-      const [book, booked] = await Promise.all([fetchLeads(), getLeadAppointments()]);
+      const [book, booked, history] = await Promise.all([
+        fetchLeads(),
+        getLeadAppointments(),
+        // Same posture as the appointments read: `fetchLeadEvents` reports its
+        // own failure and returns []. A project without 0006 applied still gets
+        // the whole tracker, minus the timeline.
+        fetchLeadEvents(),
+      ]);
       leads = book;
       // `getLeadAppointments` reports its failure in the result rather than
       // throwing, and it is not worth losing the book over: the card says "No
       // appointments booked" and every other view is untouched.
       appointments = booked.data;
+      events = history;
+
+      // Only the headline, not the list: the finding says how many questions
+      // went unanswered and what the commonest was, and the list itself lives
+      // on /admin/settings next to the editor that fixes it.
+      const report = await getKnowledgeGaps(1);
+      if (report.error === null && report.total > 0) {
+        kbGaps = { total: report.total, topTheme: report.gaps[0]?.question ?? null };
+      }
     } catch (cause) {
       notice = cause instanceof Error ? cause.message : "Could not read the leads table.";
     }
@@ -48,7 +82,7 @@ export default async function AdminLeadsPage({ className }: AdminLeadsPageProps)
     <div className={className ?? ""}>
       <AdminHeader
         title="Lead Tracker"
-        description="Which channels produce leads, and which of those leads are worth anything."
+        description="Who to call today, what it is worth, and why the rest can wait."
       />
 
       <div className="space-y-6 p-5 md:p-8">
@@ -57,10 +91,10 @@ export default async function AdminLeadsPage({ className }: AdminLeadsPageProps)
             title="Showing sample data — the database is not connected."
             reason={notice}
           >
-            Every view below works on the 46 seed leads. The stage controls still respond, but
-            nothing is saved — these rows exist in no database. Apply{" "}
+            Every view below works on the seed leads. The controls still respond, but nothing is
+            saved — these rows exist in no database. Apply the migrations in{" "}
             <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">
-              supabase/migrations/0001_crm_leads_and_settings.sql
+              supabase/migrations/
             </code>{" "}
             in the Supabase SQL Editor, set{" "}
             <code className="rounded bg-white px-1.5 py-0.5 font-mono text-xs">SUPABASE_URL</code>{" "}
@@ -87,11 +121,14 @@ export default async function AdminLeadsPage({ className }: AdminLeadsPageProps)
             <LeadTracker
               leads={leads}
               appointments={appointments}
+              events={events}
+              kbGaps={kbGaps}
+              viewer={viewer}
               today={today}
               autoLoad={false}
             />
           ) : (
-            <LeadTracker today={today} autoLoad={false} />
+            <LeadTracker viewer={viewer} today={today} autoLoad={false} />
           )}
         </Suspense>
       </div>

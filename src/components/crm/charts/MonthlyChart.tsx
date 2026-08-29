@@ -24,7 +24,7 @@ export default function MonthlyChart({
   showTable = true,
   className = "",
 }: MonthlyChartProps) {
-  const { visible } = useLeadTracker();
+  const { visible, insightFor } = useLeadTracker();
   const rows = monthlyStats(visible);
   if (rows.length === 0) return null;
   const top = niceTop(Math.max(1, ...rows.map((row) => row.count)));
@@ -32,7 +32,9 @@ export default function MonthlyChart({
   return (
     <ChartCard
       title={title}
+      explain="chart.monthly"
       subtitle={subtitle}
+      insight={insightFor("monthly")}
       showTable={showTable}
       className={className}
       columns={["Month", "Leads"]}

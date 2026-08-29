@@ -33,13 +33,15 @@ export default function SourceQualityChart({
   showTable = true,
   className = "",
 }: SourceQualityChartProps) {
-  const { sources } = useLeadTracker();
+  const { sources, insightFor } = useLeadTracker();
   const ranked = [...sources].sort((a, b) => b.qualifiedRate - a.qualifiedRate);
 
   return (
     <ChartCard
       title={title}
+      explain="chart.sourceQuality"
       subtitle={subtitle}
+      insight={insightFor("sourceQuality")}
       footnote={footnote}
       showTable={showTable}
       className={className}

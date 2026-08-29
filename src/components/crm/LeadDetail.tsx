@@ -3,11 +3,16 @@
 import { useEffect, useRef } from "react";
 import StatusBadge from "@/components/admin/StatusBadge";
 import EditableCell from "./EditableCell";
+import Explain from "./Explain";
+import LeadActions from "./LeadActions";
+import LeadTimeline from "./LeadTimeline";
+import NextActionEditor from "./NextActionEditor";
+import ScoreBreakdown from "./ScoreBreakdown";
 import SourceSelect from "./SourceSelect";
 import StageSelect from "./StageSelect";
 import { TrackerLink, useLeadTracker } from "./TrackerContext";
 import { ago, prettyDate } from "@/lib/crm/analytics";
-import { STAGES } from "@/lib/crm/taxonomy";
+import { LOST_REASONS, STAGES } from "@/lib/crm/taxonomy";
 
 type LeadDetailProps = {
   /**
@@ -35,6 +40,14 @@ type LeadDetailProps = {
   showAppointments?: boolean;
   /** The "closed — lost" explainer, shown only on a lost lead. */
   showLostPanel?: boolean;
+  /** The score, with the factors behind it. */
+  showScore?: boolean;
+  /** The committed next action. */
+  showCommercials?: boolean;
+  /** The activity log. Renders nothing when the lead has no recorded history. */
+  showTimeline?: boolean;
+  /** Log contact / advance / mark lost, inline on the card. */
+  showActions?: boolean;
   /** The captured-from-chatbot quote, shown only on a chatbot lead. */
   showChatbotPanel?: boolean;
   /** Overrides the tracker's setting for this panel only. */
@@ -42,11 +55,27 @@ type LeadDetailProps = {
   className?: string;
 };
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+/**
+ * One labelled value on the card.
+ *
+ * `explain` is a glossary key rather than prose, so a label a designer renamed
+ * keeps its explanation, and the explanation itself stays identical to the one
+ * the same term gets on the table header and the KPI tile.
+ */
+function Field({
+  label,
+  explain,
+  children,
+}: {
+  label: string;
+  explain?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div>
-      <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+      <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
         {label}
+        {explain ? <Explain term={explain} label={label} /> : null}
       </span>
       <div className="mt-2 text-sm text-slate-700">{children}</div>
     </div>
@@ -70,6 +99,10 @@ export default function LeadDetail({
   showAppointments = true,
   showLostPanel = true,
   showChatbotPanel = true,
+  showScore = true,
+  showCommercials = true,
+  showTimeline = true,
+  showActions = true,
   readOnly,
   className = "",
 }: LeadDetailProps) {
@@ -155,8 +188,18 @@ export default function LeadDetail({
         </TrackerLink>
       </header>
 
+      {showActions && !isReadOnly ? <LeadActions lead={lead} variant="full" className="mt-5" /> : null}
+
+      {showCommercials ? (
+        <div className="mt-6">
+          <Field label="Next action" explain="action.nextAction">
+            <NextActionEditor lead={lead} />
+          </Field>
+        </div>
+      ) : null}
+
       <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-        <Field label={stageLabel}>
+        <Field label={stageLabel} explain={`stage.${lead.stage}`}>
           <StageSelect
             lead={lead}
             readOnly={isReadOnly}
@@ -165,7 +208,7 @@ export default function LeadDetail({
             onResult={setFlash}
           />
         </Field>
-        <Field label={sourceLabel}>
+        <Field label={sourceLabel} explain="field.source">
           <SourceSelect
             leadId={lead.id}
             source={lead.source}
@@ -174,7 +217,7 @@ export default function LeadDetail({
             onResult={setFlash}
           />
         </Field>
-        <Field label={capturedLabel}>
+        <Field label={capturedLabel} explain="field.captured">
           <EditableCell
             leadId={lead.id}
             field="created_at"
@@ -207,21 +250,35 @@ export default function LeadDetail({
         </Field>
       </div>
 
+      {showScore && !lead.lost ? <ScoreBreakdown leadId={lead.id} className="mt-6" /> : null}
+
       {showLostPanel && lead.lost ? (
         <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-          <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
             Closed — lost
+            <Explain term="stage.lost" label="a lost lead" />
           </span>
           <p className="mt-2 text-sm text-slate-600">
             Reached <strong className="text-slate-900">{STAGES[lead.stage].label}</strong> before it
             was lost. It still counts towards {STAGES[lead.stage].label} in the funnel and towards
             its source&apos;s quality score, so the channel keeps credit for the leads it qualified.
           </p>
+          {lead.lostReason ? (
+            <p className="mt-3 border-t border-slate-200 pt-3 text-sm text-slate-600">
+              <strong className="text-slate-900">{LOST_REASONS[lead.lostReason].label}.</strong>{" "}
+              {LOST_REASONS[lead.lostReason].fix}
+            </p>
+          ) : (
+            <p className="mt-3 border-t border-slate-200 pt-3 text-sm text-slate-500">
+              No reason was recorded — this deal was closed before the field existed, so it counts
+              towards the gap in the loss analysis rather than towards any cause.
+            </p>
+          )}
         </div>
       ) : null}
 
       <div className="mt-6">
-        <Field label={interestLabel}>
+        <Field label={interestLabel} explain="field.interest">
           <EditableCell
             leadId={lead.id}
             field="interest"
@@ -239,7 +296,7 @@ export default function LeadDetail({
           here, and /admin/appointments is where its status is worked. */}
       {showAppointments ? (
         <div className="mt-6">
-          <Field label={appointmentsLabel}>
+          <Field label={appointmentsLabel} explain="field.appointments">
             {booked.length === 0 ? (
               <p className="text-slate-500">{noAppointmentsText}</p>
             ) : (
@@ -272,8 +329,9 @@ export default function LeadDetail({
 
       {showChatbotPanel && lead.chatTopic !== null ? (
         <div className="mt-6 rounded-2xl border border-sky-200 bg-sky-50 p-4">
-          <span className="block text-xs font-semibold uppercase tracking-[0.16em] text-sky-800">
+          <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-sky-800">
             Captured from chatbot
+            <Explain term="field.chatCapture" label="a chatbot capture" />
           </span>
           <p className="mt-2 border-l-2 border-sky-300 pl-3 text-sm italic text-slate-700">
             “{lead.chatTopic}”
@@ -299,7 +357,10 @@ export default function LeadDetail({
       ) : null}
 
       <div className="mt-6">
-        <Field label={notesLabel}>
+        {/* Notes say where things stand; the timeline below says how they got
+            here. Keeping both jobs in one free-text box meant preserving the
+            history required never editing the summary. */}
+        <Field label={notesLabel} explain="field.notes">
           <EditableCell
             leadId={lead.id}
             field="notes"
@@ -311,6 +372,10 @@ export default function LeadDetail({
           />
         </Field>
       </div>
+
+      {showTimeline ? (
+        <LeadTimeline leadId={lead.id} className="mt-6 border-t border-slate-200 pt-6" />
+      ) : null}
     </section>
   );
 

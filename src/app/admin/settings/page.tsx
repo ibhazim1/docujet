@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import AdminShell from "@/components/admin/AdminShell";
 import AdminHeader from "@/components/admin/AdminHeader";
 import DemoNotice from "@/components/admin/DemoNotice";
+import KnowledgeGaps from "@/components/admin/KnowledgeGaps";
 import KnowledgeManager from "@/components/admin/KnowledgeManager";
 import SettingsForm from "@/components/admin/SettingsForm";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { integrationStatuses } from "@/lib/admin-mock-data";
+import { getKnowledgeGaps, type KnowledgeGap } from "@/lib/chat/capture";
 import { fetchKnowledgeEntries, type KnowledgeEntry } from "@/lib/chat/knowledge";
 import { DEFAULT_SETTINGS } from "@/lib/settings/defaults";
 import { toSafeSettingsView } from "@/lib/settings/mask";
@@ -54,6 +56,23 @@ export default async function AdminSettingsPage() {
   } catch (cause) {
     knowledgeNotice =
       cause instanceof Error ? cause.message : "Could not read the knowledge base.";
+  }
+
+  // Same posture again: the gap report is worth having and not worth the page
+  // for. `getKnowledgeGaps` returns its own error rather than throwing, so an
+  // unapplied 0006 costs this one panel.
+  let gaps: KnowledgeGap[] = [];
+  let gapTotal = 0;
+  let gapNotice: string | null = null;
+
+  try {
+    const report = await getKnowledgeGaps();
+    gaps = report.gaps;
+    gapTotal = report.total;
+    gapNotice = report.error;
+  } catch (cause) {
+    gapNotice =
+      cause instanceof Error ? cause.message : "Could not read the unanswered questions.";
   }
 
   // The rest of the sidebar is fixed copy, but the database and the assistant's
@@ -138,6 +157,13 @@ export default async function AdminSettingsPage() {
             and this section has a form of its own for adding an entry. */}
         <div className="xl:col-span-2">
           <KnowledgeManager entries={knowledgeEntries} notice={knowledgeNotice} />
+        </div>
+
+        {/* Directly under the editor, because reading this list and acting on
+            it are the same task: every row here is an entry somebody should
+            add above. */}
+        <div className="xl:col-span-2">
+          <KnowledgeGaps gaps={gaps} total={gapTotal} notice={gapNotice} />
         </div>
 
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm xl:col-start-2">

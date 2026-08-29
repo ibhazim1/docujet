@@ -2,11 +2,14 @@
 
 import AdminTable from "@/components/admin/AdminTable";
 import EditableCell from "./EditableCell";
+import Explain from "./Explain";
+import ScoreChip from "./ScoreChip";
+import TablePagination from "./TablePagination";
 import SortHeader from "./SortHeader";
 import SourceSelect from "./SourceSelect";
 import StageSelect from "./StageSelect";
 import { TrackerLink, useLeadTracker } from "./TrackerContext";
-import { prettyDate } from "@/lib/crm/analytics";
+import { daysBetween, prettyDate } from "@/lib/crm/analytics";
 import { STAGES } from "@/lib/crm/taxonomy";
 import type { MouseEvent } from "react";
 import type { Lead, SortKey } from "@/lib/crm/types";
@@ -22,7 +25,9 @@ export type ColumnKey =
   | "stage"
   | "title"
   | "interest"
-  | "notes";
+  | "notes"
+  | "score"
+  | "next_action";
 
 export type LeadColumn = {
   field: ColumnKey;
@@ -41,6 +46,8 @@ type LeadTableProps = {
   rowClickOpens?: boolean;
   /** Overrides the tracker's setting for this table only. */
   readOnly?: boolean;
+  /** The row-count picker and pager beneath the table. */
+  showPagination?: boolean;
   className?: string;
 };
 
@@ -55,6 +62,8 @@ const HEADERS: Record<ColumnKey, string> = {
   title: "Job title",
   interest: "Interest",
   notes: "Notes",
+  score: "Score",
+  next_action: "Next action",
 };
 
 /** Fixed shares rather than auto widths — a long note must not move every other column. */
@@ -69,6 +78,26 @@ const WIDTHS: Record<ColumnKey, string> = {
   title: "15%",
   interest: "17%",
   notes: "17%",
+  score: "8%",
+  next_action: "20%",
+};
+
+/**
+ * The columns whose heading is a term rather than a plain word.
+ *
+ * Only these get an explainer. "Company" and "Phone" need no gloss, and a dot
+ * on every heading would turn the row into a line of dots with words between
+ * them — which is the failure mode this whole feature has to avoid.
+ */
+const EXPLAINED: Partial<Record<ColumnKey, string>> = {
+  score: "score",
+  stage: "concept.qualified",
+  source: "field.source",
+  created_at: "field.captured",
+  next_action: "action.nextAction",
+  title: "field.title",
+  interest: "field.interest",
+  notes: "field.notes",
 };
 
 /** The columns whose values the list can actually be ordered by. */
@@ -78,20 +107,31 @@ const SORTABLE: Partial<Record<ColumnKey, SortKey>> = {
   source: "source",
   created_at: "created_at",
   stage: "stage",
+  score: "score",
+  next_action: "next_action_at",
 };
 
+/**
+ * The shipped columns.
+ *
+ * Score leads, because the first question a person opens this list with is
+ * which lead matters most — and a list that cannot answer it until you have
+ * read every row is one that gets worked top to bottom by arrival date. Phone
+ * drops out of the default set to make room; it is still on the lead card and
+ * still available as a column.
+ */
 export const DEFAULT_COLUMNS: LeadColumn[] = [
+  { field: "score" },
   { field: "name" },
-  { field: "email" },
-  { field: "phone" },
-  { field: "source" },
-  { field: "created_at" },
+  { field: "company" },
   { field: "stage" },
-  { field: "notes" },
+  { field: "source" },
+  { field: "next_action" },
+  { field: "created_at" },
 ];
 
 /** What a click has to miss for the row itself to claim it. */
-const CONTROLS = "a, button, select, input, textarea, label, [contenteditable]";
+const CONTROLS = "a, button, select, input, textarea, label, [contenteditable], [data-explain]";
 
 /**
  * The working list.
@@ -109,10 +149,14 @@ export default function LeadTable({
   showOpenLink = true,
   rowClickOpens = true,
   readOnly,
+  showPagination = true,
   className = "",
 }: LeadTableProps) {
   const tracker = useLeadTracker();
-  const { visible, query, isSample, setFlash, apply } = tracker;
+  const { paged, query, isSample, setFlash, apply, today } = tracker;
+  // One page, not the whole filtered set: see `paged` in TrackerContext for why
+  // the two are kept apart.
+  const rows = paged.rows;
   const isReadOnly = readOnly ?? tracker.readOnly;
   const edit = { readOnly: isReadOnly, isSample, onResult: setFlash };
 
@@ -132,6 +176,37 @@ export default function LeadTable({
 
   function cell(column: LeadColumn, lead: Lead) {
     switch (column.field) {
+      case "score":
+        // Lost leads carry no useful score — the queue excludes them and the
+        // stall penalty does not apply — so the cell says why it is blank
+        // rather than showing a number that means nothing.
+        return lead.lost ? (
+          <span className="text-xs text-slate-400">closed</span>
+        ) : (
+          <ScoreChip leadId={lead.id} />
+        );
+      case "next_action": {
+        if (!lead.nextAction && !lead.nextActionAt) {
+          return <span className="text-xs text-slate-400">—</span>;
+        }
+        const overdueBy = lead.nextActionAt ? daysBetween(lead.nextActionAt, today) : null;
+        const isOverdue = overdueBy !== null && overdueBy >= 0;
+        return (
+          <>
+            <span className="block text-slate-800">{lead.nextAction || "Unnamed task"}</span>
+            {lead.nextActionAt ? (
+              <span
+                className={`mt-0.5 block text-xs ${
+                  isOverdue ? "font-semibold text-rose-700" : "text-slate-400"
+                }`}
+              >
+                {isOverdue ? "overdue " : "due "}
+                {prettyDate(lead.nextActionAt)}
+              </span>
+            ) : null}
+          </>
+        );
+      }
       case "name":
         return (
           <>
@@ -280,16 +355,20 @@ export default function LeadTable({
               {shown.map((column, index) => {
                 const sortKey = SORTABLE[column.field];
                 const label = column.header || HEADERS[column.field];
+                const term = EXPLAINED[column.field];
                 return (
                   <th key={index} className="px-5 py-4 font-medium">
-                    {sortKey ? <SortHeader sortKey={sortKey} label={label} /> : label}
+                    <span className="inline-flex items-center gap-1.5">
+                      {sortKey ? <SortHeader sortKey={sortKey} label={label} /> : label}
+                      {term ? <Explain term={term} label={label} /> : null}
+                    </span>
                   </th>
                 );
               })}
             </tr>
           </thead>
           <tbody>
-            {visible.map((lead) => (
+            {rows.map((lead) => (
               <tr
                 key={lead.id}
                 // The row is a mouse convenience, not the accessible control:
@@ -319,6 +398,8 @@ export default function LeadTable({
           </tbody>
         </table>
       </AdminTable>
+
+      {showPagination ? <TablePagination className="mt-4" /> : null}
     </div>
   );
 }
