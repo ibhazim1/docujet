@@ -32,7 +32,10 @@ export default function LoginPage({
 
     try {
       const supabase = createClient();
-      const signIn = supabase.auth.signInWithPassword({ email, password });
+      const signIn = supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
       const timeout = new Promise<never>((_, reject) => {
         window.setTimeout(() => reject(new Error("Supabase sign-in timed out. Check your connection and Supabase API settings.")), 15000);
       });
@@ -44,8 +47,9 @@ export default function LoginPage({
         return;
       }
 
-      // The proxy reads the new auth cookie during this navigation. A second
-      // refresh here creates an unnecessary duplicate request.
+      // The proxy performs the role check on the destination request. Avoid
+      // querying user_profiles here as well, which adds another network round
+      // trip before the workspace can render.
       router.replace("/admin");
     } catch (cause) {
       setErrorMessage(cause instanceof Error ? cause.message : "Could not sign in.");

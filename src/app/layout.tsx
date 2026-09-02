@@ -58,8 +58,12 @@ export default async function RootLayout({
             that module turns into a readable error rather than a crash inside
             the library. */}
         <SupabaseBrowserConfig
-          url={process.env.SUPABASE_URL ?? ""}
-          publishableKey={process.env.SUPABASE_PUBLISHABLE_KEY ?? ""}
+          url={process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ""}
+          publishableKey={
+            process.env.SUPABASE_PUBLISHABLE_KEY ||
+            process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+            ""
+          }
         />
         <SiteChrome chatConfig={chat}>{children}</SiteChrome>
       </body>

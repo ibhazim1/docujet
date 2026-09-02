@@ -66,6 +66,7 @@ export const adminNavItems = [
 export const superadminNavItems = [
   ...adminNavItems,
   { label: "Staff Accounts", href: "/superadmin/users" },
+  { label: "Appointment Availability", href: "/superadmin/availability" },
 ] as const;
 
 export const dashboardStats = [

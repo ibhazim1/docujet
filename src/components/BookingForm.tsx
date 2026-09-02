@@ -18,10 +18,6 @@ type FormValues = {
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
-const timeSlotStart = "09:00";
-const timeSlotEnd = "17:30";
-const timeSlotStepMinutes = 30;
-
 const initialValues: FormValues = {
   fullName: "",
   companyName: "",
@@ -61,44 +57,16 @@ function validate(values: FormValues): FormErrors {
   return errors;
 }
 
-function buildTimeSlots(
-  start: string,
-  end: string,
-  stepMinutes: number,
-) {
-  const slots: string[] = [];
-  const [startHour, startMinute] = start.split(":").map(Number);
-  const [endHour, endMinute] = end.split(":").map(Number);
-  let currentMinutes = startHour * 60 + startMinute;
-  const endMinutes = endHour * 60 + endMinute;
-
-  while (currentMinutes <= endMinutes) {
-    const hours = Math.floor(currentMinutes / 60);
-    const minutes = currentMinutes % 60;
-    slots.push(
-      `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`,
-    );
-    currentMinutes += stepMinutes;
-  }
-
-  return slots;
-}
-
 export default function BookingForm() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
-  const timeSlots = useMemo(
-    () => buildTimeSlots(timeSlotStart, timeSlotEnd, timeSlotStepMinutes),
-    [],
-  );
-
   useEffect(() => {
     if (!values.preferredDate) {
       return;
@@ -110,7 +78,7 @@ export default function BookingForm() {
       setIsLoadingSlots(true);
 
       const supabase = createClient();
-      const { data, error } = await supabase.rpc("get_booked_time_slots", {
+      const { data, error } = await supabase.rpc("get_available_time_slots", {
         p_date: values.preferredDate,
       });
 
@@ -121,12 +89,12 @@ export default function BookingForm() {
       setIsLoadingSlots(false);
 
       if (error) {
-        setBookedSlots([]);
+        setAvailableSlots([]);
         setSubmitError(error.message);
         return;
       }
 
-      setBookedSlots(
+      setAvailableSlots(
         (data ?? []).map((slot: { preferred_time: string }) =>
           String(slot.preferred_time).slice(0, 5),
         ),
@@ -150,7 +118,7 @@ export default function BookingForm() {
 
       if (field === "preferredDate") {
         next.preferredTime = "";
-        setBookedSlots([]);
+        setAvailableSlots([]);
       }
 
       return next;
@@ -347,7 +315,7 @@ export default function BookingForm() {
                       Select a 30-minute slot
                     </p>
                     <p className="text-xs text-slate-500">
-                      Booked slots are greyed out
+                      Only active availability is shown
                     </p>
                   </div>
                 ) : (
@@ -361,40 +329,23 @@ export default function BookingForm() {
                     <p className="text-sm text-slate-500">Checking availability...</p>
                   ) : (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                      {timeSlots.map((slot) => {
-                        const isBooked = bookedSlots.includes(slot);
+                      {availableSlots.map((slot) => {
                         const isSelected = values.preferredTime === slot;
 
                         return (
                           <button
                             key={slot}
                             type="button"
-                            disabled={isBooked}
                             onClick={() => updateField("preferredTime", slot)}
-                            className={`rounded-2xl border px-4 py-3 text-sm font-medium transition ${
-                              isBooked
-                                ? "cursor-not-allowed border-slate-200 bg-slate-200 text-slate-400 opacity-80"
-                                : isSelected
-                                  ? "border-sky-800 bg-sky-800 text-white"
-                                  : "border-slate-300 bg-white text-slate-700 hover:border-sky-700 hover:text-sky-900"
-                            }`}
+                            className={`rounded-2xl border px-4 py-3 text-sm font-medium transition ${isSelected ? "border-sky-800 bg-sky-800 text-white" : "border-slate-300 bg-white text-slate-700 hover:border-sky-700 hover:text-sky-900"}`}
                             aria-pressed={isSelected}
-                            aria-disabled={isBooked}
-                            title={isBooked ? "Already booked" : `Select ${slot}`}
+                            title={`Select ${slot}`}
                           >
-                            {isBooked ? (
-                              <span className="flex flex-col items-center gap-1">
-                                <span>{slot}</span>
-                                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
-                                  Booked
-                                </span>
-                              </span>
-                            ) : (
-                              slot
-                            )}
+                            {slot}
                           </button>
                         );
                       })}
+                      {!availableSlots.length ? <p className="col-span-full text-sm text-slate-500">No appointment times are available for this date.</p> : null}
                     </div>
                   )
                 ) : null}

@@ -22,14 +22,25 @@ export async function updateSession(request: NextRequest) {
   const isLoginRoute = pathname === "/login";
 
   const cookiesToSet: CookieToSet[] = [];
+  const projectUrl =
+    process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const publishableKey =
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-  // Read at request time, not inlined at build time: Next 16's Proxy runs on
-  // the Node.js runtime, so these are ordinary server-side variables and do not
-  // need a NEXT_PUBLIC_ prefix. See src/lib/supabase/client.ts for how the
-  // browser gets the same pair.
+  // Let public pages, including /login, render when the environment is not
+  // configured. Protected pages are redirected below instead of crashing the
+  // entire request in createServerClient.
+  if (!projectUrl || !publishableKey) {
+    if (isAdminRoute || isSuperadminRoute) {
+      return NextResponse.redirect(new URL("/login", request.url));
+    }
+    return NextResponse.next({ request });
+  }
+
   const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_PUBLISHABLE_KEY!,
+    projectUrl,
+    publishableKey,
     {
       cookies: {
         getAll() {
