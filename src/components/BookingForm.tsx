@@ -166,7 +166,7 @@ export default function BookingForm() {
     setIsSubmitting(true);
 
     const supabase = createClient();
-    const { error } = await supabase.rpc("create_booking", {
+    const { data, error } = await supabase.rpc("create_booking", {
       p_full_name: values.fullName,
       p_company_name: values.companyName,
       p_email: values.email,
@@ -183,6 +183,36 @@ export default function BookingForm() {
     if (error) {
       setSubmitError(error.message);
       return;
+    }
+
+    const booking = Array.isArray(data) ? data[0] as { appointment_id?: string } | undefined : data as { appointment_id?: string } | null;
+    const appointmentId = booking?.appointment_id;
+    if (appointmentId) {
+      const notificationPayload = {
+        fullName: values.fullName,
+        appointmentType: values.appointmentType,
+        preferredDate: values.preferredDate,
+        preferredTime: values.preferredTime,
+        appointmentId,
+      };
+      const [whatsapp, email] = await Promise.allSettled([
+        fetch("/api/notifications/whatsapp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...notificationPayload, phoneNumber: values.phoneNumber }),
+        }),
+        fetch("/api/notifications/email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...notificationPayload, email: values.email }),
+        }),
+      ]);
+      if (whatsapp.status === "rejected" || (whatsapp.status === "fulfilled" && !whatsapp.value.ok)) {
+        console.warn("The booking was saved, but its WhatsApp notification was not sent.");
+      }
+      if (email.status === "rejected" || (email.status === "fulfilled" && !email.value.ok)) {
+        console.warn("The booking was saved, but its email notification was not sent.");
+      }
     }
 
     setValues(initialValues);
