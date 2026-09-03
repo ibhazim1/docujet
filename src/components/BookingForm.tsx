@@ -61,33 +61,12 @@ export default function BookingForm() {
   const [values, setValues] = useState<FormValues>(initialValues);
   const [errors, setErrors] = useState<FormErrors>({});
   const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  const [availableDates, setAvailableDates] = useState<string[]>([]);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const today = useMemo(() => new Date().toISOString().split("T")[0], []);
-
-  useEffect(() => {
-    let active = true;
-    async function loadAvailableDates() {
-      const supabase = createClient();
-      const { data, error } = await supabase.rpc("get_available_dates", {
-        p_from: today,
-        p_to: `${new Date().getFullYear() + 1}-12-31`,
-      });
-      if (!active) return;
-      if (error) {
-        setAvailableDates([]);
-        setSubmitError(error.message);
-        return;
-      }
-      setAvailableDates((data ?? []).map((row: { available_date: string }) => String(row.available_date)));
-    }
-    void loadAvailableDates();
-    return () => { active = false; };
-  }, [today]);
 
   useEffect(() => {
     if (!values.preferredDate) {
@@ -152,9 +131,6 @@ export default function BookingForm() {
     event.preventDefault();
 
     const nextErrors = validate(values);
-    if (values.preferredDate && !availableDates.includes(values.preferredDate)) {
-      nextErrors.preferredDate = "This date is not available for booking.";
-    }
     setErrors(nextErrors);
     setSubmitted(false);
     setSubmitError(null);
@@ -240,7 +216,6 @@ export default function BookingForm() {
             />
           }
         />
-        {availableDates.length ? <p className="mt-2 text-xs text-slate-500">Booking is available on {availableDates.length} configured date(s) in the next year.</p> : null}
         <Field
           label="Company Name"
           htmlFor="companyName"
@@ -342,9 +317,7 @@ export default function BookingForm() {
               min={today}
               value={values.preferredDate}
               onChange={(event) =>
-                availableDates.length > 0 && !availableDates.includes(event.target.value)
-                  ? setErrors((current) => ({ ...current, preferredDate: "Choose a date with active availability." }))
-                  : updateField("preferredDate", event.target.value)
+                updateField("preferredDate", event.target.value)
               }
               className={inputClassName}
             />
