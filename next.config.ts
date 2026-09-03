@@ -1,5 +1,28 @@
 import type { NextConfig } from "next";
 
+/**
+ * What Transformers.js needs on disk at runtime, and cannot be traced to.
+ *
+ * `onnxruntime-node` locates its binding at runtime, from
+ * `path.join(__dirname, 'bin', 'napi-v6', process.platform, process.arch)`.
+ * Nothing about that is statically analysable, so file tracing includes none of
+ * them — verified in `.next/server/app/api/chat/route.js.nft.json`, which
+ * listed 95 files from the library and not one `.node` or `.so` among them.
+ * A function built without them throws on `require('onnxruntime-node')` with
+ * `libonnxruntime.so.1: cannot open shared object file`, before a line of code
+ * in this repository runs.
+ *
+ * Both Linux architectures, since the deployment target may be either, and
+ * together they are 53 MB against the 160 MB the excludes below remove.
+ */
+const EMBEDDING_RUNTIME_FILES = [
+  "node_modules/onnxruntime-node/bin/napi-v6/linux/**",
+  // The embedding model itself, downloaded by the `prebuild` script. Ships with
+  // the function so the running server never has to write to disk or reach
+  // Hugging Face — see scripts/warm-embeddings.ts.
+  ".cache/transformers/**",
+];
+
 const nextConfig: NextConfig = {
   /**
    * Transformers.js embeds the chat assistant's questions on the server (see
@@ -31,27 +54,20 @@ const nextConfig: NextConfig = {
   },
 
   /**
-   * ...and put the one it does need back in.
+   * ...and put the one it does need back in, for every entry point that embeds.
    *
-   * `onnxruntime-node` locates its binding at runtime, from
-   * `path.join(__dirname, 'bin', 'napi-v6', process.platform, process.arch)`.
-   * Nothing about that is statically analysable, so file tracing includes none
-   * of them — verified in `.next/server/app/api/chat/route.js.nft.json`, which
-   * listed 95 files from the library and not one `.node` or `.so` among them.
-   * The deployed function then throws on `require('onnxruntime-node')`, and
-   * /api/chat answers 500 without reaching any code in this repository.
+   * `/api/chat` embeds the visitor's question. `/admin/settings` renders
+   * KnowledgeManager, whose "use server" actions in src/lib/chat/actions.ts
+   * embed a Q&A entry before storing it — server actions are built into the
+   * page that imports them, so they need their own copy of the runtime.
    *
-   * Both Linux architectures, since the deployment target may be either, and
-   * together they are 53 MB against the 160 MB the excludes above remove.
+   * A route left off this list still builds and still ships the Transformers.js
+   * JavaScript, because JavaScript is all file tracing can see. It fails only
+   * at runtime, on the deployed host, on the first call that touches the model.
    */
   outputFileTracingIncludes: {
-    "/api/chat": [
-      "node_modules/onnxruntime-node/bin/napi-v6/linux/**",
-      // The embedding model itself, downloaded by the `prebuild` script. Ships
-      // with the function so the running server never has to write to disk or
-      // reach Hugging Face — see scripts/warm-embeddings.ts.
-      ".cache/transformers/**",
-    ],
+    "/api/chat": EMBEDDING_RUNTIME_FILES,
+    "/admin/settings": EMBEDDING_RUNTIME_FILES,
   },
 };
 
